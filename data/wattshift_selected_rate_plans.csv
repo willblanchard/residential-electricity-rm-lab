@@ -1,0 +1,9 @@
+zip,utility_id,utility_name,rate_plan_id,rate_id,ud_id,rate_plan_name,supported_type
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc1,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc1,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c90f,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD58,6915de60881cbc6041e4c90f,TOU-D-5-8PM,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8dd,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDR1,6915de54881cbc6041e4c8dd,TOU-DR1 - Residential Time of Use,optimizable
+11002,4226,Con Edison,6915de99881cbc6041e4c994,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,6915de99881cbc6041e4c994,SC-1 - Residential & Religious Service [NYC] Low Income Rate,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a2,USA-CA-15270-15270-R-TN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c8a2,RESIDENTIAL TIME-OF-USE PILOT PROGRAM R-TOU-P,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b2,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b2,Residential Time of Day (Full Service)-D1.2,optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c993,USA-CA-04110-04110-R-FN?NN?-??????-??-PJMHOU,6915de96881cbc6041e4c993,PJM Hourly Pricing,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc4,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc4,E-TOU-C Residential Time of Use Baseline Region Q,optimizable

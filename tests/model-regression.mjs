@@ -24,6 +24,7 @@ vm.runInContext(
     demandProfileEnsemble,
     state,
     optimizationConfig,
+    nathanLpCalibration,
     portfolioEconomics,
     optimizeTariff,
     optimizationCsv,
@@ -33,6 +34,9 @@ vm.runInContext(
 const model = context.globalThis.__model;
 
 assert.equal(model.demandProfileEnsemble.length, 100);
+assert.equal(model.nathanLpCalibration.buildingCount, 100);
+assert.equal(model.nathanLpCalibration.capacityKwPer100Homes, 272);
+assert.equal(model.nathanLpCalibration.wtpResponseEnabled, false);
 
 const edge = {
   ...model.state,
@@ -72,7 +76,10 @@ for (const kind of ["tou", "demand"]) {
 
 const optimizationCsv = model.optimizationCsv();
 assert.equal(optimizationCsv.split("\n").length, 1 + 41 + 31);
-assert.match(optimizationCsv, /capacity_limit_kw,demand_profile_count/);
+assert.match(
+  optimizationCsv,
+  /capacity_limit_kw,capacity_limit_kw_per_100_homes,(phase3_wtp_status,phase3_)?wtp_reference_price,demand_profile_count,calibration_source/,
+);
 
 const forbiddenLegacyNames = [
   "function scenarioFor",

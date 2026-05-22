@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phase 2 Optional Rate Selection</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260522-phase2" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">Phase 2 optional-rate selection</p>
+            </div>
+          </div>
+          <nav class="page-nav" aria-label="page sections">
+            <a href="index.html">Phase 1</a>
+            <a class="active" aria-current="page" href="phase2.html">Phase 2</a>
+            <a href="phase3.html">Phase 3 WTP</a>
+            <a href="#choice-title">Choice</a>
+            <a href="#phase2-controls">Controls</a>
+            <a href="#leakage-title">Leakage</a>
+            <a href="#segments-title">Segments</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="intro phase2-hero" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">Optional rates create a second RM problem.</h1>
+            <p class="lead">
+              Phase 1 asks what happens if the same portfolio is placed under a
+              flat, TOU, or demand-charge tariff. Phase 2 asks who leaves the
+              fixed-rate pool when TOU or demand-charge plans are offered in
+              parallel. The adverse-selection risk is simple: the customers
+              with the most bill savings are also the first customers to switch.
+            </p>
+            <nav class="nav-actions" aria-label="phase actions">
+              <a class="button" href="index.html">Back to Phase 1</a>
+              <button class="button primary" id="download-phase2">
+                Download Phase 2 CSV
+              </button>
+            </nav>
+          </div>
+          <aside class="summary-panel" aria-label="optional-rate summary">
+            <p class="summary-title">Optional-rate leakage</p>
+            <div class="summary-metric primary">
+              <span>Switching homes</span>
+              <strong id="phase2-switch-homes">--</strong>
+              <small id="phase2-switch-note">--</small>
+            </div>
+            <div class="summary-metric">
+              <span>Revenue leakage</span>
+              <strong id="phase2-leakage">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Cost avoided</span>
+              <strong id="phase2-cost-avoided">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Margin impact</span>
+              <strong id="phase2-margin-delta">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Fixed-pool adder</span>
+              <strong id="phase2-fixed-adder">--</strong>
+            </div>
+            <p class="phase2-summary-note" id="phase2-summary-note">--</p>
+          </aside>
+        </section>
+
+        <section class="story-grid" aria-label="phase two flow">
+          <article class="story-card">
+            <span>1</span>
+            <h2>Keep fixed as default.</h2>
+            <p>
+              The flat tariff remains available, so customers switch only when
+              the optional rate clears their expected savings threshold.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>2</span>
+            <h2>Let flexible homes self-select.</h2>
+            <p>
+              Thermostats, batteries, and elastic behavior raise the odds that
+              a household can lower its bill under TOU or demand pricing.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>3</span>
+            <h2>Measure the fixed-pool pressure.</h2>
+            <p>
+              Revenue leakage can come back as a fixed-rate adder if the utility
+              tries to recover the same revenue requirement from stayers.
+            </p>
+          </article>
+        </section>
+
+        <section id="phase2-controls" aria-labelledby="choice-title">
+          <div class="section-head">
+            <div>
+              <h2 id="choice-title">Optional rate-choice model</h2>
+            </div>
+            <p class="section-note">
+              The model starts with the same 10,000-home portfolio from Phase 1.
+              Each behavior/device bucket compares the fixed rate with the
+              optional plans, then a share of economically eligible homes
+              switches into the plan with the highest expected bill savings.
+            </p>
+          </div>
+          <div class="controls phase2-controls" aria-label="optional rate controls">
+            <div class="control">
+              <label for="phase2-menu">Optional menu</label>
+              <div class="segmented phase2-menu" id="phase2-menu">
+                <button type="button" data-menu="tou">TOU only</button>
+                <button type="button" data-menu="demand">Demand only</button>
+                <button type="button" class="active" data-menu="both">Both</button>
+              </div>
+            </div>
+            <div class="control">
+              <label for="phase2-spread">TOU peak spread</label>
+              <div class="control-value"><span id="phase2-spread-value">2.0</span>x</div>
+              <input id="phase2-spread" type="range" min="1" max="5" step="0.05" value="2" />
+            </div>
+            <div class="control">
+              <label for="phase2-demand">Demand charge</label>
+              <div class="control-value">$<span id="phase2-demand-value">20</span>/kW-mo</div>
+              <input id="phase2-demand" type="range" min="0" max="30" step="1" value="20" />
+            </div>
+            <div class="control">
+              <label for="phase2-threshold">Switching threshold</label>
+              <div class="control-value">$<span id="phase2-threshold-value">8</span>/mo</div>
+              <input id="phase2-threshold" type="range" min="0" max="40" step="1" value="8" />
+            </div>
+            <div class="control">
+              <label for="phase2-adoption">Eligible adoption</label>
+              <div class="control-value"><span id="phase2-adoption-value">75</span>%</div>
+              <input id="phase2-adoption" type="range" min="0" max="100" step="5" value="75" />
+            </div>
+          </div>
+        </section>
+
+        <section class="choice-layout" aria-labelledby="leakage-title">
+          <article class="panel">
+            <h3 id="leakage-title">Leakage versus avoided cost</h3>
+            <p class="panel-subtitle">
+              Revenue leakage is the customer bill reduction from switching.
+              Cost avoided is the utility cost reduction from load response.
+            </p>
+            <div class="choice-chart-wrap">
+              <svg id="phase2-leakage-chart" viewBox="0 0 760 340" role="img"></svg>
+            </div>
+            <div class="mini-metrics phase2-metrics" id="phase2-metrics"></div>
+          </article>
+
+          <article class="panel">
+            <h3>Who leaves the fixed pool</h3>
+            <p class="panel-subtitle">
+              Bars show each population bucket split between fixed-rate stayers
+              and optional-plan switchers under the current menu.
+            </p>
+            <div class="choice-chart-wrap">
+              <svg id="phase2-selection-chart" viewBox="0 0 620 420" role="img"></svg>
+            </div>
+            <div class="legend">
+              <span class="legend-item" style="color: var(--muted)">
+                <span class="swatch"></span>Fixed-rate stayers
+              </span>
+              <span class="legend-item" style="color: var(--amber)">
+                <span class="swatch"></span>TOU switchers
+              </span>
+              <span class="legend-item" style="color: var(--teal)">
+                <span class="swatch"></span>Demand switchers
+              </span>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel phase2-table-panel" aria-labelledby="segments-title">
+          <div class="table-heading">
+            <div>
+              <h3 id="segments-title">Segment-level opt-in results</h3>
+            </div>
+            <p>
+              Savings and utility economics are monthly per switched home.
+              Segment totals use the normalized 10,000-home portfolio.
+            </p>
+          </div>
+          <div class="phase2-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Behavior</th>
+                  <th>Device case</th>
+                  <th>Selected plan</th>
+                  <th>Homes</th>
+                  <th>Switch homes</th>
+                  <th>Customer savings</th>
+                  <th>Cost avoided</th>
+                  <th>Margin / switcher</th>
+                  <th>Segment leakage</th>
+                  <th>Segment margin</th>
+                </tr>
+              </thead>
+              <tbody id="phase2-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="footer">
+          Phase 2 is intentionally separate from the main dashboard. It models
+          optional rate choice and adverse selection after the Phase 1 universal
+          tariff mechanism is understood.
+        </p>
+      </main>
+    </div>
+
+    <script src="phase2.js?v=20260522-phase2"></script>
+  </body>
+</html>

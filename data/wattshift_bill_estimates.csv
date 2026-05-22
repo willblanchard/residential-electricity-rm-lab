@@ -1,0 +1,19 @@
+rate_plan_id,utility_name,rate_plan_name,building_id,segment,daily_kwh,peak_kw,peak_hour,bill_cost,raw_keys
+691623d324a3ba28ef331fc1,Pacific Gas & Electric Co,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),107374-0,low_peak,1.2512,0.0712,18,0.6088851415000001,billTotal|startDate|endDate
+691623d324a3ba28ef331fc1,Pacific Gas & Electric Co,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),108640-0,median_peak,20.1653,1.3318,20,9.586722617999996,billTotal|startDate|endDate
+691623d324a3ba28ef331fc1,Pacific Gas & Electric Co,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),108438-0,high_peak,155.0545,8.1054,20,75.249856377,billTotal|startDate|endDate
+6915de60881cbc6041e4c90f,Southern California Edison,TOU-D-5-8PM,107374-0,low_peak,1.2512,0.0712,18,0.4901945000000002,billTotal|startDate|endDate
+6915de60881cbc6041e4c90f,Southern California Edison,TOU-D-5-8PM,108640-0,median_peak,20.1653,1.3318,20,7.785475250000001,billTotal|startDate|endDate
+6915de60881cbc6041e4c90f,Southern California Edison,TOU-D-5-8PM,108438-0,high_peak,155.0545,8.1054,20,59.448066499999975,billTotal|startDate|endDate
+6915de54881cbc6041e4c8dd,San Diego Gas & Electric Co,TOU-DR1 - Residential Time of Use,107374-0,low_peak,1.2512,0.0712,18,0.45652425,billTotal|startDate|endDate
+6915de54881cbc6041e4c8dd,San Diego Gas & Electric Co,TOU-DR1 - Residential Time of Use,108640-0,median_peak,20.1653,1.3318,20,7.391194849999999,billTotal|startDate|endDate
+6915de54881cbc6041e4c8dd,San Diego Gas & Electric Co,TOU-DR1 - Residential Time of Use,108438-0,high_peak,155.0545,8.1054,20,56.49308777499999,billTotal|startDate|endDate
+6915de99881cbc6041e4c994,Con Edison,SC-1 - Residential & Religious Service [NYC] Low Income Rate,107374-0,low_peak,1.2512,0.0712,18,0.12045302399999995,billTotal|startDate|endDate
+6915de99881cbc6041e4c994,Con Edison,SC-1 - Residential & Religious Service [NYC] Low Income Rate,108640-0,median_peak,20.1653,1.3318,20,1.9413134309999995,billTotal|startDate|endDate
+6915de99881cbc6041e4c994,Con Edison,SC-1 - Residential & Religious Service [NYC] Low Income Rate,108438-0,high_peak,155.0545,8.1054,20,14.927096715000005,billTotal|startDate|endDate
+6915de48881cbc6041e4c8a2,Potomac Electric Power Co,RESIDENTIAL TIME-OF-USE PILOT PROGRAM R-TOU-P,107374-0,low_peak,1.2512,0.0712,18,0.110036041,billTotal|startDate|endDate
+6915de48881cbc6041e4c8a2,Potomac Electric Power Co,RESIDENTIAL TIME-OF-USE PILOT PROGRAM R-TOU-P,108640-0,median_peak,20.1653,1.3318,20,1.7708824649999997,billTotal|startDate|endDate
+6915de48881cbc6041e4c8a2,Potomac Electric Power Co,RESIDENTIAL TIME-OF-USE PILOT PROGRAM R-TOU-P,108438-0,high_peak,155.0545,8.1054,20,13.005396498999993,billTotal|startDate|endDate
+6915de9e881cbc6041e4c9b2,Detroit Edison Co,Residential Time of Day (Full Service)-D1.2,107374-0,low_peak,1.2512,0.0712,18,0.17782423574999998,billTotal|startDate|endDate
+6915de9e881cbc6041e4c9b2,Detroit Edison Co,Residential Time of Day (Full Service)-D1.2,108640-0,median_peak,20.1653,1.3318,20,2.8646892095000003,billTotal|startDate|endDate
+6915de9e881cbc6041e4c9b2,Detroit Edison Co,Residential Time of Day (Full Service)-D1.2,108438-0,high_peak,155.0545,8.1054,20,21.82149725,billTotal|startDate|endDate

@@ -241,10 +241,32 @@ const dailyBaselineKwh = endUseProfile.reduce(
 const monthlyScale = base.monthlyKwh / dailyBaselineKwh;
 const portfolioSize = 10000;
 const capacityCostPerKwMonth = 20;
+const nathanLpCalibration = {
+  source: "Analysis/demand_curve.xlsx, annual_demand.xlsx, Capacity.mlx",
+  phase: "Phase 3 WTP calibration - not active in current dashboard economics",
+  wtpResponseEnabled: false,
+  buildingCount: 100,
+  annualKwhAcrossBuildings: 942797.4,
+  referencePrice: 0.18,
+  capacityKwhPer15Min: 68,
+  capacityKwPer100Homes: 272,
+  responseCurve: [
+    { price: 0.06, ratio: 1.15 },
+    { price: 0.1, ratio: 1.142 },
+    { price: 0.13, ratio: 1.108 },
+    { price: 0.18, ratio: 1 },
+    { price: 0.23, ratio: 0.892 },
+    { price: 0.27, ratio: 0.807 },
+    { price: 0.3, ratio: 0.772 },
+    { price: 0.4, ratio: 0.75 },
+  ],
+};
+nathanLpCalibration.capacityLimitKw =
+  (nathanLpCalibration.capacityKwPer100Homes / 100) * portfolioSize;
 const optimizationConfig = {
   revenueRetentionMin: 0.95,
   filingNeutralTolerance: 0.005,
-  maxPeakKw: 30000,
+  maxPeakKw: nathanLpCalibration.capacityLimitKw,
   touMin: 1,
   touMax: 5,
   touStep: 0.1,
@@ -333,6 +355,53 @@ function tariffResponseStrength(tariffId, overrides = state) {
 function smoothResponseStrength(value) {
   const bounded = clamp(value, 0, 1);
   return bounded * bounded * (3 - 2 * bounded);
+}
+
+function interpolateCalibration(points, price) {
+  if (!points.length) return 1;
+  if (price <= points[0].price) return points[0].ratio;
+  const last = points[points.length - 1];
+  if (price >= last.price) return last.ratio;
+  for (let index = 1; index < points.length; index += 1) {
+    const right = points[index];
+    const left = points[index - 1];
+    if (price > right.price) continue;
+    const span = right.price - left.price || 1;
+    const t = (price - left.price) / span;
+    return left.ratio + (right.ratio - left.ratio) * t;
+  }
+  return 1;
+}
+
+function wtpRelativeDemandForPrice(price) {
+  return interpolateCalibration(
+    nathanLpCalibration.responseCurve,
+    Math.max(0, price),
+  );
+}
+
+function behavioralPriceForHour(hour, loadKw, tariffId, overrides = state) {
+  const rate = rateForTariff(tariffId, hour, overrides);
+  if (tariffId !== "demand" || !scarcityHoursForTariff("demand").has(hour)) {
+    return rate;
+  }
+  const demandCharge = Number(
+    calibratedTariff("demand", overrides).demandCharge || 0,
+  );
+  const capacityBurden = (demandCharge * Math.max(loadKw, 0)) / base.monthlyKwh;
+  return rate + capacityBurden;
+}
+
+function elasticDemandScaleForPrice(price, responseStrength, elasticFlex) {
+  if (!nathanLpCalibration.wtpResponseEnabled) return 1;
+  const boundedStrength = smoothResponseStrength(responseStrength);
+  const boundedFlex = clamp(elasticFlex, 0, 1);
+  const ratio = wtpRelativeDemandForPrice(price);
+  return clamp(
+    1 + (ratio - 1) * boundedStrength * boundedFlex * 0.65,
+    0.86,
+    1.08,
+  );
 }
 
 function cents(value) {
@@ -426,7 +495,8 @@ function tariffDesignText(tariffId, overrides = state) {
 }
 
 function demandPeakHours(count = 3) {
-  return [...endUseProfile]
+  return filingBaselineHourlyLoads
+    .map((total, hour) => ({ hour, total }))
     .sort((a, b) => b.total - a.total)
     .slice(0, count)
     .map((row) => row.hour)
@@ -480,6 +550,7 @@ function elasticOnlyResponse(overrides = state, tariffId = state.focusTariff) {
   const elasticFlex = clamp(Number(overrides.elasticShare ?? 35) / 100, 0, 1);
   const touEffect = tariffId === "tou" ? touSignalStrength(overrides) : 0;
   const spreadEffect = tariffId === "tou" ? touHighSpreadEffect(overrides) : 0;
+  const responseStrength = tariffResponseStrength(tariffId, overrides);
   const demandEffect = clamp(
     calibratedTariff("demand", overrides).demandCharge / 20,
     0,
@@ -495,6 +566,32 @@ function elasticOnlyResponse(overrides = state, tariffId = state.focusTariff) {
   const rows = baseRows();
   let shifted = 0;
   rows.forEach((row, index) => {
+    const source = endUseProfile[index];
+    const nonControlled =
+      source.waterHeating +
+      source.lighting +
+      source.appliances +
+      source.plugOther;
+    const price = behavioralPriceForHour(
+      row.hour,
+      source.total,
+      tariffId,
+      overrides,
+    );
+    const demandScale = elasticDemandScaleForPrice(
+      price,
+      responseStrength,
+      elasticFlex,
+    );
+    const delta = nonControlled * (demandScale - 1);
+    if (Math.abs(delta) < 0.0001) return;
+    const boundedDelta = Math.max(delta, -row.gridImport * 0.35);
+    row.homeLoad += boundedDelta;
+    row.gridImport += boundedDelta;
+    row.action =
+      boundedDelta < 0 ? "WTP price reduction" : "WTP low-price rebound";
+  });
+  rows.forEach((row, index) => {
     if (!peakHours.has(row.hour)) return;
     const source = endUseProfile[index];
     const nonControlled =
@@ -505,10 +602,12 @@ function elasticOnlyResponse(overrides = state, tariffId = state.focusTariff) {
     const reduction = nonControlled * elasticFlex * reductionShare;
     row.homeLoad -= reduction;
     row.gridImport -= reduction;
-    row.action =
+    row.action = appendAction(
+      row.action,
       tariffId === "demand"
         ? "elastic peak clipping"
-        : "elastic peak reduction";
+        : "elastic peak reduction",
+    );
     shifted += reduction;
   });
   rows.forEach((row) => {
@@ -517,7 +616,7 @@ function elasticOnlyResponse(overrides = state, tariffId = state.focusTariff) {
     const addition = shifted * weight * reboundShare;
     row.homeLoad += addition;
     row.gridImport += addition;
-    row.action = "elastic shift";
+    row.action = appendAction(row.action, "elastic shift");
   });
   return { rows, shiftedKwh: shifted };
 }
@@ -690,9 +789,16 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
   const dispatchStrength = smoothResponseStrength(responseStrength);
   const powerLimit = clamp(capacity / 2.5, 1, 5) * dispatchStrength;
   const baselinePeak = Math.max(...loadRows.map((row) => row.gridImport));
-  const chargeCeiling = baselinePeak * (1 - 0.18 * dispatchStrength);
+  const shapedImport = (row) =>
+    row.gridImport *
+    (tariffId === "demand" ? averageDemandProfileFactors[row.hour] || 1 : 1);
+  const dispatchPeak =
+    tariffId === "demand"
+      ? Math.max(...loadRows.map((row) => shapedImport(row)))
+      : baselinePeak;
+  const chargeCeiling = dispatchPeak * (1 - 0.18 * dispatchStrength);
   const targetReduction = tariffId === "demand" ? 0.5 : 0.42;
-  const dischargeTarget = baselinePeak * (1 - targetReduction * dispatchStrength);
+  const dischargeTarget = dispatchPeak * (1 - targetReduction * dispatchStrength);
   const peakHours = scarcityHoursForTariff(tariffId);
   const chargeHours =
     tariffId === "demand"
@@ -708,9 +814,11 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
     let chargeKw = 0;
     let dischargeKw = 0;
     let action = row.action || "hold";
+    const profileFactor =
+      tariffId === "demand" ? averageDemandProfileFactors[row.hour] || 1 : 1;
 
     if (chargeHours.has(row.hour) && soc < maxSoc) {
-      const headroom = Math.max(0, chargeCeiling - gridImport);
+      const headroom = Math.max(0, (chargeCeiling - gridImport * profileFactor) / profileFactor);
       chargeKw = Math.min(powerLimit, headroom, (maxSoc - soc) / efficiency);
       if (chargeKw > 0) {
         soc += chargeKw * efficiency;
@@ -722,7 +830,10 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
     }
 
     if (peakHours.has(row.hour) && soc > minSoc) {
-      const targetDriven = Math.max(0, gridImport - dischargeTarget);
+      const targetDriven = Math.max(
+        0,
+        (gridImport * profileFactor - dischargeTarget) / profileFactor,
+      );
       const priceDriven =
         tariffId !== "demand" && row.price === maxPrice
           ? gridImport * 0.28 * dispatchStrength
@@ -768,8 +879,30 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
   const optimizedPeakWindow = Math.max(
     ...peakWindowRows.map((row) => row.gridImport),
   );
-  const baselineBill = economicsForRows(loadRows, tariffId, overrides).revenue;
-  const optimizedBill = economicsForRows(rows, tariffId, overrides).revenue;
+  const billRowsForShape = (billRows) => {
+    if (tariffId !== "demand") return billRows;
+    return billRows.map((row) => {
+      const factor = averageDemandProfileFactors[row.hour] || 1;
+      return {
+        ...row,
+        baselineLoad: (row.baselineLoad ?? row.homeLoad) * factor,
+        homeLoad: row.homeLoad * factor,
+        gridImport: row.gridImport * factor,
+        chargeKw: (row.chargeKw || 0) * factor,
+        dischargeKw: (row.dischargeKw || 0) * factor,
+      };
+    });
+  };
+  const baselineBill = economicsForRows(
+    billRowsForShape(loadRows),
+    tariffId,
+    overrides,
+  ).revenue;
+  const optimizedBill = economicsForRows(
+    billRowsForShape(rows),
+    tariffId,
+    overrides,
+  ).revenue;
 
   if (optimizedBill >= baselineBill - 0.01) {
     return {
@@ -1385,24 +1518,6 @@ function allPopulationOutcomes(overrides = state) {
   );
 }
 
-function portfolioSummary(overrides = state) {
-  const economics = portfolioEconomics(overrides.focusTariff, overrides);
-  const flat = portfolioEconomics("flat", overrides);
-  const revenue =
-    flat.total.revenue > 0
-      ? economics.total.revenue / flat.total.revenue
-      : 1;
-  const peak =
-    flat.total.peakKw > 0
-      ? 1 - economics.total.peakKw / flat.total.peakKw
-      : 0;
-  return {
-    revenue,
-    peak,
-    leakage: 1 - revenue,
-  };
-}
-
 function renderTable() {
   const tbody = document.getElementById("scenario-table");
   tbody.innerHTML = "";
@@ -1501,7 +1616,9 @@ function renderOptimizer() {
       optimizationConfig.filingNeutralTolerance,
     )}. Candidate economics use ${num.format(
       demandProfileEnsemble.length,
-    )} normalized demand profiles.`;
+    )} normalized demand profiles, the ${num.format(
+      nathanLpCalibration.capacityKwhPer15Min,
+    )} kWh / 15-min capacity screen, and device-response assumptions. Nathan's demand-curve WTP calibration is parked as Phase 3.`;
 
   container.innerHTML = allOptimizations()
     .map((result) => {
@@ -1589,6 +1706,74 @@ function renderOptimizer() {
       `;
     })
     .join("");
+}
+
+function renderWtpPreview() {
+  const metrics = document.getElementById("wtp-preview-metrics");
+  const svg = document.getElementById("wtp-preview-chart");
+  if (!metrics || !svg) return;
+  const selected = nathanLpCalibration.responseCurve.find(
+    (point) => Math.abs(point.price - nathanLpCalibration.referencePrice) < 0.001,
+  );
+  const highPrice = nathanLpCalibration.responseCurve.find(
+    (point) => Math.abs(point.price - 0.3) < 0.001,
+  );
+  metrics.innerHTML = [
+    ["Buildings", num.format(nathanLpCalibration.buildingCount)],
+    ["Capacity screen", `${num.format(nathanLpCalibration.capacityKwPer100Homes)} kW`],
+    ["30¢ demand ratio", pct.format(highPrice?.ratio ?? 0.77)],
+  ]
+    .map(
+      ([label, value]) => `
+        <div class="phase3-wtp-metric">
+          <label>${label}</label>
+          <strong>${value}</strong>
+        </div>
+      `,
+    )
+    .join("");
+
+  const width = 420;
+  const height = 220;
+  const pad = { top: 24, right: 18, bottom: 42, left: 54 };
+  const points = nathanLpCalibration.responseCurve;
+  const minPrice = Math.min(...points.map((point) => point.price));
+  const maxPrice = Math.max(...points.map((point) => point.price));
+  const minRatio = 0.7;
+  const maxRatio = 1.2;
+  const xFor = (price) =>
+    pad.left +
+    ((price - minPrice) / (maxPrice - minPrice)) *
+      (width - pad.left - pad.right);
+  const yFor = (ratio) =>
+    height -
+    pad.bottom -
+    ((ratio - minRatio) / (maxRatio - minRatio)) *
+      (height - pad.top - pad.bottom);
+  const path = points
+    .map(
+      (point, index) =>
+        `${index === 0 ? "M" : "L"} ${xFor(point.price).toFixed(1)} ${yFor(point.ratio).toFixed(1)}`,
+    )
+    .join(" ");
+  const selectedX = xFor(selected?.price ?? nathanLpCalibration.referencePrice);
+  const selectedY = yFor(selected?.ratio ?? 1);
+  svg.innerHTML = `
+    <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    <line x1="${pad.left}" y1="${yFor(1).toFixed(1)}" x2="${width - pad.right}" y2="${yFor(1).toFixed(1)}" stroke="#9aa7af" stroke-dasharray="5 5" />
+    <path d="${path}" fill="none" stroke="#087f8c" stroke-width="3" stroke-linecap="round" />
+    ${points
+      .map(
+        (point) =>
+          `<circle cx="${xFor(point.price).toFixed(1)}" cy="${yFor(point.ratio).toFixed(1)}" r="3.4" fill="#087f8c" opacity="0.82" />`,
+      )
+      .join("")}
+    <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="5" fill="#b36b00" stroke="#fff" stroke-width="2" />
+    <text x="${pad.left}" y="${pad.top - 6}" fill="#087f8c" font-size="12" font-weight="820">WTP demand ratio by price</text>
+    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price ($/kWh)</text>
+    <text x="15" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720" transform="rotate(-90 15 ${height / 2})">demand ratio</text>
+  `;
 }
 
 function chartPath(points, width, height, pad, yMax, yMin = 0) {
@@ -2403,7 +2588,11 @@ function optimizationCsv() {
       "realized_revenue_retention_min",
       "filing_neutrality_tolerance",
       "capacity_limit_kw",
+      "capacity_limit_kw_per_100_homes",
+      "phase3_wtp_status",
+      "phase3_wtp_reference_price",
       "demand_profile_count",
+      "calibration_source",
       "tariff",
       "candidate_value",
       "candidate_label",
@@ -2438,7 +2627,11 @@ function optimizationCsv() {
         optimizationConfig.revenueRetentionMin,
         optimizationConfig.filingNeutralTolerance,
         optimizationConfig.maxPeakKw,
+        nathanLpCalibration.capacityKwPer100Homes,
+        nathanLpCalibration.wtpResponseEnabled ? "active" : "phase_3_not_active",
+        nathanLpCalibration.referencePrice,
         demandProfileEnsemble.length,
+        nathanLpCalibration.source,
         tariffById(candidate.tariffId).name,
         candidate.value,
         optimizerDecisionLabel(candidate.kind, candidate.value),
@@ -2609,6 +2802,7 @@ function render() {
   renderCaseStudy();
   renderRateCards();
   renderOptimizer();
+  renderWtpPreview();
   renderSensitivityCharts();
   renderPopulationChart();
   renderSelectedCaseDetail();

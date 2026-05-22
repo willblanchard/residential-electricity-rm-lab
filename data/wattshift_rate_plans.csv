@@ -1,0 +1,208 @@
+zip,utility_id,utility_name,rate_plan_id,rate_id,ud_id,rate_plan_name,supported_type
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c889,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c889,Electric Vehicle EV Rate A,optimizable
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c888,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,6915de3f881cbc6041e4c888,E-1 Residantial Services,optimizable
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88c,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,6915de3f881cbc6041e4c88c,E-ELEC Residential Time of Use,optimizable
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88b,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c88b,Electric Vehicle EV2,optimizable
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c887,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,6915de3f881cbc6041e4c887,Residential Time-of-Use Rate Schedule E-TOU-B (4-9 p.m.),optimizable
+95313,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88a,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c88a,Electric Vehicle EV Rate B,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc1,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc1,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc0,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331fc0,E-1 -Residential Service Baseline Region Y,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc3,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331fc3,E-6 -Residential Time of Use Baseline Region Q; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc4,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc4,E-TOU-C Residential Time of Use Baseline Region Q,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc5,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fc5,E-TOU Option A - Residential Time of Use Service Baseline Region Y,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc6,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fc6,E-TOU Option A - Residential Time of Use Service Baseline Region Z,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc2,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc2,E-TOU-C Residential Time of Use Baseline Region Y,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcb,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fcb,E-TOU-C Residential Time of Use Baseline Region Y,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcd,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcd,E-TOU Option A - Residential Time of Use Service Baseline Region P,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fca,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fca,E-7 -Residential Time of Use Baseline Region Y; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fce,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fce,E-TOU Option A - Residential Time of Use Service Baseline Region V,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcf,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcf,E-TOU Option A - Residential Time of Use Service Baseline Region S,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc8,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331fc8,E-1 -Residential Service Baseline Region P,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc9,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc9,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcc,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcc,E-TOU Option A - Residential Time of Use Service Baseline Region R,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd0,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fd0,E-TOU Option A - Residential Time of Use Service Baseline Region X,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd7,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fd7,E-7 -Residential Time of Use Baseline Region X; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fed,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,691623d324a3ba28ef331fed,E-ELEC Residential Time of Use (Electric Home),optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff8,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331ff8,E-1 -Residential Service Baseline Region X,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff9,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331ff9,E-1 -Residential Service Baseline Region T,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fdb,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331fdb,E-6 -Residential Time of Use- Baseline Region P; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fea,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUDR,691623d324a3ba28ef331fea,E-TOU-D Residential Time of Use,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff5,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331ff5,E-6 -Residential Time of Use Baseline Region X; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd5,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fd5,E-TOU-C Residential Time of Use Baseline Region P,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd6,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fd6,E-7 -Residential Time of Use Baseline Region P; Closed Rate,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fe6,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef331fe6,Electric Vehicle EV2 (Sch),optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331feb,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef331feb,Electric Vehicle EV (Sch) Rate B,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332005,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332005,Electric Vehicle EV-B,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332014,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332014,Electric Vehicle EV2,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332008,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,691623d324a3ba28ef332008,E-ELEC Residential Time of Use,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332009,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,691623d324a3ba28ef332009,Residential Time-of-Use Rate Schedule E-TOU-B (4-9 p.m.),optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332024,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332024,Electric Vehicle EV Rate B,optimizable
+95313,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b3,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691628fe24a3ba28ef3320b3,E-TOU-C Residential Time-of-Use Rate Schedule (Peak Pricing 4 - 9 p.m. Every Day),optimizable
+95313,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b4,USA-CA-14328-14328-R-TN?NN?-??????-??-EMTOUR,691628fe24a3ba28ef3320b4,EM-TOU Rate Schedule (Peak Pricing 4 - 9 p.m. Every Day),optimizable
+95313,14328,Pacific Gas & Electric Co,69259b493a075734a2e6fc4c,USA-CA-14328-14328-R-T?NNN?-NRRR?M-??-E_ELEC,69259b493a075734a2e6fc4c,Residential Time-of-Use (Electric Home) Service for Customers with Qualifying Electric Technologies,optimizable
+95313,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332012,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332012,Electric Vehicle EV Rate A,optimizable
+95313,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b2,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,691628fe24a3ba28ef3320b2,Residential Time-of-Use Rate Schedule E-TOU-D (Peak Pricing 5 - 8 p.m. Non-Holiday Weekdays),optimizable
+95313,14328,Pacific Gas & Electric Co,69ebbcce8b507d090b50889a,USA-CA-14328-14328-R-TNNNNN-NR?R?E-v-03012026-????-????????-????????-E_ELEC,69ebbcce8b507d090b50889a,Schedule E-ELEC,optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c889,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c889,Electric Vehicle EV Rate A,optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c888,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,6915de3f881cbc6041e4c888,E-1 Residantial Services,optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88c,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,6915de3f881cbc6041e4c88c,E-ELEC Residential Time of Use,optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88b,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c88b,Electric Vehicle EV2,optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c887,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,6915de3f881cbc6041e4c887,Residential Time-of-Use Rate Schedule E-TOU-B (4-9 p.m.),optimizable
+94701,14328,Pacific Gas & Electric Co,6915de3f881cbc6041e4c88a,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,6915de3f881cbc6041e4c88a,Electric Vehicle EV Rate B,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc1,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc1,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc0,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331fc0,E-1 -Residential Service Baseline Region Y,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc3,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331fc3,E-6 -Residential Time of Use Baseline Region Q; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc4,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc4,E-TOU-C Residential Time of Use Baseline Region Q,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc5,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fc5,E-TOU Option A - Residential Time of Use Service Baseline Region Y,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc6,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fc6,E-TOU Option A - Residential Time of Use Service Baseline Region Z,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc2,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc2,E-TOU-C Residential Time of Use Baseline Region Y,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcb,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fcb,E-TOU-C Residential Time of Use Baseline Region Y,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcd,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcd,E-TOU Option A - Residential Time of Use Service Baseline Region P,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fca,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fca,E-7 -Residential Time of Use Baseline Region Y; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fce,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fce,E-TOU Option A - Residential Time of Use Service Baseline Region V,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcf,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcf,E-TOU Option A - Residential Time of Use Service Baseline Region S,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc8,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331fc8,E-1 -Residential Service Baseline Region P,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fc9,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fc9,E-TOU-C Residential Time of Use Baseline Region Y (All Electric Service),optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fcc,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fcc,E-TOU Option A - Residential Time of Use Service Baseline Region R,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd0,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUOP,691623d324a3ba28ef331fd0,E-TOU Option A - Residential Time of Use Service Baseline Region X,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd7,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fd7,E-7 -Residential Time of Use Baseline Region X; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fed,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,691623d324a3ba28ef331fed,E-ELEC Residential Time of Use (Electric Home),optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff8,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331ff8,E-1 -Residential Service Baseline Region X,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff9,USA-CA-14328-14328-R-FN?NN?-??????-??-E1RESI,691623d324a3ba28ef331ff9,E-1 -Residential Service Baseline Region T,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fdb,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331fdb,E-6 -Residential Time of Use- Baseline Region P; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fea,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUDR,691623d324a3ba28ef331fea,E-TOU-D Residential Time of Use,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331ff5,USA-CA-14328-14328-R-TN?NN?-??????-??-E6RESI,691623d324a3ba28ef331ff5,E-6 -Residential Time of Use Baseline Region X; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd5,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691623d324a3ba28ef331fd5,E-TOU-C Residential Time of Use Baseline Region P,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fd6,USA-CA-14328-14328-R-TN?NN?-??????-??-E7RESI,691623d324a3ba28ef331fd6,E-7 -Residential Time of Use Baseline Region P; Closed Rate,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331fe6,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef331fe6,Electric Vehicle EV2 (Sch),optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef331feb,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef331feb,Electric Vehicle EV (Sch) Rate B,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332005,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332005,Electric Vehicle EV-B,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332014,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332014,Electric Vehicle EV2,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332008,USA-CA-14328-14328-R-TN?NN?-??????-??-EELECR,691623d324a3ba28ef332008,E-ELEC Residential Time of Use,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332009,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,691623d324a3ba28ef332009,Residential Time-of-Use Rate Schedule E-TOU-B (4-9 p.m.),optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332024,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332024,Electric Vehicle EV Rate B,optimizable
+94701,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b3,USA-CA-14328-14328-R-TN?NN?-??????-??-ETOUCR,691628fe24a3ba28ef3320b3,E-TOU-C Residential Time-of-Use Rate Schedule (Peak Pricing 4 - 9 p.m. Every Day),optimizable
+94701,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b4,USA-CA-14328-14328-R-TN?NN?-??????-??-EMTOUR,691628fe24a3ba28ef3320b4,EM-TOU Rate Schedule (Peak Pricing 4 - 9 p.m. Every Day),optimizable
+94701,14328,Pacific Gas & Electric Co,69259b493a075734a2e6fc4c,USA-CA-14328-14328-R-T?NNN?-NRRR?M-??-E_ELEC,69259b493a075734a2e6fc4c,Residential Time-of-Use (Electric Home) Service for Customers with Qualifying Electric Technologies,optimizable
+94701,14328,Pacific Gas & Electric Co,691623d324a3ba28ef332012,USA-CA-14328-14328-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef332012,Electric Vehicle EV Rate A,optimizable
+94701,14328,Pacific Gas & Electric Co,691628fe24a3ba28ef3320b2,USA-CA-14328-14328-R-TN?NN?-??????-??-RESIDE,691628fe24a3ba28ef3320b2,Residential Time-of-Use Rate Schedule E-TOU-D (Peak Pricing 5 - 8 p.m. Non-Holiday Weekdays),optimizable
+94701,14328,Pacific Gas & Electric Co,69ebbcce8b507d090b50889a,USA-CA-14328-14328-R-TNNNNN-NR?R?E-v-03012026-????-????????-????????-E_ELEC,69ebbcce8b507d090b50889a,Schedule E-ELEC,optimizable
+92401,17609,Southern California Edison,68edcd5cadd29901c0997bb3,USA-CA-17609-TOU_D_Option_4_9_PM,68edcd5cadd29901c0997bb3,Option 4-9 PM,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c90f,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD58,6915de60881cbc6041e4c90f,TOU-D-5-8PM,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c910,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDPR,6915de60881cbc6041e4c910,TOU-D-PRIME,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c90e,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD49,6915de60881cbc6041e4c90e,TOU-D-4-9PM,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c911,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDA?,6915de60881cbc6041e4c911,TOU-D-A,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c913,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDT?,6915de60881cbc6041e4c913,TOU-D-T,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c912,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDB?,6915de60881cbc6041e4c912,TOU-D-B,optimizable
+92401,17609,Southern California Edison,6915de60881cbc6041e4c914,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUEV1,6915de60881cbc6041e4c914,TOU-EV-1,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331fbe,USA-CA-17609-17609-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331fbe,Time-of-use Tiered Domestic: TOU-D-T - Region 14,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331fbf,USA-CA-17609-17609-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331fbf,Time-of-use Domestic: TOU-D-2,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331fd2,USA-CA-17609-17609-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331fd2,"Time-Of-Use Domestic Tiered Electric Vehicle Charging -TOU-D-TEV, Region 13",optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331ff2,USA-CA-17609-17609-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331ff2,"Time-Of-Use Domestic Tiered Electric Vehicle Charging -TOU-D-TEV, Region 16",optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331ff4,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD58,691623d324a3ba28ef331ff4,TOU-D-5-8PM,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331fe7,USA-CA-17609-17609-R-FN?NN?-??????-??-DOMEST,691623d324a3ba28ef331fe7,Domestic Service: D - Baseline Region 13,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331ff0,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDPR,691623d324a3ba28ef331ff0,TOU-D-PRIME,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef331ff3,USA-CA-17609-17609-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331ff3,"Time-Of-Use Domestic Tiered Electric Vehicle Charging -TOU-D-TEV, Region 14",optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef33200d,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD49,691623d324a3ba28ef33200d,TOU-D-4-9PM,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef332015,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUD58,691623d324a3ba28ef332015,TOU-D-5-8PM,optimizable
+92401,17609,Southern California Edison,691623d324a3ba28ef332023,USA-CA-17609-17609-R-TN?NN?-??????-??-TOUDPR,691623d324a3ba28ef332023,TOU-D-PRIME,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8d9,USA-CA-16609-16609-R-TN?NN?-??????-??-EVTOUD,6915de54881cbc6041e4c8d9,EV-TOU - Domestic Time of Use for Electric Vehicle Charging,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8d8,USA-CA-16609-16609-R-TN?NN?-??????-??-DOMEST,6915de54881cbc6041e4c8d8,Domestic Time of Use for Households with a Solar Energy System,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8da,USA-CA-16609-16609-R-TN?NN?-??????-??-EVTOU2,6915de54881cbc6041e4c8da,EV-TOU-2 - Domestic Time of Use for Households with Electric Vehicles,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8dd,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDR1,6915de54881cbc6041e4c8dd,TOU-DR1 - Residential Time of Use,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8e0,USA-CA-16609-16609-R-TN?NN?-??????-??-EVTOU5,6915de54881cbc6041e4c8e0,EV-TOU-5,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8e2,USA-CA-16609-16609-R-FN?NN?-??????-??-DRLI??,6915de54881cbc6041e4c8e2,DR-LI,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8de,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDR2,6915de54881cbc6041e4c8de,TOU-DR2,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8db,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDRR,6915de54881cbc6041e4c8db,TOU-DR - Residential Time of Use Service,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8e1,USA-CA-16609-16609-R-TN?NN?-??????-??-EVTOU5,6915de54881cbc6041e4c8e1,EV-TOU-5-P,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8dc,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDRP,6915de54881cbc6041e4c8dc,TOU-DR-P - Residential Time of Use Plus,optimizable
+91911,16609,San Diego Gas & Electric Co,6915de54881cbc6041e4c8df,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUELE,6915de54881cbc6041e4c8df,TOU-ELEC,optimizable
+91911,16609,San Diego Gas & Electric Co,691623d324a3ba28ef332017,USA-CA-16609-16609-R-TN?NN?-??????-??-DOMEST,691623d324a3ba28ef332017,Domestic Time of Use for Households with a Solar Energy System,optimizable
+91911,16609,San Diego Gas & Electric Co,691623d324a3ba28ef332026,USA-CA-16609-16609-R-TN?NN?-??????-??-EVTOUD,691623d324a3ba28ef332026,EV-TOU - Domestic Time of Use for Electric Vehicle Charging,optimizable
+91911,16609,San Diego Gas & Electric Co,6924d51082b6bad80237b3f6,USA-CA-16609-16609-R-T?NNN?-N?????-??-TOU_DR1,6924d51082b6bad80237b3f6,Residential Time-of-Use,optimizable
+91911,16609,San Diego Gas & Electric Co,691623d324a3ba28ef33201c,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDR2,691623d324a3ba28ef33201c,TOU-DR2,optimizable
+91911,16609,San Diego Gas & Electric Co,691623d324a3ba28ef33201b,USA-CA-16609-16609-R-TN?NN?-??????-??-TOUDR1,691623d324a3ba28ef33201b,TOU-DR1 - Residential Time of Use,optimizable
+11002,4226,Con Edison,6915de99881cbc6041e4c994,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,6915de99881cbc6041e4c994,SC-1 - Residential & Religious Service [NYC] Low Income Rate,optimizable
+11002,4226,Con Edison,6915de99881cbc6041e4c995,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,6915de99881cbc6041e4c995,SC-1 - Residential & Religious Service [Westchester] Low Income Rate,optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331fee,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,691623d324a3ba28ef331fee,SC-1 - Residential & Religious Service [Westchester] Low Income Rate,optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331fe5,USA-CA-04226-04226-R-TN?NN?-??????-??-SC1RES,691623d324a3ba28ef331fe5,SC-1 Residential & Religious Voluntary TOD (Rate III) [NYC],optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331fec,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,691623d324a3ba28ef331fec,SC-1 - Residential & Religious Service [NYC],optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331ff7,USA-CA-04226-04226-R-TN?NN?-??????-??-SC1RES,691623d324a3ba28ef331ff7,SC-1 Residential & Religious Vountary TOD (Rate II) [NYC],optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331fe4,USA-CA-04226-04226-R-TN?NN?-??????-??-SC1RES,691623d324a3ba28ef331fe4,SC-1 Residential & Religious Voluntary TOD (Rate III) [NYC],optimizable
+11002,4226,Con Edison,691623d324a3ba28ef331fff,USA-CA-04226-04226-R-TN?NN?-??????-??-SC1RES,691623d324a3ba28ef331fff,SC-1 Residential & Religious Vountary TOD (Rate II) [NYC],optimizable
+11002,4226,Con Edison,691623d324a3ba28ef33201a,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,691623d324a3ba28ef33201a,SC-1 - Residential & Religious Service [NYC] Low Income Rate,optimizable
+11002,4226,Con Edison,691623d324a3ba28ef332025,USA-CA-04226-04226-R-FN?NN?-??????-??-SC1RES,691623d324a3ba28ef332025,SC-1 - Residential & Religious Service [Westchester] Low Income Rate,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c899,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c899,Residential Apartments -All Electric Service (Schedule AE),optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c898,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c898,Residential All - Electric Service - Schedule AE,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89b,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c89b,Residential Aid Discount - Schedule RAD,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a1,USA-CA-15270-15270-R-TN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c8a1,"Residential Time Metered, Standard Offer Service (Schedule R-TM)",optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a3,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c8a3,Residential - Schedule R,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89c,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c89c,Residential Aid Discount All-Electric Rider- Schedule RAD-AE,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89d,USA-CA-15270-15270-R-TN?NN?-??????-??-PLUGIN,6915de48881cbc6041e4c89d,"PLUG-IN VEHICLE CHARGING - SCHEDULE ""PIV"" (Closed to new customers)",optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89f,USA-CA-15270-15270-R-TN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c89f,"RESIDENTIAL SERVICE - WITH PLUG-IN VEHICLE CHARGING SCHEDULE ""R-PIV""",optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a0,USA-CA-15270-15270-R-TN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c8a0,Residential Time Metered (Schedule R-TM),optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89a,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c89a,Residential Time Metered - Schedule RTM,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c89e,USA-CA-15270-15270-R-FN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c89e,"Residential, Standard Offer Service (Schedule R)",optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a2,USA-CA-15270-15270-R-TN?NN?-??????-??-RESIDE,6915de48881cbc6041e4c8a2,RESIDENTIAL TIME-OF-USE PILOT PROGRAM R-TOU-P,optimizable
+20817,15270,Potomac Electric Power Co,6915de48881cbc6041e4c8a4,USA-CA-15270-15270-R-FN?NN?-??????-??-PJMHOU,6915de48881cbc6041e4c8a4,PJM Hourly Pricing,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9a8,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9a8,Water Heating Service Rate D5 Option 1 (Full Service Residential),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9ab,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9ab,RESIDENTIAL SERVICE RATE-(Retail Access Service)-D1,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9ae,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9ae,Residential Service (Full Service) - D1,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b2,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b2,Residential Time of Day (Full Service)-D1.2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b7,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b7,Residential Time of Use Pilot 1 (Full Service)- D1-A,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9a6,USA-CA-05109-05109-R-TN?NN?-??????-??-EXPEAR,6915de9e881cbc6041e4c9a6,Expearimental Electric Vehicle Rate-Retail Access,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9a9,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9a9,Water Heating Service Rate D5 Option 1 (Retail Service Residential),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9aa,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9aa,Water Heating Service Rate D5 Option 1 (Delivery Charge Residential),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9ac,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9ac,Residential Service (Retail Access Service Customer) D1,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b3,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b3,Residential Space Heating (Retail Service)-D2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b4,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b4,Residential Space Heating (Retail Access)-D2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b5,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b5,Residential Space Heating (Full Service)-D2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c0,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9c0,RESIDENTIAL SERVICE RATE-(Retail Access)-D1 Low Income Rate Pilot,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c2,USA-CA-05109-05109-R-TN?NN?-??????-??-GEOTHE,6915de9e881cbc6041e4c9c2,Geothermal Time of Day Rate Retail Access Residential,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c5,USA-CA-05109-05109-R-FN?NN?-??????-??-SPACEH,6915de9e881cbc6041e4c9c5,Space Heating Rate (D2),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b8,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b8,Residential Time of Use Pilot 2 (Full Service)- D1-B,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b9,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9b9,WATER HEATING SERVICE RATE Option III - Separate Meter - Uncontrolled (Retail Service Residential),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9bd,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9bd,RESIDENTIAL SERVICE RATE-(Retail Access Service)-D1 Low Income Rate,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c3,USA-CA-05109-05109-R-FN?NN?-??????-??-INTERR,6915de9e881cbc6041e4c9c3,Interruptible Space Conditioning Rate (CoolCurrents) (D1.1),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9a7,USA-CA-05109-05109-R-TN?NN?-??????-??-EXPEAR,6915de9e881cbc6041e4c9a7,Expearimental Electric Vehicle Rate-Full Service Customers,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b1,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b1,Residential Time of Day (Full Service)-D1.2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c6,USA-CA-05109-05109-R-FN?NN?-??????-??-NONTRA,6915de9e881cbc6041e4c9c6,Non-Transmitting Meter Rate (D1),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9ad,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9ad,Residential Service Rate -(Full Service)-D1,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9af,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9af,Residential Time of Day (Retail Service)-D1.2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b0,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b0,Residential Time of Day (Retail Access)-D1.2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9b6,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9b6,Residential Space Heating (Full Service)-D2,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9ba,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9ba,WATER HEATING SERVICE RATE-Option II-Combined Meter-Controlled D5 (Retail Service Residential),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9bb,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9bb,Water Heating Residential Service Rate D5  (Full Service),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9bc,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9bc,Water Heating Commerfial Service Rate D5  (Full Service),optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9be,USA-CA-05109-05109-R-FN?NN?-??????-??-D1RESI,6915de9e881cbc6041e4c9be,D-1 Residential Service,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9bf,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,6915de9e881cbc6041e4c9bf,RESIDENTIAL SERVICE RATE-(Full Service)-D1 Low Income Rate Pilot,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c1,USA-CA-05109-05109-R-FN?NN?-??????-??-GEOTHE,6915de9e881cbc6041e4c9c1,Geothermal Time of Day Rate Delivery Residential,optimizable
+48103,5109,Detroit Edison Co,6915de9e881cbc6041e4c9c4,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,6915de9e881cbc6041e4c9c4,Water Heating Service Rate (D5),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fd8,USA-CA-05109-05109-R-FN?NN?-??????-??-GEOTHE,691623d324a3ba28ef331fd8,Geothermal Time of Day Rate Delivery Residential,optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fdc,USA-CA-05109-05109-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331fdc,Time of Day 3 p.m. Standard Base Rate (D1.11),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fdf,USA-CA-05109-05109-R-TN?NN?-??????-??-GEOTHE,691623d324a3ba28ef331fdf,Geothermal Time of Day Rate(D1.7),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fe0,USA-CA-05109-05109-R-FN?NN?-??????-??-INTERR,691623d324a3ba28ef331fe0,Interruptible Space Conditioning Rate (CoolCurrents) (D1.1),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fd9,USA-CA-05109-05109-R-TN?NN?-??????-??-RESIDE,691623d324a3ba28ef331fd9,Residential Time of Day (Full Service)-D1.2,optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fda,USA-CA-05109-05109-R-FN?NN?-??????-??-RESIDE,691623d324a3ba28ef331fda,Residential Time of Day (Full Service)-D1.2,optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fdd,USA-CA-05109-05109-R-TN?NN?-??????-??-TIMEOF,691623d324a3ba28ef331fdd,Time of Day 11 a.m. - 7 p.m. (D1.2),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fde,USA-CA-05109-05109-R-TN?NN?-??????-??-ELECTR,691623d324a3ba28ef331fde,Electric Vehicle Rate (D1.9),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fe1,USA-CA-05109-05109-R-FN?NN?-??????-??-WATERH,691623d324a3ba28ef331fe1,Water Heating Service Rate (D5),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fe2,USA-CA-05109-05109-R-FN?NN?-??????-??-SPACEH,691623d324a3ba28ef331fe2,Space Heating Rate (D2),optimizable
+48103,5109,Detroit Edison Co,691623d324a3ba28ef331fe3,USA-CA-05109-05109-R-FN?NN?-??????-??-NONTRA,691623d324a3ba28ef331fe3,Non-Transmitting Meter Rate (D1),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c98b,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,6915de96881cbc6041e4c98b,BESH- Residential Single Family Without Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c990,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,6915de96881cbc6041e4c990,BESH- Residential Multi Family Without Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c991,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,6915de96881cbc6041e4c991,Residential Single Family With Electric Space Heat Delivery Class(Retail Delivery Service-Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c98c,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,6915de96881cbc6041e4c98c,BESH- Residential Single Family With Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c98d,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,6915de96881cbc6041e4c98d,BESH- Residential Multi Family With Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c98e,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,6915de96881cbc6041e4c98e,Residential Multi Family With Electric Space Heat Delivery Class(Retail Delivery Service-Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c993,USA-CA-04110-04110-R-FN?NN?-??????-??-PJMHOU,6915de96881cbc6041e4c993,PJM Hourly Pricing,optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c98f,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,6915de96881cbc6041e4c98f,Residential Single Family Without Electric Space Heat Delivery Class(Retail Delivery Service),optimizable
+60601,4110,Commonwealth Edison Co,6915de96881cbc6041e4c992,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,6915de96881cbc6041e4c992,Residential Multi Family Without Electric Space Heat Delivery Class(Retail Delivery Service-Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef331ffa,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,691623d324a3ba28ef331ffa,Residential Single Family With Electric Space Heat Delivery Class(Retail Delivery Service-Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef332003,USA-CA-04110-04110-R-FN?NN?-??????-??-RESIDE,691623d324a3ba28ef332003,Residential Single Family Without Electric Space Heat Delivery Class(Retail Delivery Service),optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef332000,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,691623d324a3ba28ef332000,BESH- Residential Single Family Without Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef332002,USA-CA-04110-04110-R-FN?NN?-??????-??-BESRES,691623d324a3ba28ef332002,BES - Residential Single Family with Electric Space Heat Delivery Class,optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef331ffb,USA-CA-04110-04110-R-FN?NN?-??????-??-BESHRE,691623d324a3ba28ef331ffb,BESH- Residential Single Family With Electric Space Heat Delivery Class(Unbundled),optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef33200b,USA-CA-04110-04110-R-FN?NN?-??????-??-RDSRES,691623d324a3ba28ef33200b,RDS - Residential Single Family Without Electric Space Heat Delivery Class,optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef33200c,USA-CA-04110-04110-R-FN?NN?-??????-??-RDSRES,691623d324a3ba28ef33200c,RDS - Residential Multi Family Without Electric Space Heat Delivery Class,optimizable
+60601,4110,Commonwealth Edison Co,691623d324a3ba28ef33200a,USA-CA-04110-04110-R-FN?NN?-??????-??-COMEDH,691623d324a3ba28ef33200a,ComEd Hourly Pricing,optimizable
