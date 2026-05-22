@@ -1,0 +1,19 @@
+metric,value
+source_url,https://oedi-data-lake.s3.amazonaws.com/nrel-pds-building-stock/end-use-load-profiles-for-us-building-stock/2021/resstock_amy2018_release_1/timeseries_aggregates/by_state/state=IL/il-single-family_detached.csv
+dataset,NLR/OEDI EULP 2021 ResStock AMY2018
+state,IL
+building_type,Single-Family Detached
+profile_day,2018-06-30
+selection_rule,complete day with highest hourly total kW
+peak_hour,17
+peak_total_kw_per_home,3.1070
+peak_hour_hvac_plus_water_heating_share,0.7642
+daily_total_kwh_per_home,54.7729
+daily_hvac_kwh_per_home,39.4528
+daily_water_heating_kwh_per_home,1.4239
+daily_lighting_kwh_per_home,3.1272
+daily_appliances_kwh_per_home,4.1367
+daily_plug_other_kwh_per_home,6.5232
+daily_unmapped_kwh_per_home,0.1091
+models_used,13128
+units_represented,3178695.768

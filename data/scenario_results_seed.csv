@@ -1,0 +1,10 @@
+model_layer,tou_peak_spread,battery_kwh,automation_adoption_pct,segment,tariff,monthly_bill,revenue_retained,peak_kw,peak_reduction,automation_value,interpretation
+controlled,3.0,10,30,Passive / inelastic,Flat $/kWh,164.00,1.0000,7.200,0.0000,0.00,"stable revenue, weak scarcity signal; no load shifting in response to price"
+controlled,3.0,10,30,Passive / inelastic,Time of use,164.00,1.0000,7.200,0.0000,0.00,"behavior signal with arbitrage exposure; no load shifting in response to price"
+controlled,3.0,10,30,Passive / inelastic,Demand charge,164.00,1.0000,7.200,0.0000,0.00,"capacity-cost signal, confusing for passive homes; no load shifting in response to price"
+controlled,3.0,10,30,Smart thermal,Flat $/kWh,163.10,0.9945,7.068,0.0183,1.10,"stable revenue, weak scarcity signal; thermostat pre-cooling and water-heater shifting"
+controlled,3.0,10,30,Smart thermal,Time of use,156.78,0.9560,6.309,0.1238,15.71,"behavior signal with arbitrage exposure; thermostat pre-cooling and water-heater shifting"
+controlled,3.0,10,30,Smart thermal,Demand charge,159.04,0.9698,6.242,0.1330,16.00,"capacity-cost signal, confusing for passive homes; thermostat pre-cooling and water-heater shifting"
+controlled,3.0,10,30,Automated DER,Flat $/kWh,162.36,0.9900,7.020,0.0250,2.00,"stable revenue, weak scarcity signal; smart thermal controls plus battery dispatch"
+controlled,3.0,10,30,Automated DER,Time of use,145.20,0.8854,5.210,0.2764,32.57,"behavior signal with arbitrage exposure; smart thermal controls plus battery dispatch"
+controlled,3.0,10,30,Automated DER,Demand charge,148.01,0.9025,4.860,0.3250,57.50,"capacity-cost signal, confusing for passive homes; smart thermal controls plus battery dispatch"
