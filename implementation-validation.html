@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Implementation | Residential Electricity RM</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">implementation and validation</p>
+            </div>
+          </div>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a href="optimization-model.html">Optimization Model</a>
+            <a class="active" aria-current="page" href="implementation-validation.html">Implementation</a>
+            <a href="phase1.html">Single Price Results</a>
+            <a href="phase2.html">Parallel Options Results</a>
+            <a href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">A browser model makes the LP results auditable.</h1>
+            <p class="lead">
+              The implementation converts the optimization setup into a static
+              site with transparent inputs, interactive controls, sanity checks,
+              and CSV exports. That lets the presentation show not only the
+              recommendation, but also how the result changes under different
+              rate and adoption assumptions.
+            </p>
+            <nav class="nav-actions" aria-label="implementation links">
+              <a class="button primary" href="phase1.html">Open single price results</a>
+            </nav>
+          </div>
+          <aside class="summary-panel" aria-label="implementation summary">
+            <p class="summary-title">Build path</p>
+            <div class="summary-metric primary">
+              <span>Artifact type</span>
+              <strong>Static HTML</strong>
+              <small>No server dependency. The model can run directly from the submitted folder.</small>
+            </div>
+            <div class="summary-metric">
+              <span>Inputs</span>
+              <strong>CSV / JSON</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Checks</span>
+              <strong>Parity tests</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Outputs</span>
+              <strong>Scenario CSV</strong>
+            </div>
+          </aside>
+        </section>
+
+        <section class="case-study narrative-card" aria-labelledby="validation-title">
+          <div class="case-copy">
+            <h2 id="validation-title">Validation checks</h2>
+            <p>
+              The implementation is checked against core economic expectations:
+              a no-signal TOU case should match flat pricing, demand charge at
+              zero should collapse to the fixed-rate baseline, and responsive
+              devices should reduce bills only when the dispatch actually helps
+              the customer under the tariff.
+            </p>
+          </div>
+          <div class="case-points">
+            <div>
+              <strong>Rate sanity</strong>
+              <span>Flat-equivalent cases are tested before interpreting model outcomes.</span>
+            </div>
+            <div>
+              <strong>Device economics</strong>
+              <span>Thermostat and battery response are evaluated against actual bill impact.</span>
+            </div>
+            <div>
+              <strong>Exports</strong>
+              <span>Raw inputs and scenario outputs stay available for outside review.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="story-grid" aria-label="implementation flow">
+          <article class="story-card">
+            <span>1</span>
+            <h2>Translate</h2>
+            <p>Map the mathematical model into rate variables and portfolio calculations.</p>
+          </article>
+          <article class="story-card">
+            <span>2</span>
+            <h2>Render</h2>
+            <p>Show rate cards, sensitivity charts, segment economics, and load response.</p>
+          </article>
+          <article class="story-card">
+            <span>3</span>
+            <h2>Export</h2>
+            <p>Generate downloadable CSVs so the result can be inspected outside the site.</p>
+          </article>
+        </section>
+
+        <section class="panel bottom-export" aria-labelledby="implementation-exports-title">
+          <div>
+            <h2 id="implementation-exports-title">Exports</h2>
+            <p>
+              Download the static rate-plan input used by the implementation
+              checks and dashboard appendix.
+            </p>
+          </div>
+          <nav class="nav-actions" aria-label="implementation exports">
+            <a class="button primary" href="data/wattshift_rate_plans.csv" download>
+              Download rate CSV
+            </a>
+          </nav>
+        </section>
+
+        <p class="footer">
+          Next page: <a href="phase1.html">Single Price Results</a>.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Phase 2 Optional Rate Selection</title>
+    <title>Parallel Options Results | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260522-phase2" />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
   </head>
   <body>
     <div class="shell">
@@ -15,13 +15,18 @@
             <div class="mark" aria-hidden="true">RM</div>
             <div>
               <p class="brand-title">Residential Electricity RM Lab</p>
-              <p class="brand-subtitle">Phase 2 optional-rate selection</p>
+              <p class="brand-subtitle">parallel options results</p>
             </div>
           </div>
-          <nav class="page-nav" aria-label="page sections">
-            <a href="index.html">Phase 1</a>
-            <a class="active" aria-current="page" href="phase2.html">Phase 2</a>
-            <a href="phase3.html">Phase 3 WTP</a>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a href="optimization-model.html">Optimization Model</a>
+            <a href="implementation-validation.html">Implementation</a>
+            <a href="phase1.html">Single Price Results</a>
+            <a class="active" aria-current="page" href="phase2.html">Parallel Options Results</a>
+            <a href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
           </nav>
         </div>
       </header>
@@ -29,19 +34,16 @@
       <main class="main">
         <section class="intro phase2-hero" aria-labelledby="page-title">
           <div>
-            <h1 id="page-title">Optional rates create a second RM problem.</h1>
+            <h1 id="page-title">Parallel options create a second RM problem.</h1>
             <p class="lead">
-              Phase 1 asks what happens if the same portfolio is placed under a
-              flat, TOU, or demand-charge tariff. Phase 2 asks who leaves the
+              Single Price Results asks what happens if the same portfolio is placed under a
+              flat, TOU, or demand-charge tariff. Parallel Options Results asks who leaves the
               fixed-rate pool when TOU or demand-charge plans are offered in
               parallel. The adverse-selection risk is simple: the customers
               with the most bill savings are also the first customers to switch.
             </p>
             <nav class="nav-actions" aria-label="phase actions">
-              <a class="button" href="index.html">Back to Phase 1</a>
-              <button class="button primary" id="download-phase2">
-                Download Phase 2 CSV
-              </button>
+              <a class="button" href="phase1.html">Back to single price results</a>
             </nav>
           </div>
           <aside class="summary-panel" aria-label="optional-rate summary">
@@ -104,7 +106,7 @@
               <h2 id="choice-title">Optional rate-choice model</h2>
             </div>
             <p class="section-note">
-              The model starts with the same 10,000-home portfolio from Phase 1.
+              The model starts with the same 10,000-home portfolio from Single Price Results.
               Each behavior/device bucket compares the fixed rate with the
               optional plans, then a share of economically eligible homes
               switches into the plan with the highest expected bill savings.
@@ -209,14 +211,29 @@
           </div>
         </section>
 
+        <section class="panel bottom-export" aria-labelledby="phase2-exports-title">
+          <div>
+            <h3 id="phase2-exports-title">Exports</h3>
+            <p>
+              Download the current optional-rate selection scenario for appendix
+              checks and spreadsheet review.
+            </p>
+          </div>
+          <nav class="nav-actions" aria-label="phase two exports">
+            <button class="button primary" id="download-phase2">
+              Download parallel options CSV
+            </button>
+          </nav>
+        </section>
+
         <p class="footer">
-          Phase 2 is intentionally separate from the main dashboard. It models
-          optional rate choice and adverse selection after the Phase 1 universal
+          Parallel Options Results is intentionally separate from the main dashboard. It models
+          optional rate choice and adverse selection after the single-price universal
           tariff mechanism is understood.
         </p>
       </main>
     </div>
 
-    <script src="phase2.js?v=20260522-phase2"></script>
+    <script src="phase2.js?v=20260522-pages"></script>
   </body>
 </html>

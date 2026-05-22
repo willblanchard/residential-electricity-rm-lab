@@ -1618,7 +1618,7 @@ function renderOptimizer() {
       demandProfileEnsemble.length,
     )} normalized demand profiles, the ${num.format(
       nathanLpCalibration.capacityKwhPer15Min,
-    )} kWh / 15-min capacity screen, and device-response assumptions. Nathan's demand-curve WTP calibration is parked as Phase 3.`;
+    )} kWh / 15-min capacity screen, and device-response assumptions. Demand-curve WTP calibration provides the segmentation context shown on the WTP page.`;
 
   container.innerHTML = allOptimizations()
     .map((result) => {
@@ -1735,7 +1735,7 @@ function renderWtpPreview() {
 
   const width = 420;
   const height = 220;
-  const pad = { top: 24, right: 18, bottom: 42, left: 54 };
+  const pad = { top: 24, right: 18, bottom: 54, left: 62 };
   const points = nathanLpCalibration.responseCurve;
   const minPrice = Math.min(...points.map((point) => point.price));
   const maxPrice = Math.max(...points.map((point) => point.price));
@@ -1758,9 +1758,24 @@ function renderWtpPreview() {
     .join(" ");
   const selectedX = xFor(selected?.price ?? nathanLpCalibration.referencePrice);
   const selectedY = yFor(selected?.ratio ?? 1);
+  const xTicks = [0.1, 0.2, 0.3, 0.4]
+    .filter((price) => price >= minPrice && price <= maxPrice)
+    .map((price) => `
+      <line x1="${xFor(price).toFixed(1)}" y1="${height - pad.bottom}" x2="${xFor(price).toFixed(1)}" y2="${height - pad.bottom + 5}" stroke="#9aa7af" />
+      <text x="${xFor(price).toFixed(1)}" y="${height - pad.bottom + 18}" text-anchor="middle" fill="#64717b" font-size="9" font-weight="650">${Math.round(price * 100)}¢</text>
+    `)
+    .join("");
+  const yTicks = [0.7, 0.95, 1.2]
+    .map((ratio) => `
+      <line x1="${pad.left - 5}" y1="${yFor(ratio).toFixed(1)}" x2="${pad.left}" y2="${yFor(ratio).toFixed(1)}" stroke="#9aa7af" />
+      <text x="${pad.left - 8}" y="${(yFor(ratio) + 3).toFixed(1)}" text-anchor="end" fill="#64717b" font-size="9" font-weight="650">${pct.format(ratio)}</text>
+    `)
+    .join("");
   svg.innerHTML = `
     <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#9aa7af" />
     <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    ${xTicks}
+    ${yTicks}
     <line x1="${pad.left}" y1="${yFor(1).toFixed(1)}" x2="${width - pad.right}" y2="${yFor(1).toFixed(1)}" stroke="#9aa7af" stroke-dasharray="5 5" />
     <path d="${path}" fill="none" stroke="#087f8c" stroke-width="3" stroke-linecap="round" />
     ${points
@@ -1771,7 +1786,7 @@ function renderWtpPreview() {
       .join("")}
     <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="5" fill="#b36b00" stroke="#fff" stroke-width="2" />
     <text x="${pad.left}" y="${pad.top - 6}" fill="#087f8c" font-size="12" font-weight="820">WTP demand ratio by price</text>
-    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price ($/kWh)</text>
+    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price (¢/kWh)</text>
     <text x="15" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720" transform="rotate(-90 15 ${height / 2})">demand ratio</text>
   `;
 }
@@ -1878,7 +1893,8 @@ function renderPopulationChart() {
   const chartHeight = height - pad.top - pad.bottom;
   const groupWidth = chartWidth / tariffs.length;
   const rowHeight = chartHeight / populationCases.length;
-  const totalsY = pad.top + chartHeight + 16;
+  const scaleY = pad.top + chartHeight + 12;
+  const totalsY = pad.top + chartHeight + 38;
   const footerY = height - 12;
   const maxPerHomeRevenue = populationChartRevenueScaleMax;
 
@@ -1941,6 +1957,22 @@ function renderPopulationChart() {
       const summaryX = groupX + 12;
       const summaryWidth = groupWidth - 24;
       const metricWidth = summaryWidth / 4;
+      const barScaleWidth = groupWidth - 38;
+      const scaleTicks = [0, maxPerHomeRevenue / 2, maxPerHomeRevenue]
+        .map((value) => {
+          const x = groupX + 12 + (value / maxPerHomeRevenue) * barScaleWidth;
+          return `
+            <line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${scaleY.toFixed(1)}" y2="${(scaleY + 5).toFixed(1)}" stroke="#aab6bd" />
+            <text x="${x.toFixed(1)}" y="${(scaleY + 17).toFixed(1)}" text-anchor="middle" fill="#64717b" font-size="9" font-weight="720">${money.format(value)}</text>
+          `;
+        })
+        .join("");
+      const scale = `
+        <g class="bar-scale">
+          <line x1="${(groupX + 12).toFixed(1)}" x2="${(groupX + 12 + barScaleWidth).toFixed(1)}" y1="${scaleY.toFixed(1)}" y2="${scaleY.toFixed(1)}" stroke="#d7e0e5" />
+          ${scaleTicks}
+        </g>
+      `;
       const summary = `
         <g class="tariff-summary">
           <rect x="${summaryX.toFixed(1)}" y="${totalsY.toFixed(1)}" width="${summaryWidth.toFixed(1)}" height="76" rx="7" fill="#f6f8f9" stroke="#d7e0e5" />
@@ -1959,7 +1991,7 @@ function renderPopulationChart() {
         tariffIndex > 0
           ? `<line x1="${groupX.toFixed(1)}" x2="${groupX.toFixed(1)}" y1="${pad.top - 10}" y2="${totalsY + 76}" stroke="#d7e0e5" />`
           : "";
-      return `${divider}${title}${caseBars}${summary}`;
+      return `${divider}${title}${caseBars}${scale}${summary}`;
     })
     .join("");
 
@@ -1973,7 +2005,7 @@ function renderPopulationChart() {
     <line x1="254" y1="16" x2="288" y2="16" stroke="#2e7d32" stroke-width="6" opacity="0.78" />
     ${rowLabels}
     ${bars}
-    <text x="${pad.left}" y="${footerY}" fill="#64717b" font-size="11" font-weight="720">Fixed $0-${money.format(populationChartRevenueScaleMax)} / meter scale; monthly values update with selected rate controls.</text>
+    <text x="${pad.left}" y="${footerY}" fill="#64717b" font-size="11" font-weight="720">Per-meter monthly scale shown under each rate plan; values update with selected rate controls.</text>
   `;
 
   svg.querySelectorAll(".population-bar").forEach((bar) => {
@@ -2049,6 +2081,7 @@ function renderSelectedCaseDetail() {
     <path d="${chartPath(baseline, width, height, pad, yMax)}" fill="none" stroke="#64717b" stroke-width="2.8" stroke-linecap="round" />
     <path d="${chartPath(optimized, width, height, pad, yMax)}" fill="none" stroke="#087f8c" stroke-width="3.2" stroke-linecap="round" />
     ${scarcityLabel(state.focusTariff, width, pad, chartWidth, pad.top + 18)}
+    ${hourTicks(width, height, pad)}
     ${axisLabels(width, height, pad, "Hour", "kW / price index")}
   `;
 
@@ -2123,6 +2156,7 @@ function renderLoadChart() {
     ${bars}
     <path d="${chartPath(total, width, height, pad, yMax)}" fill="none" stroke="#172026" stroke-width="2.5" stroke-linecap="round" />
     <text x="${pad.left + (18 / 23) * chartWidth}" y="${pad.top + 16}" text-anchor="middle" fill="#b13a2f" font-size="11" font-weight="760">TOU peak window</text>
+    ${hourTicks(width, height, pad)}
     ${axisLabels(width, height, pad, "Hour", "kW")}
   `;
 }
@@ -2163,6 +2197,7 @@ function renderHvacChart() {
     <path d="${chartPath(optimized, width, height, pad, yMax)}" fill="none" stroke="#b36b00" stroke-width="3" stroke-linecap="round" />
     ${state.focusTariff === "flat" ? "" : `<text x="${pad.left + (13.5 / 23) * chartWidth}" y="${pad.top + 18}" text-anchor="middle" fill="#b36b00" font-size="12" font-weight="780">pre-cool</text>`}
     ${scarcityLabel(state.focusTariff, width, pad, chartWidth, pad.top + 18)}
+    ${hourTicks(width, height, pad)}
     ${axisLabels(width, height, pad, "Hour", "HVAC kW")}
   `;
 
@@ -2238,6 +2273,7 @@ function renderBatteryChart() {
     <path d="${chartPath(soc, width, height, pad, yMax)}" fill="none" stroke="#087f8c" stroke-width="2.8" stroke-linecap="round" />
     ${state.focusTariff === "flat" ? "" : `<text x="${pad.left + (3 / 23) * chartWidth}" y="${pad.top + 18}" text-anchor="middle" fill="#2e7d32" font-size="12" font-weight="780">charge</text>`}
     ${scarcityLabel(state.focusTariff, width, pad, chartWidth, pad.top + 18)}
+    ${hourTicks(width, height, pad)}
     ${axisLabels(width, height, pad, "Hour", "kW / normalized SOC")}
   `;
 
@@ -2490,6 +2526,19 @@ function axisLabels(width, height, pad, xLabel, yLabel) {
     <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="700">${xLabel}</text>
     <text x="16" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="700" transform="rotate(-90, 16, ${height / 2})">${yLabel}</text>
   `;
+}
+
+function hourTicks(width, height, pad) {
+  const chartWidth = width - pad.left - pad.right;
+  return [0, 6, 12, 18, 23]
+    .map((hour) => {
+      const x = pad.left + (hour / 23) * chartWidth;
+      return `
+        <line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${height - pad.bottom}" y2="${height - pad.bottom + 5}" stroke="#aab6bd" />
+        <text x="${x.toFixed(1)}" y="${height - pad.bottom + 18}" text-anchor="middle" fill="#64717b" font-size="10" font-weight="700">${hour}h</text>
+      `;
+    })
+    .join("");
 }
 
 function renderSummary() {

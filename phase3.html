@@ -3,170 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Phase 3 WTP Calibration</title>
+    <meta http-equiv="refresh" content="0; url=wtp-segmentation.html" />
+    <title>Redirecting to WTP + Segmentation</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260522-guide" />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
   </head>
   <body>
-    <div class="shell">
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand">
-            <div class="mark" aria-hidden="true">RM</div>
-            <div>
-              <p class="brand-title">Phase 3 WTP Lab</p>
-              <p class="brand-subtitle">demand curves, capacity, and tariff calibration</p>
-            </div>
-          </div>
-          <nav class="page-nav" aria-label="page sections">
-            <a href="index.html">Phase 1</a>
-            <a href="phase2.html">Phase 2</a>
-            <a class="active" aria-current="page" href="phase3.html">Phase 3 WTP</a>
-          </nav>
+    <main class="main">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">WTP + Segmentation moved.</h1>
+          <p class="lead">
+            This page now lives at <a href="wtp-segmentation.html">wtp-segmentation.html</a>.
+          </p>
         </div>
-      </header>
-
-      <main class="main phase3-page">
-        <section class="phase3-hero" aria-labelledby="phase3-title">
-          <div>
-            <p class="phase3-kicker">Phase 3 preview</p>
-            <h1 id="phase3-title">What willingness to pay would add.</h1>
-            <p class="lead">
-              Nathan's LP files imply a building-level demand curve. This page
-              makes that layer visible without activating it in the main
-              device-adoption model: price first changes annual demand, then a
-              rate design can be tested against revenue and capacity.
-            </p>
-          </div>
-          <aside class="summary-panel" aria-label="phase 3 status">
-            <p class="summary-title">Model status</p>
-            <div class="summary-metric primary">
-              <span>Current role</span>
-              <strong>Appendix</strong>
-              <small>Not blended into Phase 1/2 dashboard economics.</small>
-            </div>
-            <div class="summary-metric">
-              <span>Buildings</span>
-              <strong id="phase3-building-count">--</strong>
-            </div>
-            <div class="summary-metric">
-              <span>Capacity screen</span>
-              <strong>272 kW</strong>
-            </div>
-            <div class="summary-metric">
-              <span>Flat anchor</span>
-              <strong>18.0¢</strong>
-            </div>
-          </aside>
-        </section>
-
-        <section class="phase3-controls-section" aria-labelledby="wtp-controls-title">
-          <div class="section-head">
-            <div>
-              <h2 id="wtp-controls-title">WTP controls</h2>
-            </div>
-            <p class="section-note">
-              The raw LP curve follows Nathan's formulation. The bounded mode
-              caps extreme expansion/contraction so it can be compared with the
-              dashboard's more conservative behavioral assumptions.
-            </p>
-          </div>
-          <div class="controls phase3-controls" aria-label="WTP controls">
-            <div class="control">
-              <label for="phase3-energy-price">Energy price</label>
-              <div class="control-value"><span id="phase3-energy-price-value">18.0</span>¢/kWh</div>
-              <input id="phase3-energy-price" type="range" min="5" max="45" step="0.5" value="18" />
-            </div>
-            <div class="control">
-              <label for="phase3-demand-charge">Capacity / demand charge</label>
-              <div class="control-value">$<span id="phase3-demand-charge-value">0</span>/kW-mo</div>
-              <input id="phase3-demand-charge" type="range" min="0" max="40" step="1" value="0" />
-            </div>
-            <div class="control">
-              <label for="phase3-mode">Curve mode</label>
-              <select id="phase3-mode">
-                <option value="bounded" selected>Bounded dashboard candidate</option>
-                <option value="raw">Raw LP curve</option>
-              </select>
-            </div>
-          </div>
-        </section>
-
-        <section class="phase3-kpi-grid" id="phase3-kpis" aria-label="WTP results"></section>
-
-        <section class="phase3-grid" aria-labelledby="wtp-frontier-title">
-          <article class="panel">
-            <h2 id="wtp-frontier-title">Revenue frontier</h2>
-            <p class="panel-subtitle">
-              Monthly revenue from the 100-building source portfolio as a
-              function of flat energy price. The marker shows the selected
-              energy price.
-            </p>
-            <svg id="phase3-revenue-chart" viewBox="0 0 680 340" role="img"></svg>
-          </article>
-          <article class="panel">
-            <h2>Demand response curve</h2>
-            <p class="panel-subtitle">
-              Annual kWh relative to the 18.0¢ anchor. The raw curve is useful
-              for optimization; bounded mode is safer for dashboard storytelling.
-            </p>
-            <svg id="phase3-demand-chart" viewBox="0 0 680 340" role="img"></svg>
-          </article>
-        </section>
-
-        <section class="phase3-grid">
-          <article class="panel">
-            <h2>Building curve cloud</h2>
-            <p class="panel-subtitle">
-              Each dot is one building. Higher intercepts imply higher
-              willingness to pay; steeper slopes imply more price sensitivity.
-            </p>
-            <svg id="phase3-scatter-chart" viewBox="0 0 680 340" role="img"></svg>
-          </article>
-          <article class="panel">
-            <h2>Capacity screen</h2>
-            <p class="panel-subtitle">
-              Peak is proxied by scaling each building's observed peak by its
-              WTP demand ratio. Nathan's screen is 68 kWh per 15 minutes, or
-              272 kW for the 100-building portfolio.
-            </p>
-            <svg id="phase3-capacity-chart" viewBox="0 0 680 340" role="img"></svg>
-          </article>
-        </section>
-
-        <section class="table-panel segment-economics-panel" aria-labelledby="wtp-buildings-title">
-          <div class="section-head">
-            <div>
-              <h2 id="wtp-buildings-title">Building-level WTP outputs</h2>
-            </div>
-            <p class="section-note">
-              Sorted by the largest demand reduction under the selected price
-              and capacity assumptions.
-            </p>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Building</th>
-                  <th>Segment</th>
-                  <th>Intercept</th>
-                  <th>Slope</th>
-                  <th>Effective price</th>
-                  <th>Demand ratio</th>
-                  <th>Annual kWh</th>
-                  <th>Revenue / month</th>
-                  <th>Peak proxy</th>
-                </tr>
-              </thead>
-              <tbody id="phase3-building-rows"></tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <script src="phase3-data.js?v=20260522-phase3"></script>
-    <script src="phase3.js?v=20260522-phase3"></script>
+      </section>
+    </main>
   </body>
 </html>

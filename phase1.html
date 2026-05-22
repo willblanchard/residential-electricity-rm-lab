@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Single Price Results | Residential Electricity RM</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">single price results</p>
+            </div>
+          </div>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a href="optimization-model.html">Optimization Model</a>
+            <a href="implementation-validation.html">Implementation</a>
+            <a class="active" aria-current="page" href="phase1.html">Single Price Results</a>
+            <a href="phase2.html">Parallel Options Results</a>
+            <a href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="intro" id="summary-introduction" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">
+              Single price results.
+            </h1>
+            <p class="lead">
+              Compare flat, TOU, and demand-charge tariffs when the whole
+              residential portfolio is placed under one universal rate plan.
+              The model starts from a revenue-neutral passive baseline, then
+              measures how elastic behavior, smart thermostats, and batteries
+              change revenue, cost, margin, energy, and peak demand.
+            </p>
+          </div>
+          <aside class="summary-panel" aria-label="portfolio summary">
+            <p class="summary-title">Selected portfolio economics</p>
+            <div class="summary-metric primary">
+              <span>Monthly revenue / 10,000 homes</span>
+              <strong id="summary-revenue-dollars">--</strong>
+              <small id="summary-revenue-note">--</small>
+            </div>
+            <div class="summary-metric">
+              <span>Gross margin</span>
+              <strong id="summary-margin">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Margin vs same-rate inelastic</span>
+              <strong id="summary-margin-delta">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Revenue-down homes</span>
+              <strong id="summary-revenue-down-homes">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Energy + capacity cost</span>
+              <strong id="summary-cost">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Portfolio peak</span>
+              <strong id="summary-peak-kw">--</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Rate plan</span>
+              <strong id="summary-rate">--</strong>
+            </div>
+          </aside>
+        </section>
+
+        <section class="case-study executive-card" aria-labelledby="finding-title">
+          <div class="case-copy">
+            <h2 id="finding-title">Executive finding</h2>
+            <p id="case-copy">
+              Start with a rate plan that is defensible as revenue-neutral for
+              passive customers. Then let the same homes adopt smart controls.
+            </p>
+          </div>
+          <div class="case-kpis" id="case-kpis"></div>
+          <p class="case-insight" id="case-insight">--</p>
+        </section>
+
+        <section class="optimizer-section" id="optimization-model" aria-labelledby="optimizer-title">
+          <div class="section-head">
+            <div>
+              <h2 id="optimizer-title">Optimization model</h2>
+            </div>
+            <p class="section-note">
+              A small grid-search solver chooses TOU spread or demand-charge
+              levels that maximize gross margin across normalized building
+              demand profiles while preserving the revenue-neutral filing
+              baseline, keeping realized revenue close enough to flat, and
+              staying under a portfolio peak-capacity screen.
+            </p>
+          </div>
+          <div class="optimizer-cards" id="optimizer-cards"></div>
+        </section>
+
+        <section id="phase1-single-rate" aria-labelledby="rate-title">
+          <div class="section-head">
+            <div>
+              <h2 id="rate-title">Single Price Results</h2>
+            </div>
+            <p class="section-note">
+              TOU and demand-charge designs are calibrated to be revenue-neutral
+              on an all-inelastic baseline, approximating the PUC defense a
+              utility would need. Then the model lets device adoption erode
+              revenue while avoiding high-cost energy and capacity.
+            </p>
+          </div>
+          <div class="rate-cards" id="rate-cards"></div>
+        </section>
+
+        <details class="collapsible-section" open data-persistent>
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="differential-title">Price differential sensitivity</h2>
+              <p>
+              These charts hold the population mix fixed and compare each
+              price signal against the flat fixed-rate baseline. The marker
+              shows the current control setting.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body grid-2 sensitivity-grid">
+            <article class="panel">
+              <h3>TOU peak spread</h3>
+              <p class="panel-subtitle">
+                More spread strengthens the customer incentive to shift away
+                from peak hours, but it can also reduce collected revenue.
+              </p>
+              <div class="chart-wrap">
+                <svg id="tou-sensitivity-chart" viewBox="0 0 640 320" role="img"></svg>
+              </div>
+              <div class="mini-metrics" id="tou-sensitivity-metrics"></div>
+            </article>
+            <article class="panel">
+              <h3>Demand charge level</h3>
+              <p class="panel-subtitle">
+                A higher $/kW-month charge moves the tariff from volumetric
+                collection toward explicit capacity-cost recovery.
+              </p>
+              <div class="chart-wrap">
+                <svg id="demand-sensitivity-chart" viewBox="0 0 640 320" role="img"></svg>
+              </div>
+              <div class="mini-metrics" id="demand-sensitivity-metrics"></div>
+            </article>
+          </div>
+        </details>
+
+        <details class="collapsible-section assumption-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="assumptions-title">Rate and device controls</h2>
+              <p>
+                Stress-test the rate signal and automated device assumptions.
+                Portfolio allocation is at the bottom of the page.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+          <div class="controls" aria-label="scenario controls">
+            <div class="control">
+              <label for="tariff-control">Rate plan focus</label>
+              <div class="segmented three" id="tariff-control">
+                <button type="button" data-tariff="flat">
+                  Flat
+                </button>
+                <button type="button" class="active" data-tariff="tou">TOU</button>
+                <button type="button" data-tariff="demand">Demand</button>
+              </div>
+            </div>
+            <div class="control">
+              <label for="thermostat">HVAC adjustment</label>
+              <select id="thermostat">
+                <option value="2">+/- 2°F average</option>
+                <option value="3" selected>+/- 3°F average</option>
+                <option value="4">+/- 4°F average</option>
+                <option value="5">+/- 5°F average</option>
+                <option value="6">+/- 6°F average</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="battery">Avg battery size</label>
+              <div class="control-value"><span id="battery-value">10</span> kWh</div>
+              <input id="battery" type="range" min="0" max="20" step="1" value="10" />
+            </div>
+            <div class="control">
+              <label for="spread">TOU peak spread</label>
+              <div class="control-value"><span id="spread-value">2.0</span>x</div>
+              <input id="spread" type="range" min="1" max="5" step="0.05" value="2" />
+            </div>
+            <div class="control">
+              <label for="demand-charge">Demand charge</label>
+              <div class="control-value">$<span id="demand-charge-value">20</span>/kW-mo</div>
+              <input id="demand-charge" type="range" min="0" max="30" step="1" value="20" />
+            </div>
+          </div>
+          </div>
+        </details>
+
+        <details class="collapsible-section" open>
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="matrix-title">Population economics map</h2>
+              <p>
+                Same portfolio under each tariff. Monthly $/meter labels and
+                portfolio totals update as the rate controls move.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+            <div class="map-rate-controls" aria-label="population map rate controls">
+              <div class="map-rate-control">
+                <label for="matrix-spread">TOU peak/off-peak ratio</label>
+                <strong><span id="matrix-spread-value">2.0</span>x</strong>
+                <span id="matrix-spread-note">Revenue-neutral TOU prices update below.</span>
+                <input id="matrix-spread" type="range" min="1" max="5" step="0.05" value="2" />
+              </div>
+              <div class="map-rate-control">
+                <label for="matrix-demand-charge">Demand charge ratio</label>
+                <strong><span id="matrix-demand-ratio-value">1.00</span>x</strong>
+                <span>$<span id="matrix-demand-charge-value">20</span>/kW-mo</span>
+                <input id="matrix-demand-charge" type="range" min="0" max="30" step="1" value="20" />
+              </div>
+            </div>
+            <div class="population-chart-wrap">
+              <svg id="population-chart" viewBox="0 0 1120 640" role="img"></svg>
+            </div>
+            <details class="raw-values-details">
+              <summary>
+                <div class="table-heading">
+                <h3>Raw 24-segment economics</h3>
+                <p>
+                  Cost is modeled utility energy cost plus per-home peak
+                  capacity exposure. Segment totals multiply the per-home
+                  economics by the normalized 10,000-home portfolio weight.
+                </p>
+                </div>
+              </summary>
+              <div class="segment-table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Behavior</th>
+                      <th>Device case</th>
+                      <th>Tariff</th>
+                      <th>Homes</th>
+                    <th>Revenue / meter</th>
+                    <th>Cost / meter</th>
+                    <th>Margin / meter</th>
+                      <th>Segment revenue</th>
+                      <th>Segment cost</th>
+                      <th>Segment margin</th>
+                    <th>kWh / meter</th>
+                    <th>Peak kW / meter</th>
+                    </tr>
+                  </thead>
+                  <tbody id="scenario-table"></tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="selected-case-title">Selected case reactive usage pattern</h2>
+              <p id="selected-case-copy">
+                Click a population bucket above to compare baseline usage with
+                the responsive profile under the selected tariff.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+          <div class="selected-case-layout">
+            <div class="chart-wrap">
+              <svg id="case-load-chart" viewBox="0 0 960 340" role="img"></svg>
+            </div>
+            <div class="selected-case-metrics" id="selected-case-metrics"></div>
+          </div>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2>Load and profit reference charts</h2>
+              <p>
+                Source load shape and tariff-level profit frontier for the
+                selected population mix.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body grid-2" aria-label="charts">
+          <article class="panel">
+            <h3>NLR end-use load shape</h3>
+            <p class="panel-subtitle">
+              Illinois single-family detached peak day from the NLR/OEDI EULP
+              aggregate. HVAC and water heating are the controllable categories
+              used by the smart-device response model.
+            </p>
+            <div class="chart-wrap">
+              <svg id="load-chart" viewBox="0 0 640 320" role="img"></svg>
+            </div>
+            <div class="legend">
+              <span class="legend-item" style="color: var(--blue)">
+                <span class="swatch"></span>HVAC
+              </span>
+              <span class="legend-item" style="color: var(--green)">
+                <span class="swatch"></span>Appliances
+              </span>
+              <span class="legend-item" style="color: var(--teal)">
+                <span class="swatch"></span>Water heating
+              </span>
+              <span class="legend-item" style="color: var(--amber)">
+                <span class="swatch"></span>Lighting
+              </span>
+              <span class="legend-item" style="color: var(--muted)">
+                <span class="swatch"></span>Plug / other
+              </span>
+            </div>
+          </article>
+
+          <article class="panel">
+            <h3>Rate-plan profit frontier</h3>
+            <p class="panel-subtitle">
+              Same population mix under each tariff. This separates customer
+              revenue from the utility cost and margin effect.
+            </p>
+            <div class="chart-wrap">
+              <svg id="adoption-chart" viewBox="0 0 640 320" role="img"></svg>
+            </div>
+            <div class="legend">
+              <span class="legend-item" style="color: var(--red)">
+                <span class="swatch"></span>Revenue
+              </span>
+              <span class="legend-item" style="color: var(--teal)">
+                <span class="swatch"></span>Gross margin
+              </span>
+            </div>
+          </article>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="hvac-title">HVAC response to the tariff signal</h2>
+              <p>
+                Thermostat pre-cooling and peak clipping against the selected
+                tariff signal.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+          <article class="panel wide-panel">
+            <h3>HVAC detail</h3>
+            <p class="panel-subtitle">
+              The smart-thermostat model uses the NLR HVAC load as movable
+              demand: it pre-cools before expensive TOU hours or before the
+              home's highest-load demand-charge hours, then preserves comfort
+              with a bounded thermal shift.
+            </p>
+            <div class="chart-wrap">
+              <svg id="hvac-chart" viewBox="0 0 960 320" role="img"></svg>
+            </div>
+            <div class="legend">
+              <span class="legend-item" style="color: var(--blue)">
+                <span class="swatch"></span>Baseline HVAC
+              </span>
+              <span class="legend-item" style="color: var(--amber)">
+                <span class="swatch"></span>Optimized HVAC
+              </span>
+              <span class="legend-item" style="color: var(--red)">
+                <span class="swatch"></span>Tariff signal
+              </span>
+            </div>
+            <div class="mini-metrics">
+              <div class="mini-metric">
+                <label>Daily HVAC bill savings</label>
+                <strong id="hvac-cost-savings">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>Shifted HVAC energy</label>
+                <strong id="hvac-shifted">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>HVAC energy reduction</label>
+                <strong id="hvac-energy-cut">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>Whole-home peak cut</label>
+                <strong id="hvac-peak-cut">--</strong>
+              </div>
+            </div>
+          </article>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="battery-title">Battery response to the tariff signal</h2>
+              <p>
+                Charging, discharging, state of charge, and grid-import impact
+                under the selected tariff.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+          <article class="panel wide-panel">
+            <h3>Battery detail</h3>
+            <p class="panel-subtitle">
+              The battery model charges during low-price hours, preserves state
+              of charge for scarcity hours, and discharges to reduce grid
+              imports when prices or capacity pressure are highest.
+            </p>
+            <div class="chart-wrap">
+              <svg id="battery-chart" viewBox="0 0 960 340" role="img"></svg>
+            </div>
+            <div class="legend">
+              <span class="legend-item" style="color: var(--blue)">
+                <span class="swatch"></span>Home load
+              </span>
+              <span class="legend-item" style="color: var(--green)">
+                <span class="swatch"></span>Grid import
+              </span>
+              <span class="legend-item" style="color: var(--teal)">
+                <span class="swatch"></span>State of charge
+              </span>
+              <span class="legend-item" style="color: var(--red)">
+                <span class="swatch"></span>Tariff signal
+              </span>
+            </div>
+            <div class="mini-metrics">
+              <div class="mini-metric">
+                <label>Daily battery bill savings</label>
+                <strong id="battery-cost-savings">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>Peak-window cut</label>
+                <strong id="battery-peak-cut">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>Charge energy</label>
+                <strong id="battery-charge">--</strong>
+              </div>
+              <div class="mini-metric">
+                <label>Off-peak rebound</label>
+                <strong id="battery-rebound">--</strong>
+              </div>
+            </div>
+          </article>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="allocation-title">Portfolio allocation</h2>
+              <p>
+                Edit allocation shares here. The model normalizes the shares
+                into a 10,000-home portfolio for the revenue map and totals.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+            <div class="population-panel" aria-labelledby="population-title">
+              <div class="section-head">
+                <div>
+                  <h2 id="population-title">Population by behavior and devices</h2>
+                  <p>
+                    The original 3x3 is expanded into 3 rate plans x 2 behavior
+                    types x 2 thermostat states x 2 battery states. Inputs are
+                    allocation shares and outputs are scaled to 10,000 homes.
+                  </p>
+                </div>
+                <p class="section-note">
+                  Passive means human behavior and non-controlled loads do not
+                  respond. Thermostats and automated home batteries can still act
+                  automatically inside those homes.
+                </p>
+              </div>
+              <div class="population-inputs" id="population-inputs"></div>
+              <div class="population-total" id="population-total">--</div>
+            </div>
+          </div>
+        </details>
+
+        <details class="collapsible-section">
+          <summary>
+            <div class="collapsible-title">
+              <h2 id="downloads-title">Exports</h2>
+              <p>
+                Download static inputs or current interactive scenario outputs
+                for supporting analysis.
+              </p>
+            </div>
+            <span class="collapse-status" aria-hidden="true"></span>
+          </summary>
+          <div class="collapsible-body">
+          <nav class="nav-actions" aria-label="data exports">
+            <a class="button" href="data/building_demand_models_hourly.csv" download>
+              Demand CSV
+            </a>
+            <a class="button" href="data/nlr_end_use_profile_il_sfd_peak_day.csv" download>
+              End-use CSV
+            </a>
+            <a class="button" href="data/wattshift_rate_plans.csv" download>
+              Rate CSV
+            </a>
+            <a class="button" href="data/wattshift_price_signals.csv" download>
+              Price CSV
+            </a>
+            <a class="button" href="data/wattshift_bill_estimates.csv" download>
+              Bill CSV
+            </a>
+            <button class="button" id="download-load">Download load CSV</button>
+            <button class="button" id="download-hvac">Download HVAC CSV</button>
+            <button class="button" id="download-battery">Download battery CSV</button>
+            <button class="button" id="download-optimization">Download optimization CSV</button>
+            <button class="button primary" id="download-scenarios">
+              Download scenario CSV
+            </button>
+          </nav>
+          </div>
+        </details>
+
+        <p class="footer">
+          This is a stylized case-study model for the final paper: rates are
+          calibrated to a passive baseline, load response is simulated from
+          NLR/OEDI end-use profiles and normalized building-demand profile
+          shapes, and costs use an explicit wholesale-energy plus capacity
+          proxy. Static WattShift rate-plan, price-signal, and
+          bill-estimate CSVs were generated by a one-off pull without storing
+          API credentials; current interactive scenario outputs are available
+          through the export buttons above, including the tariff-optimization
+          candidate grid. A separate <a href="phase2.html">Parallel Options Results page</a>
+          isolates optional-rate choice, population leakage, and adverse
+          selection from this universal-tariff comparison.
+        </p>
+      </main>
+    </div>
+
+    <script src="profiles.js?v=20260522-pages"></script>
+    <script src="app.js?v=20260522-pages"></script>
+  </body>
+</html>

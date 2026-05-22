@@ -104,6 +104,11 @@ select {
   flex-wrap: wrap;
 }
 
+.presentation-nav {
+  max-width: 860px;
+  row-gap: 6px;
+}
+
 .page-nav a {
   display: inline-flex;
   align-items: center;
@@ -455,6 +460,10 @@ input[type="range"] {
   margin-top: 22px;
 }
 
+.outline-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .story-card {
   padding: 16px;
   border: 1px solid var(--line);
@@ -487,6 +496,10 @@ input[type="range"] {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.story-card .button {
+  margin-top: 12px;
 }
 
 .case-study,
@@ -570,6 +583,171 @@ input[type="range"] {
   border-top: 1px solid var(--line);
   color: var(--muted);
   line-height: 1.45;
+}
+
+.case-points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.case-points div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.case-points strong {
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.case-points span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.narrative-card,
+.final-takeaway {
+  margin-top: 28px;
+}
+
+.lp-section {
+  display: grid;
+  gap: 18px;
+}
+
+.lp-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.45fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.lp-section-head h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.lp-section-head p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lp-source-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfcfd;
+}
+
+.lp-source-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.lp-source-card strong {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.lp-source-card small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.lp-formula-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.lp-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfcfd;
+}
+
+.lp-panel.wide {
+  grid-column: 1 / -1;
+}
+
+.lp-panel h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.lp-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.lp-definition-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.lp-definition-list div {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lp-definition-list dt {
+  color: var(--teal);
+  font-weight: 840;
+}
+
+.lp-definition-list dd {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.lp-formula {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  border: 1px solid #cdd6db;
+  border-radius: var(--radius);
+  background: #11181d;
+  color: #eff7f7;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.lp-formula.compact {
+  min-height: 100%;
+}
+
+.lp-note {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.takeaway-points {
+  grid-template-columns: 1fr;
 }
 
 .assumption-section {
@@ -731,6 +909,28 @@ input[type="range"] {
 }
 
 .panel-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.bottom-export {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.bottom-export h2,
+.bottom-export h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.bottom-export p {
+  max-width: 720px;
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 13px;
@@ -1455,6 +1655,8 @@ tr:hover td {
   .selected-case-layout,
   .choice-layout,
   .phase3-wtp-panel,
+  .lp-section-head,
+  .lp-formula-grid,
   .phase3-grid {
     grid-template-columns: 1fr;
   }
@@ -1480,8 +1682,13 @@ tr:hover td {
     grid-template-columns: 1fr;
   }
 
+  .lp-panel.wide {
+    grid-column: auto;
+  }
+
   .case-kpis,
-  .population-inputs {
+  .population-inputs,
+  .case-points {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -1500,6 +1707,11 @@ tr:hover td {
   .nav-actions {
     width: 100%;
     justify-content: stretch;
+  }
+
+  .bottom-export {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .button {
@@ -1534,7 +1746,8 @@ tr:hover td {
 
   .case-kpis,
   .population-inputs,
-  .map-rate-controls {
+  .map-rate-controls,
+  .case-points {
     grid-template-columns: 1fr;
   }
 

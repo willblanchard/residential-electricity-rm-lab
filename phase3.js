@@ -139,8 +139,38 @@ function renderAxes(width, height, pad, xLabel, yLabel) {
   return `
     <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#9aa7af" />
     <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#9aa7af" />
-    <text x="${width / 2}" y="${height - 10}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="720">${xLabel}</text>
-    <text x="16" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="720" transform="rotate(-90 16 ${height / 2})">${yLabel}</text>
+    ${
+      xLabel
+        ? `<text x="${width / 2}" y="${height - 10}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="760">${xLabel}</text>`
+        : ""
+    }
+    ${
+      yLabel
+        ? `<text x="16" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="760" transform="rotate(-90 16 ${height / 2})">${yLabel}</text>`
+        : ""
+    }
+  `;
+}
+
+function renderTicks(width, height, pad, xTicks, yTicks) {
+  const xAxisY = height - pad.bottom;
+  return `
+    ${xTicks
+      .map(
+        (tick) => `
+          <line x1="${tick.x.toFixed(1)}" y1="${xAxisY}" x2="${tick.x.toFixed(1)}" y2="${xAxisY + 5}" stroke="#9aa7af" />
+          <text x="${tick.x.toFixed(1)}" y="${xAxisY + 20}" text-anchor="middle" fill="#64717b" font-size="10" font-weight="650">${tick.label}</text>
+        `,
+      )
+      .join("")}
+    ${yTicks
+      .map(
+        (tick) => `
+          <line x1="${pad.left - 5}" y1="${tick.y.toFixed(1)}" x2="${pad.left}" y2="${tick.y.toFixed(1)}" stroke="#9aa7af" />
+          <text x="${pad.left - 9}" y="${(tick.y + 3).toFixed(1)}" text-anchor="end" fill="#64717b" font-size="10" font-weight="650">${tick.label}</text>
+        `,
+      )
+      .join("")}
   `;
 }
 
@@ -148,7 +178,7 @@ function renderRevenueChart(frontier, selected) {
   const svg = document.getElementById("phase3-revenue-chart");
   const width = 680;
   const height = 340;
-  const pad = { top: 24, right: 28, bottom: 48, left: 64 };
+  const pad = { top: 24, right: 28, bottom: 62, left: 78 };
   const yScale = chartScales(frontier.map((row) => row.monthlyRevenue), 0.08);
   const xFor = (price) =>
     pad.left +
@@ -164,11 +194,22 @@ function renderRevenueChart(frontier, selected) {
   }));
   const selectedX = xFor(phase3.energyPriceCents / 100);
   const optimumX = xFor(phase3Config.fixedLpOptimum);
+  const xTicks = [0.05, 0.15, 0.25, 0.35, 0.45].map((price) => ({
+    x: xFor(price),
+    label: `${Math.round(price * 100)}¢`,
+  }));
+  const yTicks = [yScale.min, (yScale.min + yScale.max) / 2, yScale.max].map(
+    (value) => ({
+      y: yFor(value),
+      label: fmtMoney0.format(value),
+    }),
+  );
   svg.innerHTML = `
-    ${renderAxes(width, height, pad, "flat energy price", "monthly revenue")}
+    ${renderAxes(width, height, pad, "Flat energy price (¢/kWh)", "Monthly revenue ($)")}
+    ${renderTicks(width, height, pad, xTicks, yTicks)}
     <path d="${svgLine(points)}" fill="none" stroke="#3765a3" stroke-width="3" stroke-linecap="round" />
     <line x1="${optimumX.toFixed(1)}" y1="${pad.top}" x2="${optimumX.toFixed(1)}" y2="${height - pad.bottom}" stroke="#b36b00" stroke-width="2" stroke-dasharray="6 6" />
-    <text x="${optimumX + 6}" y="${pad.top + 16}" fill="#7d4b00" font-size="11" font-weight="820">Nathan fixed-rate optimum</text>
+    <text x="${optimumX + 6}" y="${pad.top + 16}" fill="#7d4b00" font-size="11" font-weight="820">Fixed-rate optimum</text>
     <circle cx="${selectedX.toFixed(1)}" cy="${yFor(selected.monthlyRevenue).toFixed(1)}" r="5.5" fill="#087f8c" stroke="#fff" stroke-width="2" />
     <text x="${pad.left}" y="${pad.top + 12}" fill="#3765a3" font-size="12" font-weight="820">${fmtMoney0.format(selected.monthlyRevenue)} / month</text>
   `;
@@ -178,8 +219,11 @@ function renderDemandChart(frontier, selected) {
   const svg = document.getElementById("phase3-demand-chart");
   const width = 680;
   const height = 340;
-  const pad = { top: 24, right: 28, bottom: 48, left: 64 };
-  const yScale = chartScales(frontier.map((row) => row.averageDemandRatio), 0.1);
+  const pad = { top: 24, right: 28, bottom: 62, left: 78 };
+  const yScale = chartScales(
+    [...frontier.map((row) => row.averageDemandRatio), 1],
+    0.06,
+  );
   const xFor = (price) =>
     pad.left +
     ((price - 0.05) / 0.4) * (width - pad.left - pad.right);
@@ -194,8 +238,17 @@ function renderDemandChart(frontier, selected) {
   }));
   const selectedX = xFor(phase3.energyPriceCents / 100);
   const anchorY = yFor(1);
+  const xTicks = [0.05, 0.15, 0.25, 0.35, 0.45].map((price) => ({
+    x: xFor(price),
+    label: `${Math.round(price * 100)}¢`,
+  }));
+  const yTicks = [yScale.min, 1, yScale.max].map((value) => ({
+    y: yFor(value),
+    label: fmtPct.format(value),
+  }));
   svg.innerHTML = `
-    ${renderAxes(width, height, pad, "flat energy price", "annual kWh ratio")}
+    ${renderAxes(width, height, pad, "Flat energy price (¢/kWh)", "Annual kWh (% of baseline)")}
+    ${renderTicks(width, height, pad, xTicks, yTicks)}
     <line x1="${pad.left}" y1="${anchorY.toFixed(1)}" x2="${width - pad.right}" y2="${anchorY.toFixed(1)}" stroke="#9aa7af" stroke-dasharray="5 5" />
     <path d="${svgLine(points)}" fill="none" stroke="#087f8c" stroke-width="3" stroke-linecap="round" />
     <circle cx="${selectedX.toFixed(1)}" cy="${yFor(selected.averageDemandRatio).toFixed(1)}" r="5.5" fill="#087f8c" stroke="#fff" stroke-width="2" />
@@ -207,7 +260,7 @@ function renderScatter(rows) {
   const svg = document.getElementById("phase3-scatter-chart");
   const width = 680;
   const height = 340;
-  const pad = { top: 24, right: 28, bottom: 48, left: 64 };
+  const pad = { top: 24, right: 28, bottom: 62, left: 78 };
   const xScale = chartScales(rows.map((row) => row.slope), 0.08);
   const yScale = chartScales(rows.map((row) => row.intercept), 0.08);
   const maxAnnual = Math.max(...rows.map((row) => row.annualKwh));
@@ -232,8 +285,19 @@ function renderScatter(rows) {
       return `<circle cx="${xFor(row.slope).toFixed(1)}" cy="${yFor(row.intercept).toFixed(1)}" r="${radius.toFixed(1)}" fill="${color}" opacity="0.68"><title>${row.id}: intercept ${row.intercept}, slope ${row.slope}</title></circle>`;
     })
     .join("");
+  const xTicks = [
+    { value: xScale.min, label: "lower" },
+    { value: (xScale.min + xScale.max) / 2, label: "typical" },
+    { value: xScale.max, label: "higher" },
+  ].map((tick) => ({ x: xFor(tick.value), label: tick.label }));
+  const yTicks = [
+    { value: yScale.min, label: "lower" },
+    { value: (yScale.min + yScale.max) / 2, label: "typical" },
+    { value: yScale.max, label: "higher" },
+  ].map((tick) => ({ y: yFor(tick.value), label: tick.label }));
   svg.innerHTML = `
-    ${renderAxes(width, height, pad, "slope", "intercept")}
+    ${renderAxes(width, height, pad, "Demand-curve slope (price sensitivity)", "Demand-curve intercept (WTP proxy)")}
+    ${renderTicks(width, height, pad, xTicks, yTicks)}
     ${dots}
   `;
 }
@@ -242,7 +306,7 @@ function renderCapacityChart(selected) {
   const svg = document.getElementById("phase3-capacity-chart");
   const width = 680;
   const height = 340;
-  const pad = { top: 26, right: 40, bottom: 48, left: 70 };
+  const pad = { top: 26, right: 40, bottom: 62, left: 78 };
   const cap = phase3Config.capacityLimitKw;
   const current = selected.peakProxyKw;
   const max = Math.max(cap, current) * 1.18;
@@ -251,6 +315,10 @@ function renderCapacityChart(selected) {
   const barWidth = 96;
   const capX = 200;
   const currentX = 390;
+  const yTicks = [0, max / 2, max].map((value) => ({
+    y: yFor(value),
+    label: `${fmtNum.format(value)} kW`,
+  }));
   const bar = (x, value, color, label) => {
     const y = yFor(value);
     return `
@@ -260,10 +328,80 @@ function renderCapacityChart(selected) {
     `;
   };
   svg.innerHTML = `
-    ${renderAxes(width, height, pad, "", "portfolio peak proxy")}
+    ${renderAxes(width, height, pad, "Portfolio peak comparison", "Peak demand proxy (kW)")}
+    ${renderTicks(width, height, pad, [], yTicks)}
     ${bar(capX, cap, "#64717b", "Capacity screen")}
     ${bar(currentX, current, current <= cap ? "#2e7d32" : "#b13a2f", "Selected WTP")}
     <text x="${pad.left}" y="${pad.top + 10}" fill="${current <= cap ? "#2e7d32" : "#b13a2f"}" font-size="12" font-weight="820">${current <= cap ? "Under" : "Over"} screen by ${fmtNum.format(Math.abs(cap - current))} kW</text>
+  `;
+}
+
+function renderWtpPreview(selected) {
+  const metrics = document.getElementById("wtp-preview-metrics");
+  const svg = document.getElementById("wtp-preview-chart");
+  if (!metrics || !svg) return;
+
+  const highPrice = portfolioAt(0.3, 0, phase3.mode);
+  metrics.innerHTML = [
+    ["Buildings", fmtNum.format(buildings.length)],
+    ["Capacity screen", `${fmtNum.format(phase3Config.capacityLimitKw)} kW`],
+    ["Selected demand ratio", fmtPct.format(selected.averageDemandRatio)],
+    ["30¢ demand ratio", fmtPct.format(highPrice.averageDemandRatio)],
+  ]
+    .map(
+      ([label, value]) => `
+        <div class="phase3-wtp-metric">
+          <label>${label}</label>
+          <strong>${value}</strong>
+        </div>
+      `,
+    )
+    .join("");
+
+  const width = 420;
+  const height = 220;
+  const pad = { top: 24, right: 18, bottom: 42, left: 54 };
+  const points = frontierRows(phase3.mode).map((row) => ({
+    price: row.price,
+    ratio: row.averageDemandRatio,
+  }));
+  const minPrice = Math.min(...points.map((point) => point.price));
+  const maxPrice = Math.max(...points.map((point) => point.price));
+  const yScale = chartScales([...points.map((point) => point.ratio), 1], 0.08);
+  const xFor = (price) =>
+    pad.left +
+    ((price - minPrice) / (maxPrice - minPrice)) *
+      (width - pad.left - pad.right);
+  const yFor = (ratio) =>
+    height -
+    pad.bottom -
+    ((ratio - yScale.min) / (yScale.max - yScale.min)) *
+      (height - pad.top - pad.bottom);
+  const path = points
+    .map(
+      (point, index) =>
+        `${index === 0 ? "M" : "L"} ${xFor(point.price).toFixed(1)} ${yFor(point.ratio).toFixed(1)}`,
+    )
+    .join(" ");
+  const selectedPrice = phase3.energyPriceCents / 100;
+  const selectedX = xFor(selectedPrice);
+  const selectedY = yFor(selected.averageDemandRatio);
+  svg.innerHTML = `
+    <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    <line x1="${pad.left}" y1="${yFor(1).toFixed(1)}" x2="${width - pad.right}" y2="${yFor(1).toFixed(1)}" stroke="#9aa7af" stroke-dasharray="5 5" />
+    <path d="${path}" fill="none" stroke="#087f8c" stroke-width="3" stroke-linecap="round" />
+    ${points
+      .filter((_, index) => index % 10 === 0)
+      .map(
+        (point) =>
+          `<circle cx="${xFor(point.price).toFixed(1)}" cy="${yFor(point.ratio).toFixed(1)}" r="3.4" fill="#087f8c" opacity="0.82" />`,
+      )
+      .join("")}
+    <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="5" fill="#b36b00" stroke="#fff" stroke-width="2" />
+    <text x="${pad.left}" y="${pad.top - 6}" fill="#087f8c" font-size="12" font-weight="820">WTP demand ratio by price</text>
+    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price ($/kWh)</text>
+    <text x="15" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720" transform="rotate(-90 15 ${height / 2})">demand ratio</text>
   `;
 }
 
@@ -324,6 +462,7 @@ function renderPhase3() {
   renderDemandChart(frontier, selected);
   renderScatter(selected.rows);
   renderCapacityChart(selected);
+  renderWtpPreview(selected);
   renderBuildingRows(selected.rows);
 }
 

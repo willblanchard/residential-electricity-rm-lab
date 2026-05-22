@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Optimization Model | Residential Electricity RM</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">optimization model</p>
+            </div>
+          </div>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a class="active" aria-current="page" href="optimization-model.html">Optimization Model</a>
+            <a href="implementation-validation.html">Implementation</a>
+            <a href="phase1.html">Single Price Results</a>
+            <a href="phase2.html">Parallel Options Results</a>
+            <a href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">Choose rates to maximize utility margin under response.</h1>
+            <p class="lead">
+              The optimization layer compares tariff candidates by combining
+              customer bills, utility energy cost, capacity exposure, and
+              adoption response. The key move is evaluating realized economics
+              after customers respond, not only the passive filing baseline.
+              The full LP below follows Nathan's MATLAB structure and then
+              maps it to the dashboard's finite tariff menu.
+            </p>
+            <nav class="nav-actions" aria-label="model links">
+              <a class="button primary" href="phase1.html">See optimizer output</a>
+              <a class="button" href="implementation-validation.html">See implementation</a>
+            </nav>
+          </div>
+          <aside class="summary-panel" aria-label="model summary">
+            <p class="summary-title">Model structure</p>
+            <div class="summary-metric primary">
+              <span>Objective</span>
+              <strong>Maximize gross margin</strong>
+              <small>Revenue minus energy and capacity cost, evaluated across the 10,000-home portfolio.</small>
+            </div>
+            <div class="summary-metric">
+              <span>Decision variables</span>
+              <strong>Tariff-menu weights</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Constraints</span>
+              <strong>One choice + filing + peak</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Output</span>
+              <strong>LP-selected tariff</strong>
+            </div>
+          </aside>
+        </section>
+
+        <section class="story-grid" aria-label="optimization components">
+          <article class="story-card">
+            <span>1</span>
+            <h2>Inputs</h2>
+            <p>
+              Load shape, customer segment mix, WTP assumptions, device
+              response, tariff levels, and utility cost proxies.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>2</span>
+            <h2>Decision variables</h2>
+            <p>
+              Flat price, TOU peak/off-peak spread, and monthly demand-charge
+              level.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>3</span>
+            <h2>Constraints</h2>
+            <p>
+              Revenue-neutral filing baseline, acceptable revenue loss screen,
+              and portfolio peak-capacity screen.
+            </p>
+          </article>
+        </section>
+
+        <section class="lp-section narrative-card" aria-labelledby="lp-title">
+          <div class="lp-section-head">
+            <div>
+              <h2 id="lp-title">Full LP formulation</h2>
+              <p>
+                Nathan's source model supplies 100 building demand curves,
+                annual demand normalization, and the 272 kW capacity screen.
+                The dashboard scales that source portfolio to 10,000 homes and
+                solves the rate-design problem as a finite candidate LP.
+              </p>
+            </div>
+            <div class="lp-source-card">
+              <span>Source calibration</span>
+              <strong>demand_curve.xlsx + annual_demand.xlsx + Capacity.mlx</strong>
+              <small>68 kWh per 15 minutes = 272 kW per 100 source homes; 27,200 kW when scaled to 10,000 homes.</small>
+            </div>
+          </div>
+
+          <div class="lp-formula-grid">
+            <article class="lp-panel">
+              <h3>Sets</h3>
+              <dl class="lp-definition-list">
+                <div>
+                  <dt>B</dt>
+                  <dd>100 source buildings/customers</dd>
+                </div>
+                <div>
+                  <dt>H</dt>
+                  <dd>24 hourly load periods</dd>
+                </div>
+                <div>
+                  <dt>T</dt>
+                  <dd>candidate tariffs: flat, TOU, or demand charge</dd>
+                </div>
+                <div>
+                  <dt>K, J</dt>
+                  <dd>candidate energy prices and demand-charge levels</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="lp-panel">
+              <h3>Decision variables</h3>
+              <dl class="lp-definition-list">
+                <div>
+                  <dt>z_t</dt>
+                  <dd>1 if tariff candidate t is selected; 0 otherwise</dd>
+                </div>
+                <div>
+                  <dt>x_nk</dt>
+                  <dd>1 if TOU period n uses price level k</dd>
+                </div>
+                <div>
+                  <dt>y_j</dt>
+                  <dd>1 if demand-charge level j is selected</dd>
+                </div>
+                <div>
+                  <dt>P_t</dt>
+                  <dd>portfolio peak implied by tariff t</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="lp-panel wide">
+              <h3>Demand response from Nathan's curves</h3>
+              <p>
+                For each building b, the MATLAB WTP curve converts an effective
+                electricity price into annual demand. The dashboard keeps the
+                raw curve visible on the WTP page and uses bounded response in
+                the presentation economics.
+              </p>
+              <pre class="lp-formula"><code>effective_price_bh(t) =
+  energy_price_h(t) + demand_charge_t * peak_b(t) * 12 / annual_kwh_b
+
+demand_bh(t) = shape_bh * max(0, (intercept_b - effective_price_bh(t)) / (slope_b / 2.106))</code></pre>
+            </article>
+
+            <article class="lp-panel wide">
+              <h3>Objective</h3>
+              <p>
+                Choose the tariff that maximizes realized monthly gross margin
+                after customer response.
+              </p>
+              <pre class="lp-formula"><code>max sum_t z_t * Margin_t
+
+where
+  Margin_t = Revenue_t - EnergyCost_t - CapacityCost_t
+  Revenue_t = sum_b sum_h bill_revenue_bh(t)
+  EnergyCost_t = sum_b sum_h wholesale_cost_h * demand_bh(t)
+  CapacityCost_t = capacity_cost_per_kw_month * P_t</code></pre>
+            </article>
+
+            <article class="lp-panel wide">
+              <h3>Core constraints</h3>
+              <pre class="lp-formula"><code>sum_t z_t = 1
+
+sum_t z_t * Revenue_t >= 0.95 * Revenue_flat
+
+-0.005 * Revenue_flat <=
+  sum_t z_t * (FiledRevenue_t - Revenue_flat)
+<= 0.005 * Revenue_flat
+
+sum_t z_t * P_t <= Capacity
+
+z_t >= 0 for all t
+z_t in {0, 1} for one selected filed tariff</code></pre>
+              <p class="lp-note">
+                The dashboard enumerates the binary choices directly, so the
+                on-page optimizer and CSV are the solved candidate table for
+                this LP.
+              </p>
+            </article>
+
+            <article class="lp-panel">
+              <h3>Tariff expansion</h3>
+              <pre class="lp-formula compact"><code>Flat:
+  t = p_k
+
+TOU:
+  t = (p_off, p_mid, p_peak)
+  p_peak >= p_mid >= p_off
+  p_peak / p_off in [1, 5]
+
+Demand charge:
+  t = (p_energy, dc_j)
+  dc_j in [$0, $30]/kW-month</code></pre>
+            </article>
+
+            <article class="lp-panel">
+              <h3>Peak linearization</h3>
+              <pre class="lp-formula compact"><code>P_t >= sum_b demand_bh(t)
+  for every hour h in the peak window
+
+P_t <= Capacity</code></pre>
+              <p>
+                This is the same capacity logic used in Nathan's capacity file:
+                68 kWh per 15 minutes, converted to kW.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="case-study narrative-card" aria-labelledby="formulation-title">
+          <div class="case-copy">
+            <h2 id="formulation-title">Formulation logic</h2>
+            <p>
+              For each candidate tariff, the model calculates customer bills,
+              adjusted usage, energy cost, capacity cost, revenue, and margin.
+              Candidates are ranked by gross margin after checking the filing
+              baseline and peak screen.
+            </p>
+          </div>
+          <div class="case-points">
+            <div>
+              <strong>Revenue</strong>
+              <span>Monthly customer bills under the chosen tariff and response scenario.</span>
+            </div>
+            <div>
+              <strong>Cost</strong>
+              <span>Wholesale-energy exposure plus a peak-capacity proxy.</span>
+            </div>
+            <div>
+              <strong>Margin</strong>
+              <span>The utility-side economic objective used to compare tariffs.</span>
+            </div>
+          </div>
+        </section>
+
+        <p class="footer">
+          Next page: <a href="implementation-validation.html">Implementation and validation</a>.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

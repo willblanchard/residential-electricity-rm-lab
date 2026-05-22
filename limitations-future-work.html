@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Limitations | Residential Electricity RM</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">limitations and future work</p>
+            </div>
+          </div>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a href="optimization-model.html">Optimization Model</a>
+            <a href="implementation-validation.html">Implementation</a>
+            <a href="phase1.html">Single Price Results</a>
+            <a href="phase2.html">Parallel Options Results</a>
+            <a class="active" aria-current="page" href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">The model is directional, not a rate filing.</h1>
+            <p class="lead">
+              The dashboard is useful because it makes the economics explicit.
+              It is still a class-project model: WTP is proxied, leakage is
+              simulated, and regulatory constraints are simplified. Future work
+              should replace those assumptions with observed customer and
+              utility data.
+            </p>
+            <nav class="nav-actions" aria-label="limitations links">
+              <a class="button primary" href="final-takeaway.html">Go to takeaway</a>
+              <a class="button" href="phase2.html">Review leakage model</a>
+            </nav>
+          </div>
+          <aside class="summary-panel" aria-label="limitations summary">
+            <p class="summary-title">Main caveat</p>
+            <div class="summary-metric primary">
+              <span>Interpretation</span>
+              <strong>Structured experiment</strong>
+              <small>The project compares mechanisms and tradeoffs; it does not claim production-grade customer forecasting.</small>
+            </div>
+            <div class="summary-metric">
+              <span>WTP</span>
+              <strong>Estimated</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Leakage</span>
+              <strong>Modeled</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Regulation</span>
+              <strong>Simplified</strong>
+            </div>
+          </aside>
+        </section>
+
+        <section class="story-grid" aria-label="limitation categories">
+          <article class="story-card">
+            <span>1</span>
+            <h2>Customer behavior</h2>
+            <p>
+              The model uses stylized elasticity and adoption assumptions
+              instead of observed enrollment and response data.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>2</span>
+            <h2>WTP calibration</h2>
+            <p>
+              Income and building-level demand curves approximate willingness
+              to pay, but need empirical calibration.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>3</span>
+            <h2>Regulatory realism</h2>
+            <p>
+              Bill protection, fairness constraints, and filing politics are
+              simplified relative to a real utility proceeding.
+            </p>
+          </article>
+        </section>
+
+        <section class="case-study narrative-card" aria-labelledby="future-title">
+          <div class="case-copy">
+            <h2 id="future-title">Future work</h2>
+            <p>
+              The most valuable extension is empirical calibration: actual
+              customer enrollment, measured load response, and utility-specific
+              cost curves would turn the current mechanism comparison into a
+              deployable pricing recommendation.
+            </p>
+          </div>
+          <div class="case-points">
+            <div>
+              <strong>Better elasticity</strong>
+              <span>Estimate segment-specific price response from real customer data.</span>
+            </div>
+            <div>
+              <strong>Richer menus</strong>
+              <span>Test bill protection, dynamic pricing, and hybrid fixed-plus-variable rates.</span>
+            </div>
+            <div>
+              <strong>Fairness screens</strong>
+              <span>Add distributional metrics before recommending a public-facing tariff.</span>
+            </div>
+          </div>
+        </section>
+
+        <p class="footer">
+          Next page: <a href="final-takeaway.html">Final takeaway</a>.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

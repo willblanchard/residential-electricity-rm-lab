@@ -1,31 +1,41 @@
 # Utility RM Dashboard
 
-Open `index.html` in a browser to view the interactive project artifact.
+Open `index.html` in a browser to start the eight-page presentation site.
 
-The page is intentionally static and dependency-free so it can be submitted,
-shared, or hosted anywhere. It combines an illustrative utility economics model
-with static NLR/OEDI end-use load data and static WattShift tariff outputs.
+The pages are intentionally static and dependency-free so they can be submitted,
+shared, or hosted anywhere. The interactive Single Price Results and Parallel Options Results pages combine
+an illustrative utility economics model with static NLR/OEDI end-use load data
+and static WattShift tariff outputs.
 
 ## File structure
 
-- `index.html`: static markup and section structure.
-- `phase2.html`: separate optional-rate choice / adverse-selection extension.
-- `phase3.html`: separate WTP calibration lab built from Nathanael's demand
-  curve files.
+- `index.html`: Summary / Intro page and eight-page navigation map.
+- `wtp-segmentation.html`: WTP + Segmentation calibration page built from the
+  demand-curve source files.
+- `optimization-model.html`: model objective, variables, and constraints.
+- `implementation-validation.html`: implementation and validation narrative.
+- `phase1.html`: interactive single-price-results dashboard.
+- `phase2.html`: interactive parallel-options-results / adverse-selection page.
+- `limitations-future-work.html`: caveats and extension paths.
+- `final-takeaway.html`: closing recommendation.
+- `phase3.html`: compatibility redirect to `wtp-segmentation.html`.
 - `styles.css`: design tokens, layout, responsive rules, chart containers, and
   control styling.
 - `profiles.js`: generated 100-profile building-demand ensemble used to vary
   hourly load shape while preserving the baseline monthly usage level.
 - `app.js`: embedded data, tariff calibration, customer/device response models,
   chart renderers, controls, and CSV export logic.
-- `phase2.js`: standalone Phase 2 model for switchers, fixed-rate stayers,
+- `phase2.js`: standalone parallel-options model for switchers, fixed-rate stayers,
   revenue leakage, rebalancing pressure, and segment-level opt-in behavior.
-- `phase3-data.js` and `phase3.js`: generated WTP data plus the Phase 3
-  appendix charts and controls.
+- `phase3-data.js` and `phase3.js`: generated WTP data plus the calibration
+  charts and controls.
 - `data/`: static source and seed CSV/JSON files used for downloads and audit.
 - `scripts/`: one-off data build/pull utilities for regenerating static inputs.
 
-The first screen is framed as a utility-board case study: TOU and
+The site follows the presentation structure in eight named pages: Summary /
+Intro, WTP + Segmentation, Optimization Model, Implementation, Single Price Results,
+Parallel Options Results, Limitations, and Takeaway. The Single Price Results screen is framed as a utility-board case
+study: TOU and
 demand-charge tariffs are calibrated to be approximately revenue-neutral for
 an all-inelastic baseline, then the dashboard tests how that neutrality evolves
 as smart thermostat and battery adoption expands. The core result is that a
@@ -53,13 +63,13 @@ changes.
 
 ## Phase boundary
 
-This dashboard is Phase 1: a universal-rate comparison where flat, TOU, and
+`phase1.html` is Single Price Results: a universal-rate comparison where flat, TOU, and
 demand-charge tariffs are each applied to the same portfolio mix. It does not
 model customers choosing among parallel fixed-rate and optional TOU/demand
 plans.
 
 Population leakage and adverse selection from optional rate choice belong in a
-separate Phase 2 page or model. That extension should track switchers versus
+separate Parallel Options Results page or model. That extension should track switchers versus
 fixed-rate stayers, revenue leakage, cost shift, and bill-protection guardrails
 without changing the current page's core KPIs.
 
@@ -75,7 +85,7 @@ For each candidate, the tariff is first calibrated to match the passive
 flat-rate filing baseline. The model then applies the current population mix,
 the device-response assumptions, and 100 normalized building-demand profiles,
 computing portfolio revenue, energy cost, capacity cost, gross margin, total
-kWh, and peak kW. The capacity screen uses Nathanael's `Capacity.mlx` estimate
+kWh, and peak kW. The capacity screen uses the source `Capacity.mlx` estimate
 that 68 kWh in 15 minutes equals 272 kW for the 100-building source portfolio,
 scaled to the 10,000-home case-study population. The objective is:
 
@@ -183,7 +193,7 @@ energy total before being used in economics calculations. This preserves the
 $164/month flat-rate baseline while adding customer-level peak and shape
 diversity.
 
-The optimization layer uses Nathanael's `Analysis` files for capacity and
+The optimization layer uses the source `Analysis` files for capacity and
 future WTP calibration rather than browser-loaded dependencies:
 
 - `demand_curve.xlsx`: 100 building-level linear demand curves.
@@ -192,15 +202,15 @@ future WTP calibration rather than browser-loaded dependencies:
 - `Capacity.mlx`: portfolio peak screen; 68 kWh per 15 minutes = 272 kW for
   the 100-building source portfolio.
 
-Phase 1/2 dashboard economics keep the current class-story boundary: passive
+Single-price and parallel-options dashboard economics keep the current class-story boundary: passive
 loads remain inelastic, elastic non-controlled loads use a transparent bounded
 shift heuristic, and automated devices respond to price/capacity signals. The
-building-level WTP curve is stored in `app.js` but disabled as a Phase 3
-extension so it does not blur the current device-adoption case study. Automated
+building-level WTP curve is summarized on the WTP + Segmentation page and used
+to explain how effective prices translate into demand response. Automated
 batteries are tested against the same portfolio-shaped peak used in the
 economics table.
 
-Open `phase3.html` to inspect the full WTP layer: energy price, capacity charge,
+Open `wtp-segmentation.html` to inspect the full WTP layer: energy price, capacity charge,
 raw-vs-bounded demand curve mode, monthly revenue frontier, demand response
 curve, building scatter, capacity screen, and building-level output table.
 

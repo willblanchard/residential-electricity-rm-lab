@@ -121,6 +121,14 @@ function signedMoney(value) {
   return value > 0 ? `+${formatted}` : `-${formatted}`;
 }
 
+function signedCompactMoney(value) {
+  if (Math.abs(value) < 0.5) return "$0";
+  const sign = value > 0 ? "+" : "-";
+  const magnitude = Math.abs(value);
+  if (magnitude >= 1000) return `${sign}$${(magnitude / 1000).toFixed(1)}k`;
+  return `${sign}${money.format(magnitude)}`;
+}
+
 function availablePlans() {
   if (state.menu === "tou") return ["tou"];
   if (state.menu === "demand") return ["demand"];
@@ -298,6 +306,7 @@ function renderLeakageChart(rows) {
   const plotHeight = height - pad.top - pad.bottom;
   const zeroY = pad.top + plotHeight / 2;
   const maxAbs = Math.max(1, ...values.map((item) => Math.abs(item.value))) * 1.22;
+  const yFor = (value) => zeroY - (value / maxAbs) * (plotHeight / 2);
   const barWidth = 118;
   const gap = 72;
   const x0 = 132;
@@ -306,7 +315,7 @@ function renderLeakageChart(rows) {
     .map((item, index) => {
       const x = x0 + index * (barWidth + gap);
       const barHeight = (Math.abs(item.value) / maxAbs) * (plotHeight / 2);
-      const y = item.value >= 0 ? zeroY - barHeight : zeroY;
+      const y = item.value >= 0 ? yFor(item.value) : zeroY;
       const labelY = item.value >= 0 ? y - 10 : y + barHeight + 20;
       return `
         <rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${barHeight.toFixed(1)}" rx="6" fill="${item.color}" />
@@ -315,10 +324,19 @@ function renderLeakageChart(rows) {
       `;
     })
     .join("");
+  const yTicks = [-maxAbs, -maxAbs / 2, 0, maxAbs / 2, maxAbs]
+    .map((value) => {
+      const y = yFor(value);
+      return `
+        <line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${Math.abs(value) < 1 ? "#aab6bd" : "#d9e0e4"}" stroke-width="${Math.abs(value) < 1 ? "1.4" : "1"}" />
+        <text x="${pad.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="#64717b" font-size="10" font-weight="700">${signedCompactMoney(value)}</text>
+      `;
+    })
+    .join("");
 
   svg.innerHTML = `
     <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
-    <line x1="${pad.left}" x2="${width - pad.right}" y1="${zeroY}" y2="${zeroY}" stroke="#aab6bd" stroke-width="1.4" />
+    ${yTicks}
     <line x1="${pad.left}" x2="${pad.left}" y1="${pad.top}" y2="${height - pad.bottom}" stroke="#d9e0e4" />
     <text x="${pad.left}" y="22" fill="#172026" font-size="13" font-weight="820">Change versus all-fixed baseline</text>
     <text x="${pad.left - 10}" y="${pad.top + 5}" text-anchor="end" fill="#64717b" font-size="11" font-weight="720">better</text>
@@ -331,11 +349,21 @@ function renderSelectionChart(rows) {
   const svg = document.getElementById("phase2-selection-chart");
   const width = 620;
   const height = 420;
-  const pad = { top: 28, right: 38, bottom: 36, left: 156 };
+  const pad = { top: 28, right: 38, bottom: 58, left: 156 };
   const chartWidth = width - pad.left - pad.right;
   const rowGap = 10;
   const rowHeight = 32;
   const maxHomes = Math.max(...rows.map((row) => row.homes));
+  const xFor = (homes) => pad.left + (homes / maxHomes) * chartWidth;
+  const xTicks = [0, maxHomes / 2, maxHomes]
+    .map((homes) => {
+      const x = xFor(homes);
+      return `
+        <line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${height - pad.bottom}" y2="${height - pad.bottom + 5}" stroke="#aab6bd" />
+        <text x="${x.toFixed(1)}" y="${height - pad.bottom + 18}" text-anchor="middle" fill="#64717b" font-size="10" font-weight="700">${num.format(homes)}</text>
+      `;
+    })
+    .join("");
   const groups = rows
     .map((row, index) => {
       const y = pad.top + index * (rowHeight + rowGap);
@@ -356,7 +384,9 @@ function renderSelectionChart(rows) {
   svg.innerHTML = `
     <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
     ${groups}
-    <text x="${pad.left}" y="${height - 12}" fill="#64717b" font-size="11" font-weight="720">Switching homes are labeled at right; bar length is total segment size.</text>
+    <line x1="${pad.left}" x2="${width - pad.right}" y1="${height - pad.bottom}" y2="${height - pad.bottom}" stroke="#aab6bd" />
+    ${xTicks}
+    <text x="${pad.left}" y="${height - 12}" fill="#64717b" font-size="11" font-weight="720">Total segment homes; switching homes are labeled at right.</text>
   `;
 }
 
