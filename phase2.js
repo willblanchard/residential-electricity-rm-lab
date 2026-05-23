@@ -184,14 +184,40 @@ function signalScale(plan, overrides = state) {
   return clamp(overrides.demandCharge / 20, 0, 1.7);
 }
 
+function demandSavingsScale(overrides = state) {
+  const charge = Number(overrides.demandCharge || 0);
+  const rawSignal = charge / 20;
+  const peakBillRiskDiscount = Math.exp(-Math.max(0, charge - 7) / 8);
+  return clamp(rawSignal * peakBillRiskDiscount, 0, 0.7);
+}
+
+function demandCostAvoidanceScale(overrides = state) {
+  const charge = Number(overrides.demandCharge || 0);
+  const saturation = 1 - Math.exp(-charge / 9);
+  return clamp(saturation / (1 - Math.exp(-20 / 9)), 0, 1.12);
+}
+
+function demandBillRiskPremium(profile, overrides = state) {
+  if (!profile) return 0;
+  const charge = Number(overrides.demandCharge || 0);
+  const riskExposure = Math.max(0, charge - 7);
+  const friction = 0.68 + 0.34 * profile.thresholdMultiplier;
+  return riskExposure * friction;
+}
+
 function planOutcome(segment, plan, profile = null, overrides = state) {
-  const scale = signalScale(plan, overrides);
+  const savingsScale =
+    plan === "demand" ? demandSavingsScale(overrides) : signalScale(plan, overrides);
+  const costAvoidanceScale =
+    plan === "demand" ? demandCostAvoidanceScale(overrides) : signalScale(plan, overrides);
   const fit = profile ? profile.fit[plan] : 1;
   const response = profile ? profile.response[plan] : 1;
-  const customerSavings = segment.savings[plan] * scale * fit;
+  const customerSavings =
+    segment.savings[plan] * savingsScale * fit -
+    (plan === "demand" ? demandBillRiskPremium(profile, overrides) : 0);
   const costAvoided = Math.max(
     0,
-    segment.avoided[plan] * Math.pow(scale, 0.88) * response,
+    segment.avoided[plan] * Math.pow(costAvoidanceScale, 0.88) * response,
   );
   return {
     plan,
@@ -644,7 +670,7 @@ function renderFrontierChart(kind) {
   const holdLabel =
     kind === "tou"
       ? `Demand price held at ${formatDemand(state.demandCharge)}/kW-mo`
-      : `TOU held at ${formatSpread(state.spread)}x`;
+      : `TOU price ratio held at ${formatSpread(state.spread)}x`;
 
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.innerHTML = `
@@ -1084,6 +1110,10 @@ function renderTable(rows) {
 
 function updateControlLabels() {
   document.getElementById("phase2-spread-value").textContent = state.spread.toFixed(1);
+  document.getElementById("phase2-spread").value = state.spread;
+  document.getElementById("phase2-frontier-spread-value").textContent =
+    state.spread.toFixed(1);
+  document.getElementById("phase2-frontier-spread").value = state.spread;
   document.getElementById("phase2-demand-value").textContent = state.demandCharge.toFixed(0);
   document.getElementById("phase2-demand").value = state.demandCharge;
   document.getElementById("phase2-frontier-demand-value").textContent =
@@ -1222,6 +1252,11 @@ document.getElementById("phase2-menu").addEventListener("click", (event) => {
 });
 
 document.getElementById("phase2-spread").addEventListener("input", (event) => {
+  state.spread = Number(event.target.value);
+  render();
+});
+
+document.getElementById("phase2-frontier-spread").addEventListener("input", (event) => {
   state.spread = Number(event.target.value);
   render();
 });
