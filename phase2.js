@@ -46,8 +46,6 @@ const segmentDefs = [
     device: "No energy devices",
     deviceShort: "None",
     homes: 20,
-    peakKw: 4.7,
-    controllableKw: 0,
   },
   {
     id: "passive-thermostat",
@@ -56,8 +54,6 @@ const segmentDefs = [
     device: "Just thermostat",
     deviceShort: "Thermostat",
     homes: 10,
-    peakKw: 4.4,
-    controllableKw: 0.55,
   },
   {
     id: "passive-battery",
@@ -66,8 +62,6 @@ const segmentDefs = [
     device: "Just battery",
     deviceShort: "Battery",
     homes: 5,
-    peakKw: 4.9,
-    controllableKw: 1.25,
   },
   {
     id: "passive-both",
@@ -76,8 +70,6 @@ const segmentDefs = [
     device: "Thermostat + battery",
     deviceShort: "Both",
     homes: 10,
-    peakKw: 4.8,
-    controllableKw: 1.55,
   },
   {
     id: "elastic-none",
@@ -86,8 +78,6 @@ const segmentDefs = [
     device: "No energy devices",
     deviceShort: "None",
     homes: 15,
-    peakKw: 4.3,
-    controllableKw: 0.25,
   },
   {
     id: "elastic-thermostat",
@@ -96,8 +86,6 @@ const segmentDefs = [
     device: "Just thermostat",
     deviceShort: "Thermostat",
     homes: 15,
-    peakKw: 4.2,
-    controllableKw: 0.75,
   },
   {
     id: "elastic-battery",
@@ -106,8 +94,6 @@ const segmentDefs = [
     device: "Just battery",
     deviceShort: "Battery",
     homes: 5,
-    peakKw: 4.6,
-    controllableKw: 1.45,
   },
   {
     id: "elastic-both",
@@ -116,8 +102,6 @@ const segmentDefs = [
     device: "Thermostat + battery",
     deviceShort: "Both",
     homes: 20,
-    peakKw: 4.5,
-    controllableKw: 1.8,
   },
 ];
 
@@ -189,6 +173,8 @@ const householdProfiles = [
   },
 ];
 
+const phase2CaseEconomicsCache = new Map();
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -214,86 +200,79 @@ function availablePlans(overrides = state) {
   return ["tou", "demand"];
 }
 
-function signalScale(plan, overrides = state) {
-  if (plan === "tou") return clamp(overrides.spread - 1, 0, 2.3);
-  return demandResponseStrength(overrides);
+function profileWeightedAverage(selector) {
+  return householdProfiles.reduce((sum, profile) => sum + profile.weight * selector(profile), 0);
 }
 
-function demandResponseStrength(overrides = state) {
-  const charge = Number(overrides.demandCharge || 0);
-  return clamp(1 - Math.exp(-charge / 10), 0, 1);
-}
-
-function demandReferencePeakKw() {
-  const segmentTotal = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
-  return segmentDefs.reduce((segmentSum, segment) => {
-    const segmentWeight = segment.homes / segmentTotal;
-    const profilePeak = householdProfiles.reduce(
-      (profileSum, profile) =>
-        profileSum + profile.weight * segment.peakKw * profile.peakMultiplier,
-      0,
-    );
-    return segmentSum + segmentWeight * profilePeak;
-  }, 0);
-}
-
-function demandEnergyRate(overrides = state) {
-  const charge = Number(overrides.demandCharge || 0);
-  return Math.max(
-    0.02,
-    (base.fixedBill - charge * demandReferencePeakKw()) / base.monthlyKwh,
-  );
-}
-
-function demandPeakAfterResponse(segment, profile = null, overrides = state) {
-  const profilePeakMultiplier = profile ? profile.peakMultiplier : 1;
-  const profileResponse = profile ? profile.response.demand : 1;
-  const baselinePeakKw = segment.peakKw * profilePeakMultiplier;
-  const responseKw =
-    segment.controllableKw * profileResponse * demandResponseStrength(overrides);
-  const peakReductionKw = Math.min(baselinePeakKw * 0.55, responseKw);
-  return Math.max(0.1, baselinePeakKw - peakReductionKw);
-}
-
-function demandPlanOutcome(segment, profile = null, overrides = state) {
-  const demandCharge = Number(overrides.demandCharge || 0);
-  const peakKw = demandPeakAfterResponse(segment, profile, overrides);
-  const bill = base.monthlyKwh * demandEnergyRate(overrides) + demandCharge * peakKw;
-  const customerSavings = base.fixedBill - bill;
-  const response = profile ? profile.response.demand : 1;
-  const responseScale = demandResponseStrength(overrides);
-  const costAvoided = Math.max(
-    0,
-    segment.avoided.demand * Math.pow(responseScale, 0.88) * response,
-  );
+function singleRateScenario(overrides = state) {
+  const model = singleRateModel();
   return {
-    plan: "demand",
-    customerSavings,
-    costAvoided,
-    bill,
-    utilityCost: base.utilityCost - costAvoided,
-    marginDelta: costAvoided - customerSavings,
-    peakKw,
+    ...model.state,
+    spread: overrides.spread,
+    demandCharge: overrides.demandCharge,
+    population: phase2PopulationForSingleRateModel(),
+  };
+}
+
+function singleRateCaseDef(segment) {
+  const caseDef = singleRateModel().populationCases.find((item) => item.id === segment.id);
+  if (!caseDef) throw new Error(`Missing single-rate case ${segment.id}`);
+  return caseDef;
+}
+
+function singleRateCaseEconomics(segment, tariffId, overrides = state) {
+  const scenario = singleRateScenario(overrides);
+  const cacheKey = [
+    segment.id,
+    tariffId,
+    Number(scenario.spread).toFixed(3),
+    Number(scenario.demandCharge).toFixed(3),
+    Number(scenario.thermostat).toFixed(3),
+    Number(scenario.battery).toFixed(3),
+  ].join(";");
+  if (!phase2CaseEconomicsCache.has(cacheKey)) {
+    phase2CaseEconomicsCache.set(
+      cacheKey,
+      singleRateModel().economicsForCase(singleRateCaseDef(segment), tariffId, scenario),
+    );
+  }
+  return phase2CaseEconomicsCache.get(cacheKey);
+}
+
+function singleRateCaseDelta(segment, plan, overrides = state) {
+  const flat = singleRateCaseEconomics(segment, "flat", overrides);
+  const selected = singleRateCaseEconomics(segment, plan, overrides);
+  return {
+    flat,
+    selected,
+    customerSavings: flat.revenue - selected.revenue,
+    costAvoided: flat.totalCost - selected.totalCost,
   };
 }
 
 function planOutcome(segment, plan, profile = null, overrides = state) {
-  if (plan === "demand") return demandPlanOutcome(segment, profile, overrides);
-  const scale = signalScale(plan, overrides);
-  const fit = profile ? profile.fit[plan] : 1;
-  const response = profile ? profile.response[plan] : 1;
-  const customerSavings = segment.savings[plan] * scale * fit;
-  const costAvoided = Math.max(
-    0,
-    segment.avoided[plan] * Math.pow(scale, 0.88) * response,
-  );
+  const baseOutcome = singleRateCaseDelta(segment, plan, overrides);
+  const averageFit = profileWeightedAverage((item) => item.fit[plan]) || 1;
+  const averageResponse = profileWeightedAverage((item) => item.response[plan]) || 1;
+  const fit = profile ? profile.fit[plan] / averageFit : 1;
+  const response = profile ? profile.response[plan] / averageResponse : 1;
+  const customerSavings = baseOutcome.customerSavings * fit;
+  const costAvoided = baseOutcome.costAvoided * response;
   return {
     plan,
     customerSavings,
     costAvoided,
-    bill: base.fixedBill - customerSavings,
-    utilityCost: base.utilityCost - costAvoided,
+    bill: baseOutcome.flat.revenue - customerSavings,
+    utilityCost: baseOutcome.flat.totalCost - costAvoided,
     marginDelta: costAvoided - customerSavings,
+  };
+}
+
+function flatOutcome(segment, overrides = state) {
+  const economics = singleRateCaseEconomics(segment, "flat", overrides);
+  return {
+    bill: economics.revenue,
+    utilityCost: economics.totalCost,
   };
 }
 
@@ -342,6 +321,7 @@ function rowsForState(overrides = state) {
   const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
   return segmentDefs.map((segment) => {
     const homes = (segment.homes / denominator) * portfolioSize;
+    const flat = flatOutcome(segment, overrides);
     const planHomes = { fixed: 0, tou: 0, demand: 0 };
     const negativeMarginPlanHomes = { tou: 0, demand: 0 };
     const marginGroups = {
@@ -359,8 +339,8 @@ function rowsForState(overrides = state) {
       );
 
       planHomes.fixed += profileHomes * choice.shares.fixed;
-      revenue += profileHomes * choice.shares.fixed * base.fixedBill;
-      utilityCost += profileHomes * choice.shares.fixed * base.utilityCost;
+      revenue += profileHomes * choice.shares.fixed * flat.bill;
+      utilityCost += profileHomes * choice.shares.fixed * flat.utilityCost;
 
       ["tou", "demand"].forEach((plan) => {
         const planShare = choice.shares[plan] || 0;
@@ -381,8 +361,8 @@ function rowsForState(overrides = state) {
 
     const stayHomes = planHomes.fixed;
     const switchHomes = planHomes.tou + planHomes.demand;
-    const baselineRevenue = homes * base.fixedBill;
-    const baselineCost = homes * base.utilityCost;
+    const baselineRevenue = homes * flat.bill;
+    const baselineCost = homes * flat.utilityCost;
     const leakage = baselineRevenue - revenue;
     const costAvoidedTotal = baselineCost - utilityCost;
     const customerSavings = switchHomes > 0 ? leakage / switchHomes : 0;
@@ -553,12 +533,7 @@ function phase2PopulationForSingleRateModel() {
 
 function singleRateReferenceRows(kind, overrides = state) {
   const model = singleRateModel();
-  const scenario = {
-    ...model.state,
-    spread: overrides.spread,
-    demandCharge: overrides.demandCharge,
-    population: phase2PopulationForSingleRateModel(),
-  };
+  const scenario = singleRateScenario(overrides);
   const rows = model.sensitivityRows(kind, scenario);
   return normalizeSingleRateReferenceRows(
     kind === "demand" ? rows.filter((row) => row.x <= 30) : rows,
@@ -589,12 +564,15 @@ function interpolateSingleRateReference(kind, x, overrides = state) {
 }
 
 function singleRateRequiredPlan(plan, overrides = state) {
+  const model = singleRateModel();
   const kind = plan === "tou" ? "tou" : "demand";
   const x = kind === "tou" ? Number(overrides.spread) : Number(overrides.demandCharge);
+  const scenario = singleRateScenario(overrides);
   const reference = interpolateSingleRateReference(kind, x, overrides);
 
-  const baselineRevenue = base.fixedBill * portfolioSize;
-  const baselineCost = base.utilityCost * portfolioSize;
+  const flat = model.portfolioEconomics("flat", scenario).total;
+  const baselineRevenue = flat.revenue;
+  const baselineCost = flat.totalCost;
   const costAvoided = reference.marginDelta - reference.revenueDelta;
 
   return {
