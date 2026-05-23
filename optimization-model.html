@@ -74,6 +74,57 @@
           </article>
         </section>
 
+        <section class="panel" aria-labelledby="report-baseline-title">
+          <div class="table-heading">
+            <div>
+              <h2 id="report-baseline-title">Report baseline LP results</h2>
+            </div>
+            <p>
+              The written report solves one LP for each universal rate
+              structure. Prices converge near 27 cents/kWh and peak demand
+              remains far below the 272 kW capacity screen, suggesting the
+              revenue maximum is driven more by monopoly demand curves than by
+              binding capacity.
+            </p>
+          </div>
+          <div class="segment-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rate structure</th>
+                  <th>Optimal price(s)</th>
+                  <th>Peak demand</th>
+                  <th>Annual revenue</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Flat rate</td>
+                  <td>$0.2755/kWh</td>
+                  <td>161.8 kW</td>
+                  <td>$140,800</td>
+                  <td>Simple volumetric recovery with no time signal.</td>
+                </tr>
+                <tr>
+                  <td>Energy plus capacity</td>
+                  <td>$0.2685/kWh + $12.2067/kW</td>
+                  <td>162.6 kW</td>
+                  <td>$140,880</td>
+                  <td>Moves some recovery into coincident-peak usage.</td>
+                </tr>
+                <tr>
+                  <td>Time of use</td>
+                  <td>0.2747-0.2769 $/kWh by 4-hour block</td>
+                  <td>162.2 kW</td>
+                  <td>$140,810</td>
+                  <td>Creates a mild hourly signal while preserving similar revenue.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="optimization-visuals narrative-card" aria-labelledby="optimization-visuals-title">
           <div class="lp-section-head">
             <div>

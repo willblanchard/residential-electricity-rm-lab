@@ -49,22 +49,42 @@
         <section class="story-grid" aria-label="limitation categories">
           <article class="story-card">
             <span>1</span>
-            <h2>Customer behavior</h2>
+            <h2>Simulated customer data</h2>
             <p>
-              Load response is simulated from NLR/OEDI profiles and normalized
-              building-demand shapes, not observed enrollment and response data.
+              ResStock/NLR load profiles are modeled rather than observed
+              utility meter data, so actual behavior under unusual weather or
+              prices may differ.
             </p>
           </article>
           <article class="story-card">
             <span>2</span>
-            <h2>WTP calibration</h2>
+            <h2>One-year demand sample</h2>
             <p>
-              Income and building-level demand curves approximate willingness
-              to pay, but need empirical calibration.
+              The analysis uses one simulated year. A longer historical meter
+              record would better estimate rare peaks and customer-specific
+              variability.
             </p>
           </article>
           <article class="story-card">
             <span>3</span>
+            <h2>Annual bill behavior</h2>
+            <p>
+              Customers respond to annual cost in the source model, not to
+              seasonal, hourly, or peak-period bill salience. That weakens the
+              modeled value of segmentation.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>4</span>
+            <h2>WTP scaling</h2>
+            <p>
+              The WTP curves and ResStock consumption data live on different
+              scales, so the model applies a scaling bridge before interpreting
+              demand response.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>5</span>
             <h2>Regulatory realism</h2>
             <p>
               Bill protection, fairness constraints, and filing politics are
@@ -72,7 +92,7 @@
             </p>
           </article>
           <article class="story-card">
-            <span>4</span>
+            <span>6</span>
             <h2>Cost proxy</h2>
             <p>
               Utility costs use a transparent wholesale-energy plus
@@ -93,16 +113,20 @@
           </div>
           <div class="case-points">
             <div>
-              <strong>Better elasticity</strong>
-              <span>Estimate segment-specific price response from real customer data.</span>
+              <strong>Customer plan choice</strong>
+              <span>Let customers self-select into rate plans and test adverse selection against the default fixed-rate pool.</span>
             </div>
             <div>
-              <strong>Richer menus</strong>
-              <span>Test bill protection, dynamic pricing, and hybrid fixed-plus-variable rates.</span>
+              <strong>Appliance-specific rates</strong>
+              <span>Separate rooftop solar, batteries, EVs, and controllable HVAC because each has a different load shape.</span>
             </div>
             <div>
-              <strong>Fairness screens</strong>
-              <span>Add distributional metrics before recommending a public-facing tariff.</span>
+              <strong>Commercial extension</strong>
+              <span>Add commercial customers to capture system-wide cost allocation beyond the residential portfolio.</span>
+            </div>
+            <div>
+              <strong>Implementation costs</strong>
+              <span>Include billing upgrades, customer communication, metering needs, and transition costs in the optimization.</span>
             </div>
           </div>
         </section>

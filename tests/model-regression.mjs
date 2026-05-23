@@ -296,6 +296,35 @@ assert.equal(
   Math.round(singleRatePoint("demand", 20).marginDelta),
   "phase2 Required demand should reuse the single-price demand margin curve",
 );
+
+const phase2RequiredTou = phase2.evaluateRequiredPlan("tou", {
+  ...phase2.state,
+  spread: 2,
+});
+assert.equal(
+  Math.round(phase2RequiredTou.baselineRevenue),
+  Math.round(model.portfolioEconomics("flat", model.state).total.revenue),
+  "phase2 required plans should use the single-price flat baseline",
+);
+
+const optionalTouNoSignal = phase2.evaluateOptionalMenu("tou", {
+  ...phase2.state,
+  spread: 1,
+});
+const optionalTouCurrent = phase2.evaluateOptionalMenu("tou", {
+  ...phase2.state,
+  spread: 2,
+});
+assert.equal(
+  Math.round(optionalTouNoSignal.switchHomes),
+  0,
+  "optional TOU should have no switchers when the shared model has no TOU savings",
+);
+assert.ok(
+  optionalTouCurrent.switchHomes > optionalTouNoSignal.switchHomes,
+  "optional plan adoption should be recalculated from modeled savings at each price point",
+);
+
 assert.equal(
   phase2Source.includes("single-rate-reference-frame"),
   false,
@@ -306,3 +335,17 @@ assert.equal(
   false,
   "phase2 should fail closed instead of falling back to the opt-in proxy for required plans",
 );
+for (const stalePhase2Proxy of [
+  "segment.savings",
+  "segment.avoided",
+  "demandEnergyRate",
+  "demandPlanOutcome",
+  "demandResponseStrength",
+  "demandPeakAfterResponse",
+]) {
+  assert.equal(
+    phase2Source.includes(stalePhase2Proxy),
+    false,
+    `${stalePhase2Proxy} should stay out of phase2 economics`,
+  );
+}
