@@ -9,35 +9,24 @@ const profileJson = profilesSource.match(
 assert.ok(profileJson, "profiles.js should expose buildingDemandProfiles");
 
 const appSource = fs.readFileSync("app.js", "utf8");
-const modelSource = appSource.split("function download")[0];
 const context = {
   console,
+  document: {
+    getElementById() {
+      return null;
+    },
+    querySelectorAll() {
+      return [];
+    },
+  },
   globalThis: {
     buildingDemandProfiles: JSON.parse(profileJson),
   },
 };
 context.window = context.globalThis;
 vm.createContext(context);
-vm.runInContext(
-  `${modelSource}
-  globalThis.__model = {
-    demandProfileEnsemble,
-	    state,
-	    populationCases,
-	    optimizationConfig,
-	    nathanLpCalibration,
-	    economicsForCase,
-	    portfolioEconomics,
-	    homeRowsForCase,
-	    hvacResponse,
-	    batteryDispatchForLoad,
-	    batteryDispatchEconomics,
-	    optimizeTariff,
-	    optimizationCsv,
-  };`,
-  context,
-);
-const model = context.globalThis.__model;
+vm.runInContext(appSource, context);
+const model = context.window.utilitySingleRateModel;
 
 assert.equal(model.demandProfileEnsemble.length, 100);
 assert.equal(model.nathanLpCalibration.buildingCount, 100);
@@ -277,3 +266,43 @@ const forbiddenLegacyNames = [
 for (const name of forbiddenLegacyNames) {
   assert.equal(appSource.includes(name), false, `${name} should stay removed`);
 }
+
+const phase2Source = fs.readFileSync("phase2.js", "utf8");
+const phase2ModelSource = phase2Source.slice(
+  0,
+  phase2Source.indexOf('\ndocument.getElementById("phase2-menu")'),
+);
+vm.runInContext(
+  `${phase2ModelSource}
+  globalThis.__phase2Model = {
+    state,
+    evaluateRequiredPlan,
+    evaluateOptionalMenu,
+  };`,
+  context,
+);
+const phase2 = context.globalThis.__phase2Model;
+const singleRatePoint = (kind, x) =>
+  model.sensitivityRows(kind, model.state).find((row) => row.x === x);
+assert.equal(
+  Math.round(phase2.evaluateRequiredPlan("tou", { ...phase2.state, spread: 2 }).marginDelta),
+  Math.round(singleRatePoint("tou", 2).marginDelta),
+  "phase2 Required TOU should reuse the single-price TOU margin curve",
+);
+assert.equal(
+  Math.round(
+    phase2.evaluateRequiredPlan("demand", { ...phase2.state, demandCharge: 20 }).marginDelta,
+  ),
+  Math.round(singleRatePoint("demand", 20).marginDelta),
+  "phase2 Required demand should reuse the single-price demand margin curve",
+);
+assert.equal(
+  phase2Source.includes("single-rate-reference-frame"),
+  false,
+  "phase2 should not depend on a hidden reference iframe",
+);
+assert.equal(
+  phase2Source.includes("evaluateRequiredPlanFallback"),
+  false,
+  "phase2 should fail closed instead of falling back to the opt-in proxy for required plans",
+);

@@ -36,10 +36,11 @@ const state = {
   adoption: 0.75,
 };
 
-let singleRateRequiredReferences = null;
+const populationStorageKey = "utility-rm-population-allocation-v1";
 
 const segmentDefs = [
   {
+    id: "passive-none",
     behavior: "Passive / inelastic",
     behaviorShort: "Passive",
     device: "No energy devices",
@@ -47,10 +48,9 @@ const segmentDefs = [
     homes: 20,
     peakKw: 4.7,
     controllableKw: 0,
-    savings: { tou: 0, demand: -3 },
-    avoided: { tou: 0, demand: 0 },
   },
   {
+    id: "passive-thermostat",
     behavior: "Passive / inelastic",
     behaviorShort: "Passive",
     device: "Just thermostat",
@@ -58,10 +58,9 @@ const segmentDefs = [
     homes: 10,
     peakKw: 4.4,
     controllableKw: 0.55,
-    savings: { tou: 6, demand: 8 },
-    avoided: { tou: 8, demand: 15 },
   },
   {
+    id: "passive-battery",
     behavior: "Passive / inelastic",
     behaviorShort: "Passive",
     device: "Just battery",
@@ -69,10 +68,9 @@ const segmentDefs = [
     homes: 5,
     peakKw: 4.9,
     controllableKw: 1.25,
-    savings: { tou: 10, demand: 18 },
-    avoided: { tou: 14, demand: 35 },
   },
   {
+    id: "passive-both",
     behavior: "Passive / inelastic",
     behaviorShort: "Passive",
     device: "Thermostat + battery",
@@ -80,10 +78,9 @@ const segmentDefs = [
     homes: 10,
     peakKw: 4.8,
     controllableKw: 1.55,
-    savings: { tou: 17, demand: 25 },
-    avoided: { tou: 25, demand: 48 },
   },
   {
+    id: "elastic-none",
     behavior: "Somewhat elastic",
     behaviorShort: "Elastic",
     device: "No energy devices",
@@ -91,10 +88,9 @@ const segmentDefs = [
     homes: 15,
     peakKw: 4.3,
     controllableKw: 0.25,
-    savings: { tou: 4, demand: 2 },
-    avoided: { tou: 6, demand: 8 },
   },
   {
+    id: "elastic-thermostat",
     behavior: "Somewhat elastic",
     behaviorShort: "Elastic",
     device: "Just thermostat",
@@ -102,10 +98,9 @@ const segmentDefs = [
     homes: 15,
     peakKw: 4.2,
     controllableKw: 0.75,
-    savings: { tou: 12, demand: 10 },
-    avoided: { tou: 18, demand: 24 },
   },
   {
+    id: "elastic-battery",
     behavior: "Somewhat elastic",
     behaviorShort: "Elastic",
     device: "Just battery",
@@ -113,10 +108,9 @@ const segmentDefs = [
     homes: 5,
     peakKw: 4.6,
     controllableKw: 1.45,
-    savings: { tou: 17, demand: 24 },
-    avoided: { tou: 28, demand: 52 },
   },
   {
+    id: "elastic-both",
     behavior: "Somewhat elastic",
     behaviorShort: "Elastic",
     device: "Thermostat + battery",
@@ -124,10 +118,28 @@ const segmentDefs = [
     homes: 20,
     peakKw: 4.5,
     controllableKw: 1.8,
-    savings: { tou: 26, demand: 34 },
-    avoided: { tou: 42, demand: 68 },
   },
 ];
+
+function restorePopulationAllocation() {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = window.localStorage?.getItem(populationStorageKey);
+    if (!stored) return;
+    const savedPopulation = JSON.parse(stored);
+    if (!Array.isArray(savedPopulation)) return;
+
+    segmentDefs.forEach((segment) => {
+      const savedBucket = savedPopulation.find((item) => item.id === segment.id);
+      const homes = Number(savedBucket?.homes);
+      if (Number.isFinite(homes)) segment.homes = clamp(homes, 0, 100);
+    });
+  } catch {
+    // Keep the default class-project portfolio if browser storage is unavailable.
+  }
+}
+
+restorePopulationAllocation();
 
 const householdProfiles = [
   {
@@ -524,8 +536,37 @@ function normalizeSingleRateReferenceRows(rows) {
     .sort((left, right) => left.x - right.x);
 }
 
-function interpolateSingleRateReference(kind, x) {
-  const rows = singleRateRequiredReferences?.[kind];
+function singleRateModel() {
+  const model = typeof window !== "undefined" ? window.utilitySingleRateModel : null;
+  if (!model?.sensitivityRows || !model?.state) {
+    throw new Error("Single-rate model must load before phase2 required references render.");
+  }
+  return model;
+}
+
+function phase2PopulationForSingleRateModel() {
+  return segmentDefs.map((segment) => ({
+    id: segment.id,
+    homes: segment.homes,
+  }));
+}
+
+function singleRateReferenceRows(kind, overrides = state) {
+  const model = singleRateModel();
+  const scenario = {
+    ...model.state,
+    spread: overrides.spread,
+    demandCharge: overrides.demandCharge,
+    population: phase2PopulationForSingleRateModel(),
+  };
+  const rows = model.sensitivityRows(kind, scenario);
+  return normalizeSingleRateReferenceRows(
+    kind === "demand" ? rows.filter((row) => row.x <= 30) : rows,
+  );
+}
+
+function interpolateSingleRateReference(kind, x, overrides = state) {
+  const rows = singleRateReferenceRows(kind, overrides);
   if (!rows?.length) return null;
   if (x <= rows[0].x) return rows[0];
   const last = rows[rows.length - 1];
@@ -550,8 +591,7 @@ function interpolateSingleRateReference(kind, x) {
 function singleRateRequiredPlan(plan, overrides = state) {
   const kind = plan === "tou" ? "tou" : "demand";
   const x = kind === "tou" ? Number(overrides.spread) : Number(overrides.demandCharge);
-  const reference = interpolateSingleRateReference(kind, x);
-  if (!reference) return null;
+  const reference = interpolateSingleRateReference(kind, x, overrides);
 
   const baselineRevenue = base.fixedBill * portfolioSize;
   const baselineCost = base.utilityCost * portfolioSize;
@@ -578,73 +618,8 @@ function singleRateRequiredPlan(plan, overrides = state) {
   };
 }
 
-function initializeSingleRateReferenceFrame() {
-  if (typeof document === "undefined") return;
-  const frame = document.createElement("iframe");
-  frame.title = "Single-rate reference model";
-  frame.src = "single-rate-reference-frame.html";
-  frame.setAttribute("aria-hidden", "true");
-  frame.style.display = "none";
-  frame.addEventListener("load", () => {
-    try {
-      const model = frame.contentWindow?.utilitySingleRateModel;
-      if (!model?.sensitivityRows) return;
-      singleRateRequiredReferences = {
-        tou: normalizeSingleRateReferenceRows(model.sensitivityRows("tou")),
-        demand: normalizeSingleRateReferenceRows(
-          model.sensitivityRows("demand").filter((row) => row.x <= 30),
-        ),
-      };
-      render();
-    } catch (error) {
-      console.warn("Single-rate reference model could not be loaded.", error);
-    }
-  });
-  document.body.appendChild(frame);
-}
-
-function evaluateRequiredPlanFallback(plan, overrides = state) {
-  const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
-  let baselineRevenue = 0;
-  let baselineCost = 0;
-  let revenue = 0;
-  let utilityCost = 0;
-
-  segmentDefs.forEach((segment) => {
-    const homes = (segment.homes / denominator) * portfolioSize;
-    baselineRevenue += homes * base.fixedBill;
-    baselineCost += homes * base.utilityCost;
-
-    householdProfiles.forEach((profile) => {
-      const profileHomes = homes * profile.weight;
-      const outcome = planOutcome(segment, plan, profile, overrides);
-      revenue += profileHomes * outcome.bill;
-      utilityCost += profileHomes * outcome.utilityCost;
-    });
-  });
-
-  const total = {
-    baselineRevenue,
-    baselineCost,
-    revenue,
-    utilityCost,
-    leakage: baselineRevenue - revenue,
-    costAvoided: baselineCost - utilityCost,
-    marginDelta: revenue - utilityCost - (baselineRevenue - baselineCost),
-    switchHomes: portfolioSize,
-  };
-
-  return scenarioTotals(total, {
-    type: "required",
-    plan,
-    label: plan === "tou" ? "Required TOU" : "Required demand",
-    spread: overrides.spread,
-    demandCharge: overrides.demandCharge,
-  });
-}
-
 function evaluateRequiredPlan(plan, overrides = state) {
-  return singleRateRequiredPlan(plan, overrides) || evaluateRequiredPlanFallback(plan, overrides);
+  return singleRateRequiredPlan(plan, overrides);
 }
 
 function toneFor(value) {
@@ -1436,5 +1411,4 @@ document.getElementById("phase2-adoption").addEventListener("input", (event) => 
 
 document.getElementById("download-phase2").addEventListener("click", downloadCsv);
 
-initializeSingleRateReferenceFrame();
 render();

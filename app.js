@@ -1,3 +1,4 @@
+(() => {
 const tariffs = [
   {
     id: "flat",
@@ -3290,11 +3291,39 @@ function bootstrapPopulationPage() {
   bindPopulationInputEvents(populationInputs, renderPopulationTotal);
 }
 
+if (typeof window !== "undefined") {
+  const utilitySingleRateModel = {
+    allOptimizations,
+    batteryDispatchEconomics,
+    batteryDispatchForLoad,
+    demandProfileEnsemble,
+    economicsForCase,
+    homeRowsForCase,
+    hvacResponse,
+    nathanLpCalibration,
+    optimizationConfig,
+    optimizationCsv,
+    optimizeTariff,
+    optimizerDecisionLabel,
+    portfolioEconomics,
+    populationCases,
+    sensitivityRows,
+    signedCompactMoney,
+    state,
+    tariffById,
+  };
+  window.utilitySingleRateModel = utilitySingleRateModel;
+  Object.assign(window, {
+    allOptimizations,
+    optimizationConfig,
+    optimizerDecisionLabel,
+    portfolioEconomics,
+    signedCompactMoney,
+    state,
+    tariffById,
+  });
+}
+
 bootstrapPopulationPage();
 bootstrapDashboardPage();
-
-if (typeof window !== "undefined") {
-  window.utilitySingleRateModel = {
-    sensitivityRows,
-  };
-}
+})();
