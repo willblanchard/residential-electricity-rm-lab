@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>WTP + Segmentation | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260523-costs" />
+    <link rel="stylesheet" href="styles.css?v=20260523-report-charts" />
     <script src="site-header.js?v=20260523-reused-header" defer></script>
   </head>
   <body>
@@ -146,6 +146,18 @@
             </div>
           </div>
         </section>
+
+        <figure class="report-chart report-chart-centered">
+          <img
+            src="assets/report-charts/demand-curves-100-buildings.png"
+            alt="Demand curves for 100 buildings showing annual electricity demand decreasing as electricity price increases."
+          />
+          <figcaption>
+            Source demand curves for the 100 buildings. These curves are the
+            WTP bridge between the report's MATLAB LP and the dashboard's
+            customer-response controls.
+          </figcaption>
+        </figure>
 
         <section class="phase3-kpi-grid" id="phase3-kpis" aria-label="WTP results"></section>
 

@@ -204,6 +204,41 @@ h1 {
   line-height: 1.55;
 }
 
+.report-chart {
+  display: grid;
+  gap: 10px;
+  max-width: 680px;
+  margin: 18px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.report-chart img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #edf1f3;
+  border-radius: 6px;
+}
+
+.report-chart figcaption {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.report-chart-centered {
+  margin: 22px auto 0;
+}
+
+.intro-report-chart {
+  max-width: 560px;
+}
+
 .phase3-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
