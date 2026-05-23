@@ -200,14 +200,18 @@ future WTP calibration rather than browser-loaded dependencies:
   response.
 - `Capacity.mlx`: portfolio peak screen; 68 kWh per 15 minutes = 272 kW for
   the 100-building source portfolio.
+- `FixedRateLP.mlx`: source WTP setup using 10 cents/kWh as the assumed demand-data
+  price before the browser dashboard re-indexes the curve to the 18 cent
+  flat-rate baseline.
 
 Single-price and parallel-options dashboard economics keep the current class-story boundary: passive
 loads remain inelastic, elastic non-controlled loads use a transparent bounded
 shift heuristic, and automated devices respond to price/capacity signals. The
 building-level WTP curve is summarized on the WTP + Segmentation page and used
-to explain how effective prices translate into demand response. Automated
-batteries are tested against the same portfolio-shaped peak used in the
-economics table.
+to explain how effective prices translate into demand response and why the
+elastic segment gets non-controlled flexibility. The active results model does
+not directly apply the raw WTP curve to every load row. Automated batteries are
+tested against the same portfolio-shaped peak used in the economics table.
 
 Open `wtp-segmentation.html` to inspect the full WTP layer: energy price, capacity charge,
 raw-vs-bounded demand curve mode, monthly revenue frontier, demand response

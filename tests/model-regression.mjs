@@ -28,6 +28,9 @@ vm.runInContext(
 	    nathanLpCalibration,
 	    economicsForCase,
 	    portfolioEconomics,
+	    homeRowsForCase,
+	    batteryDispatchForLoad,
+	    batteryDispatchEconomics,
 	    optimizeTariff,
 	    optimizationCsv,
   };`,
@@ -92,13 +95,97 @@ assert.ok(
   "demand-charge battery dispatch should materially lower billable peak",
 );
 assert.ok(
-  demandPassiveBoth.grossMargin < 0,
-  "passive thermostat+battery should reach negative margin at the high demand charge",
+  demandPassiveBoth.peakKw < demandNoDevice.peakKw * 0.9,
+  "passive thermostat+battery should compose thermostat response with battery peak shaving",
 );
 assert.ok(
-  demandElasticBoth.grossMargin < 0,
-  "elastic thermostat+battery should reach negative margin at the high demand charge",
+  demandElasticBoth.peakKw < demandNoDevice.peakKw * 0.9,
+  "elastic thermostat+battery should compose elastic, thermostat, and battery response",
 );
+
+const mildTou = {
+  ...model.state,
+  spread: 1.25,
+  demandCharge: 20,
+  battery: 10,
+  thermostat: 3,
+  population: model.state.population.map((item) => ({ ...item })),
+};
+const mildBatteryRows = model.homeRowsForCase(
+  "passive",
+  "battery",
+  mildTou,
+  "tou",
+);
+assert.ok(
+  model.batteryDispatchEconomics("tou", mildTou).dispatchFactor <= 0,
+  "battery should require TOU spread to clear efficiency and wear",
+);
+assert.equal(
+  mildBatteryRows.some((row) => row.chargeKw > 0 || row.dischargeKw > 0),
+  false,
+  "battery should stay idle below the arbitrage hurdle",
+);
+const mildThermostatRows = model.homeRowsForCase(
+  "passive",
+  "thermostat",
+  mildTou,
+  "tou",
+);
+assert.ok(
+  mildThermostatRows.some((row) => row.action !== "baseline"),
+  "thermostat response should remain available below the battery arbitrage hurdle",
+);
+
+const assertRowsMatch = (actual, expected, label) => {
+  assert.equal(actual.length, expected.length, `${label} row count`);
+  actual.forEach((row, index) => {
+    for (const key of ["homeLoad", "gridImport", "capacityGridImport", "chargeKw", "dischargeKw"]) {
+      assert.equal(
+        Number((row[key] - expected[index][key]).toFixed(8)),
+        0,
+        `${label} ${key} hour ${row.hour}`,
+      );
+    }
+    assert.equal(
+      row.action.includes("coordinated"),
+      false,
+      `${label} should not use a special coordinated action`,
+    );
+  });
+};
+
+const activeScenarios = [
+  { tariffId: "tou", overrides: { ...model.state, spread: 2.2, demandCharge: 20 } },
+  { tariffId: "demand", overrides: { ...model.state, spread: 2, demandCharge: 30 } },
+];
+for (const { tariffId, overrides } of activeScenarios) {
+  const scenario = {
+    ...overrides,
+    battery: 10,
+    thermostat: 3,
+    population: model.state.population.map((item) => ({ ...item })),
+  };
+  for (const behavior of ["passive", "elastic"]) {
+    const thermostatRows = model.homeRowsForCase(
+      behavior,
+      "thermostat",
+      scenario,
+      tariffId,
+    );
+    const composedRows = model.batteryDispatchForLoad(
+      thermostatRows,
+      scenario,
+      tariffId,
+    ).rows;
+    const bothRows = model.homeRowsForCase(behavior, "both", scenario, tariffId);
+    assertRowsMatch(
+      bothRows,
+      composedRows,
+      `${tariffId} ${behavior} thermostat+battery composition`,
+    );
+  }
+}
 
 for (const kind of ["tou"]) {
   const result = model.optimizeTariff(kind, model.state);
@@ -115,13 +202,19 @@ for (const kind of ["tou"]) {
 }
 
 const demandOptimization = model.optimizeTariff("demand", model.state);
-assert.ok(
-  demandOptimization.feasibleCandidates.length > 0,
-  "demand optimizer should allow customer bill savings instead of imposing a revenue retention floor",
+assert.equal(
+  demandOptimization.feasibleCandidates.length,
+  0,
+  "demand optimizer should expose that no candidate clears capacity and filing neutrality",
+);
+assert.equal(
+  demandOptimization.best.feasible,
+  false,
+  "demand optimizer fallback should remain marked as a constraint violation",
 );
 assert.ok(
-  demandOptimization.best.feasible,
-  "demand optimizer should find a capacity- and filing-feasible point",
+  demandOptimization.best.objectiveValue > demandOptimization.candidates[0].objectiveValue,
+  "demand optimizer fallback should still choose the best available frontier point",
 );
 
 const optimizationCsv = model.optimizationCsv();

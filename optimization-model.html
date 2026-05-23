@@ -41,8 +41,8 @@
               customer bills, utility energy cost, capacity exposure, and
               adoption response. The key move is evaluating realized economics
               after customers respond, not only the passive filing baseline.
-              The full LP below follows Nathan's MATLAB structure and then
-              maps it to the dashboard's finite tariff menu.
+              The formulation below separates Nathan's MATLAB WTP/capacity
+              structure from the dashboard's finite tariff menu.
             </p>
           </div>
           <aside class="summary-panel" aria-label="model summary">
@@ -88,8 +88,8 @@
             <span>3</span>
             <h2>Constraints</h2>
             <p>
-              Revenue-neutral filing baseline, acceptable revenue loss screen,
-              and portfolio peak-capacity screen.
+              Revenue-neutral filing baseline and portfolio peak-capacity
+              screen.
             </p>
           </article>
         </section>
@@ -176,7 +176,7 @@
             </div>
             <div class="lp-source-card">
               <span>Source calibration</span>
-              <strong>demand_curve.xlsx + annual_demand.xlsx + Capacity.mlx</strong>
+              <strong>demand_curve.xlsx + annual_demand.xlsx + FixedRateLP.mlx + Capacity.mlx</strong>
               <small>68 kWh per 15 minutes = 272 kW per 100 source homes; 27,200 kW when scaled to 10,000 homes.</small>
             </div>
           </div>
@@ -227,12 +227,13 @@
             </article>
 
             <article class="lp-panel wide">
-              <h3>Demand response from Nathan's curves</h3>
+              <h3>WTP provenance and dashboard response</h3>
               <p>
                 For each building b, the MATLAB WTP curve converts an effective
                 electricity price into annual demand. The dashboard keeps the
-                raw curve visible on the WTP page and uses bounded response in
-                the presentation economics.
+                raw and bounded curves visible on the WTP page; the Single Price
+                and Optimization economics use conservative segment/device
+                response heuristics informed by that WTP layer.
               </p>
               <pre class="lp-formula"><code>effective_price_bh(t) =
   energy_price_h(t) + demand_charge_t * peak_b(t) * 12 / annual_kwh_b
@@ -258,8 +259,6 @@ where
             <article class="lp-panel wide">
               <h3>Core constraints</h3>
               <pre class="lp-formula"><code>sum_t z_t = 1
-
-sum_t z_t * Revenue_t >= 0.95 * Revenue_flat
 
 -0.005 * Revenue_flat <=
   sum_t z_t * (FiledRevenue_t - Revenue_flat)
@@ -288,7 +287,7 @@ TOU:
 
 Demand charge:
   t = (p_energy, dc_j)
-  dc_j in [$0, $30]/kW-month</code></pre>
+  dc_j in [$0, $50]/kW-month</code></pre>
             </article>
 
             <article class="lp-panel">

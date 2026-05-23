@@ -424,11 +424,12 @@ function renderLeakageChart(rows) {
   const muted = "#64717b";
   const text = "#172026";
   const line = "#d9e0e4";
-  const barX = 92;
-  const barY = 70;
-  const barWidth = 560;
-  const barHeight = 32;
-  const marginColor = total.marginDelta >= 0 ? green : red;
+  const barX = 64;
+  const barY = 122;
+  const barWidth = 642;
+  const barHeight = 20;
+  const positiveMargin = total.marginDelta >= 0;
+  const marginColor = positiveMargin ? green : red;
   const bridgeMax = Math.max(total.costAvoided, total.leakage, 1);
   const leakageWidth = (total.leakage / bridgeMax) * barWidth;
   const avoidedWidth = (total.costAvoided / bridgeMax) * barWidth;
@@ -453,7 +454,7 @@ function renderLeakageChart(rows) {
   const splitAxisX = 398;
   const splitPlotRight = 684;
   const splitTrackWidth = splitPlotRight - splitPlotLeft;
-  const splitRowTop = 232;
+  const splitRowTop = 240;
   const splitRowGap = 76;
   const splitRowHeight = 58;
   const splitBarHeight = 30;
@@ -516,31 +517,61 @@ function renderLeakageChart(rows) {
     })
     .join("");
   const marginSegment =
-    total.marginDelta >= 0
-      ? `<rect x="${(barX + leakageWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="8" fill="${green}" />`
-      : `<rect x="${(barX + avoidedWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="8" fill="${red}" opacity="0.82" />`;
-  const marginLabel =
-    total.marginDelta >= 0
-      ? "Net margin left after bill savings"
-      : "Margin shortfall after avoided cost";
+    positiveMargin
+      ? `<rect x="${(barX + leakageWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="7" fill="${green}" />`
+      : `<rect x="${(barX + avoidedWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="7" fill="${red}" opacity="0.82" />`;
+  const marginCardLabel = positiveMargin ? "Net margin" : "Margin shortfall";
+  const marginCardNote = positiveMargin ? "left after savings" : "savings exceed avoided cost";
+  const marginCardValue = positiveMargin
+    ? signedMoney(total.marginDelta)
+    : money.format(Math.abs(total.marginDelta));
+  const operator = positiveMargin ? "+" : "-";
+  const marginCardFill = positiveMargin ? "#e5f2e6" : "#f7e7e4";
+  const marginCardStroke = positiveMargin ? "#b7d9bd" : "#e9c2bc";
+  const componentCards = `
+    <g class="bridge-equation">
+      <rect x="54" y="61" width="186" height="50" rx="8" fill="#f7e7e4" stroke="#e9c2bc" />
+      <text x="70" y="78" fill="${red}" font-size="9" font-weight="820">Bill savings</text>
+      <text x="70" y="98" fill="${red}" font-size="14" font-weight="900">${money.format(total.leakage)}</text>
+      <text x="154" y="78" fill="${red}" font-size="8" font-weight="720">revenue leakage</text>
+      <text x="258" y="94" text-anchor="middle" fill="${muted}" font-size="19" font-weight="820">${operator}</text>
+      <rect x="278" y="61" width="186" height="50" rx="8" fill="${marginCardFill}" stroke="${marginCardStroke}" />
+      <text x="294" y="78" fill="${marginColor}" font-size="9" font-weight="820">${marginCardLabel}</text>
+      <text x="294" y="98" fill="${marginColor}" font-size="14" font-weight="900">${marginCardValue}</text>
+      <text x="376" y="78" fill="${marginColor}" font-size="8" font-weight="720">${marginCardNote}</text>
+      <text x="482" y="94" text-anchor="middle" fill="${muted}" font-size="19" font-weight="820">=</text>
+      <rect x="502" y="61" width="204" height="50" rx="8" fill="#e4f4f6" stroke="#acd7dc" />
+      <text x="518" y="78" fill="${teal}" font-size="9" font-weight="820">Cost avoided</text>
+      <text x="518" y="98" fill="${teal}" font-size="14" font-weight="900">${money.format(total.costAvoided)}</text>
+      <text x="616" y="78" fill="${teal}" font-size="8" font-weight="720">utility cost reduction</text>
+    </g>
+  `;
+  const leakageText =
+    leakageWidth > 150
+      ? `<text x="${(barX + leakageWidth / 2).toFixed(1)}" y="${barY + 14}" text-anchor="middle" fill="#fff" font-size="9" font-weight="860">${money.format(total.leakage)}</text>`
+      : "";
+  const marginText =
+    marginWidth > 110
+      ? `<text x="${(positiveMargin ? barX + leakageWidth + marginWidth / 2 : barX + avoidedWidth + marginWidth / 2).toFixed(1)}" y="${barY + 14}" text-anchor="middle" fill="#fff" font-size="9" font-weight="860">${positiveMargin ? signedMoney(total.marginDelta) : `-${money.format(Math.abs(total.marginDelta))}`}</text>`
+      : "";
 
   svg.innerHTML = `
     <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
     <text x="48" y="29" fill="${text}" font-size="13" font-weight="840">Total cost avoided bridge</text>
-    <text x="48" y="48" fill="${muted}" font-size="10" font-weight="720">Cost avoided equals bill savings paid to switchers plus net margin impact.</text>
-    <rect x="${barX}" y="${barY}" width="${barWidth}" height="${barHeight}" rx="9" fill="#eef1f3" />
-    <rect x="${barX}" y="${barY}" width="${leakageWidth.toFixed(1)}" height="${barHeight}" rx="9" fill="${red}" />
+    <text x="48" y="48" fill="${muted}" font-size="10" font-weight="720">Cost avoided is the part of switcher bill savings covered by utility cost reduction, plus any net margin left over.</text>
+    ${componentCards}
+    <rect x="${barX}" y="${barY}" width="${barWidth}" height="${barHeight}" rx="7" fill="#eef1f3" />
+    <rect x="${barX}" y="${barY}" width="${leakageWidth.toFixed(1)}" height="${barHeight}" rx="7" fill="${red}" />
     ${marginSegment}
-    <line x1="${(barX + avoidedWidth).toFixed(1)}" x2="${(barX + avoidedWidth).toFixed(1)}" y1="${barY - 8}" y2="${barY + barHeight + 8}" stroke="${teal}" stroke-width="2" />
-    <text x="${barX}" y="124" fill="${red}" font-size="11" font-weight="840">Revenue leakage</text>
-    <text x="${barX}" y="143" fill="${red}" font-size="13" font-weight="880">${money.format(total.leakage)}</text>
-    <text x="${barX + barWidth}" y="124" text-anchor="end" fill="${marginColor}" font-size="11" font-weight="840">${marginLabel}</text>
-    <text x="${barX + barWidth}" y="143" text-anchor="end" fill="${marginColor}" font-size="13" font-weight="880">${signedMoney(total.marginDelta)}</text>
-    <text x="${barX + avoidedWidth}" y="${barY - 12}" text-anchor="middle" fill="${teal}" font-size="12" font-weight="880">Cost avoided ${money.format(total.costAvoided)}</text>
+    ${leakageText}
+    ${marginText}
+    <line x1="${(barX + avoidedWidth).toFixed(1)}" x2="${(barX + avoidedWidth).toFixed(1)}" y1="${barY - 7}" y2="${barY + barHeight + 7}" stroke="${teal}" stroke-width="2" />
+    <text x="${barX}" y="157" fill="${muted}" font-size="9" font-weight="720">Proportional bridge: bill savings ${operator} ${marginCardLabel.toLowerCase()} = avoided cost</text>
+    <text x="${barX + avoidedWidth}" y="157" text-anchor="middle" fill="${teal}" font-size="9" font-weight="820">${money.format(total.costAvoided)}</text>
     <line x1="48" x2="${width - 48}" y1="170" y2="170" stroke="${line}" />
     <text x="48" y="198" fill="${text}" font-size="13" font-weight="840">Gross-margin split by switcher type</text>
     <text x="48" y="217" fill="${muted}" font-size="10" font-weight="720">Positive-margin homes are shown to the right of zero; negative-margin homes are shown to the left.</text>
-    <text x="${splitAxisX}" y="224" text-anchor="middle" fill="${muted}" font-size="9" font-weight="760">$0</text>
+    <text x="${splitAxisX}" y="230" text-anchor="middle" fill="${muted}" font-size="9" font-weight="760">$0</text>
     ${splitBars}
     <rect x="${width - 222}" y="390" width="174" height="28" rx="7" fill="${total.marginDelta >= 0 ? "#e5f2e6" : "#f7e7e4"}" />
     <text x="${width - 64}" y="409" text-anchor="end" fill="${marginColor}" font-size="12" font-weight="880">Net ${signedMoney(total.marginDelta)}</text>

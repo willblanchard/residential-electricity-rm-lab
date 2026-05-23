@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Customer WTP Calibration</title>
+    <title>WTP + Segmentation | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css?v=20260523-population" />
   </head>
@@ -14,8 +14,8 @@
           <div class="brand">
             <div class="mark" aria-hidden="true">RM</div>
             <div>
-              <p class="brand-title">Customer WTP Lab</p>
-              <p class="brand-subtitle">demand curves, capacity, and tariff calibration</p>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">WTP + segmentation</p>
             </div>
           </div>
           <nav class="page-nav presentation-nav" aria-label="presentation pages">
@@ -63,7 +63,11 @@
               <strong>272 kW</strong>
             </div>
             <div class="summary-metric">
-              <span>Flat anchor</span>
+              <span>Source WTP anchor</span>
+              <strong>10.0¢</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Dashboard reference</span>
               <strong>18.0¢</strong>
             </div>
           </aside>
@@ -152,8 +156,10 @@
           <article class="panel">
             <h2>Demand response curve</h2>
             <p class="panel-subtitle">
-              Annual kWh relative to the 18.0¢ anchor. The raw curve is useful
-              for optimization; bounded mode is safer for dashboard storytelling.
+              Annual kWh relative to the 18.0¢ dashboard reference, after
+              translating Nathan's 10.0¢ source WTP anchor into the class-story
+              baseline. The raw curve is useful for optimization; bounded mode
+              is safer for dashboard storytelling.
             </p>
             <svg id="phase3-demand-chart" viewBox="0 0 680 340" role="img"></svg>
           </article>

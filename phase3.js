@@ -9,6 +9,7 @@ const phase3 = {
 };
 
 const phase3Config = {
+  sourceDemandAnchor: 0.1,
   flatAnchor: 0.18,
   capacityLimitKw: 272,
   fixedLpOptimum: 0.2755,

@@ -93,6 +93,126 @@
           </article>
         </section>
 
+        <section class="population-cases" aria-labelledby="population-cases-title">
+          <div class="section-head">
+            <div>
+              <h2 id="population-cases-title">Eight modeled population cases</h2>
+            </div>
+            <p class="section-note">
+              Each behavior type is crossed with the four device states. The
+              shares below are normalized to 10,000 homes for every pricing
+              result.
+            </p>
+          </div>
+          <div class="population-case-grid">
+            <article class="population-case-card">
+              <span>Case 1</span>
+              <h3>Inelastic / no devices</h3>
+              <strong>2,000 homes</strong>
+              <small>20% of portfolio</small>
+            </article>
+            <article class="population-case-card">
+              <span>Case 2</span>
+              <h3>Inelastic / thermostat</h3>
+              <strong>1,000 homes</strong>
+              <small>10% of portfolio</small>
+            </article>
+            <article class="population-case-card">
+              <span>Case 3</span>
+              <h3>Inelastic / battery</h3>
+              <strong>500 homes</strong>
+              <small>5% of portfolio</small>
+            </article>
+            <article class="population-case-card">
+              <span>Case 4</span>
+              <h3>Inelastic / thermostat + battery</h3>
+              <strong>1,000 homes</strong>
+              <small>10% of portfolio</small>
+            </article>
+            <article class="population-case-card elastic">
+              <span>Case 5</span>
+              <h3>Elastic / no devices</h3>
+              <strong>1,500 homes</strong>
+              <small>15% of portfolio</small>
+            </article>
+            <article class="population-case-card elastic">
+              <span>Case 6</span>
+              <h3>Elastic / thermostat</h3>
+              <strong>1,500 homes</strong>
+              <small>15% of portfolio</small>
+            </article>
+            <article class="population-case-card elastic">
+              <span>Case 7</span>
+              <h3>Elastic / battery</h3>
+              <strong>500 homes</strong>
+              <small>5% of portfolio</small>
+            </article>
+            <article class="population-case-card elastic">
+              <span>Case 8</span>
+              <h3>Elastic / thermostat + battery</h3>
+              <strong>2,000 homes</strong>
+              <small>20% of portfolio</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="wtp-behavior-panel" aria-labelledby="wtp-behavior-title">
+          <div class="case-copy">
+            <h2 id="wtp-behavior-title">How WTP drives elastic vs inelastic behavior</h2>
+            <p>
+              Nathan's WTP work anchors the source demand data at 10 cents per
+              kWh. The dashboard then re-indexes that curve to the 18 cent
+              flat-rate baseline so the population model can separate
+              price-insensitive customers from customers with discretionary load
+              that responds to price signals.
+            </p>
+          </div>
+          <div class="wtp-flow">
+            <article class="wtp-step">
+              <span>Source WTP anchor</span>
+              <strong>10.0¢</strong>
+              <small>Nathan's MATLAB work uses this as the assumed price for the demand data.</small>
+            </article>
+            <article class="wtp-step">
+              <span>Dashboard reference</span>
+              <strong>18.0¢ = 100%</strong>
+              <small>The browser model normalizes demand at the flat-rate baseline used in the class story.</small>
+            </article>
+            <article class="wtp-step">
+              <span>High-price signal</span>
+              <strong>30.0¢ = 77.2%</strong>
+              <small>The WTP curve implies materially lower demand as effective price rises.</small>
+            </article>
+            <article class="wtp-step">
+              <span>Bounded range</span>
+              <strong>72%-118%</strong>
+              <small>The WTP page caps extreme expansion or contraction for presentation-safe scenarios.</small>
+            </article>
+          </div>
+          <div class="behavior-value-grid" aria-label="elastic and inelastic behavior values">
+            <article class="behavior-value-card">
+              <span>Inelastic behavior class</span>
+              <h3>High WTP / low response</h3>
+              <strong>4,500 homes</strong>
+              <p>
+                Assigned 0% discretionary behavioral flexibility. These homes
+                keep non-controlled usage fixed, though installed devices can
+                still automate response.
+              </p>
+            </article>
+            <article class="behavior-value-card elastic">
+              <span>Elastic behavior class</span>
+              <h3>Lower WTP / price sensitive</h3>
+              <strong>5,500 homes</strong>
+              <p>
+                Assigned 35% flexible non-controlled load. These homes can
+                shift some discretionary usage away from expensive or scarce
+                hours before device effects are added.
+              </p>
+            </article>
+          </div>
+        </section>
+
         <section class="case-study narrative-card" aria-labelledby="population-logic-title">
           <div class="case-copy">
             <h2 id="population-logic-title">Why this population exists</h2>
@@ -111,7 +231,7 @@
             </div>
             <div>
               <strong>Controllable mix</strong>
-              <span>The Phase 1 allocation controls can stress-test the shares without redefining the buckets.</span>
+              <span>The Single Price Results allocation controls can stress-test the shares without redefining the buckets.</span>
             </div>
             <div>
               <strong>Choice is separate</strong>
