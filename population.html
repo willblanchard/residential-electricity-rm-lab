@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Population | Residential Electricity RM</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css?v=20260523-population" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true">RM</div>
+            <div>
+              <p class="brand-title">Residential Electricity RM Lab</p>
+              <p class="brand-subtitle">population definition</p>
+            </div>
+          </div>
+          <nav class="page-nav presentation-nav" aria-label="presentation pages">
+            <a href="index.html">Summary / Intro</a>
+            <a href="wtp-segmentation.html">WTP + Segmentation</a>
+            <a class="active" aria-current="page" href="population.html">Population</a>
+            <a href="optimization-model.html">Optimization Model</a>
+            <a href="implementation-validation.html">Implementation</a>
+            <a href="phase1.html">Single Price Results</a>
+            <a href="phase2.html">Parallel Options Results</a>
+            <a href="limitations-future-work.html">Limitations</a>
+            <a href="final-takeaway.html">Takeaway</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main population-page">
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">The model uses one fixed population across the pricing tests.</h1>
+            <p class="lead">
+              The results pages start from the same normalized 10,000-home
+              portfolio. The population is a scenario design, not a census
+              claim: it crosses behavior type with device ownership so the
+              rate designs face passive homes, price-aware homes, and homes
+              with automation.
+            </p>
+          </div>
+          <aside class="summary-panel" aria-label="population summary">
+            <p class="summary-title">Baseline mix</p>
+            <div class="summary-metric primary">
+              <span>Modeled portfolio</span>
+              <strong>10,000 homes</strong>
+              <small>Allocation shares sum to 100 and are normalized to the portfolio size.</small>
+            </div>
+            <div class="summary-metric">
+              <span>Population buckets</span>
+              <strong>8</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Behavior split</span>
+              <strong>45% / 55%</strong>
+            </div>
+            <div class="summary-metric">
+              <span>Largest bucket</span>
+              <strong>Elastic + both</strong>
+            </div>
+          </aside>
+        </section>
+
+        <section class="story-grid population-summary-grid" aria-label="population structure">
+          <article class="story-card">
+            <span>1</span>
+            <h2>Behavior</h2>
+            <p>
+              Passive homes keep non-controlled usage fixed. Elastic homes
+              shift some discretionary load when prices change.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>2</span>
+            <h2>Devices</h2>
+            <p>
+              Each behavior type is crossed with no devices, thermostat only,
+              battery only, and thermostat plus battery.
+            </p>
+          </article>
+          <article class="story-card">
+            <span>3</span>
+            <h2>Normalization</h2>
+            <p>
+              Shares are scaled to 10,000 homes so revenue, cost, margin,
+              kWh, and peak can be compared on the same base.
+            </p>
+          </article>
+        </section>
+
+        <section class="case-study narrative-card" aria-labelledby="population-logic-title">
+          <div class="case-copy">
+            <h2 id="population-logic-title">Why this population exists</h2>
+            <p>
+              The portfolio is designed to separate three effects that are
+              easy to mix up: human price response, automated device response,
+              and rate-menu choice. Single Price Results uses the population
+              as a fixed mix; Parallel Options Results then asks which
+              customers leave the fixed pool when optional plans are offered.
+            </p>
+          </div>
+          <div class="case-points">
+            <div>
+              <strong>Same base</strong>
+              <span>Flat, TOU, and demand-charge cases all start from this population.</span>
+            </div>
+            <div>
+              <strong>Controllable mix</strong>
+              <span>The Phase 1 allocation controls can stress-test the shares without redefining the buckets.</span>
+            </div>
+            <div>
+              <strong>Choice is separate</strong>
+              <span>Opt-in behavior belongs to Parallel Options Results, not the baseline population definition.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel population-table-panel" aria-labelledby="population-table-title">
+          <div class="table-heading">
+            <div>
+              <h2 id="population-table-title">Baseline population buckets</h2>
+            </div>
+            <p>
+              Default allocation shares in the interactive model. Homes are
+              shown after normalizing the 100-share mix to the 10,000-home
+              portfolio.
+            </p>
+          </div>
+          <div class="segment-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Behavior</th>
+                  <th>Device case</th>
+                  <th>Share</th>
+                  <th>Homes</th>
+                  <th>Response assumption</th>
+                  <th>Why it matters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Passive / inelastic</td>
+                  <td>No energy devices</td>
+                  <td>20%</td>
+                  <td>2,000</td>
+                  <td>Non-controlled load does not shift.</td>
+                  <td>Baseline revenue anchor for customers with no flexibility.</td>
+                </tr>
+                <tr>
+                  <td>Passive / inelastic</td>
+                  <td>Just thermostat</td>
+                  <td>10%</td>
+                  <td>1,000</td>
+                  <td>HVAC can respond automatically, but human usage stays fixed.</td>
+                  <td>Tests automation without assuming price-aware habits.</td>
+                </tr>
+                <tr>
+                  <td>Passive / inelastic</td>
+                  <td>Just battery</td>
+                  <td>5%</td>
+                  <td>500</td>
+                  <td>Battery dispatch is accepted only when it lowers the customer bill.</td>
+                  <td>Isolates storage economics from thermostat response.</td>
+                </tr>
+                <tr>
+                  <td>Passive / inelastic</td>
+                  <td>Thermostat + battery</td>
+                  <td>10%</td>
+                  <td>1,000</td>
+                  <td>Both automated controls respond to the rate signal.</td>
+                  <td>Shows full device flexibility for otherwise passive homes.</td>
+                </tr>
+                <tr>
+                  <td>Somewhat elastic</td>
+                  <td>No energy devices</td>
+                  <td>15%</td>
+                  <td>1,500</td>
+                  <td>Non-controlled load shifts modestly under price pressure.</td>
+                  <td>Captures human response without smart-home automation.</td>
+                </tr>
+                <tr>
+                  <td>Somewhat elastic</td>
+                  <td>Just thermostat</td>
+                  <td>15%</td>
+                  <td>1,500</td>
+                  <td>Elastic usage combines with HVAC automation.</td>
+                  <td>Represents the common smart-thermostat segment.</td>
+                </tr>
+                <tr>
+                  <td>Somewhat elastic</td>
+                  <td>Just battery</td>
+                  <td>5%</td>
+                  <td>500</td>
+                  <td>Elastic usage combines with bill-saving battery dispatch.</td>
+                  <td>Tests whether storage value survives customer response.</td>
+                </tr>
+                <tr>
+                  <td>Somewhat elastic</td>
+                  <td>Thermostat + battery</td>
+                  <td>20%</td>
+                  <td>2,000</td>
+                  <td>Behavioral shift, HVAC response, and battery dispatch all apply.</td>
+                  <td>Largest flexible segment and the strongest stress test for rate design.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel bottom-export" aria-labelledby="population-next-title">
+          <div>
+            <h2 id="population-next-title">Next modeling step</h2>
+            <p>
+              Once the population is fixed, the optimization page chooses
+              tariff candidates and the results pages test realized economics
+              against this same customer base.
+            </p>
+          </div>
+          <nav class="nav-actions" aria-label="population next page">
+            <a class="button primary" href="optimization-model.html">Open optimization model</a>
+            <a class="button" href="phase1.html">Open single price results</a>
+          </nav>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -264,7 +264,6 @@ const nathanLpCalibration = {
 nathanLpCalibration.capacityLimitKw =
   (nathanLpCalibration.capacityKwPer100Homes / 100) * portfolioSize;
 const optimizationConfig = {
-  revenueRetentionMin: 0.95,
   filingNeutralTolerance: 0.005,
   maxPeakKw: nathanLpCalibration.capacityLimitKw,
   touMin: 1,
@@ -1647,7 +1646,6 @@ function optimizationCandidate(kind, value, overrides = state, flatTotal = null)
   const revenueRetention = flat.revenue > 0 ? economics.revenue / flat.revenue : 1;
   const peakReduction = flat.peakKw > 0 ? 1 - economics.peakKw / flat.peakKw : 0;
   const feasible =
-    revenueRetention >= optimizationConfig.revenueRetentionMin &&
     Math.abs(filing.deltaPct) <= optimizationConfig.filingNeutralTolerance &&
     economics.peakKw <= optimizationConfig.maxPeakKw;
   return {
@@ -1851,9 +1849,7 @@ function renderOptimizer() {
   const container = document.getElementById("optimizer-cards");
   if (!container) return;
   const objectiveText =
-    `Maximize monthly gross margin subject to realized revenue >= ${pct.format(
-      optimizationConfig.revenueRetentionMin,
-    )} of flat, portfolio peak <= ${num.format(
+    `Maximize monthly gross margin subject to portfolio peak <= ${num.format(
       optimizationConfig.maxPeakKw,
     )} kW, and filing-baseline revenue neutrality within ${pct.format(
       optimizationConfig.filingNeutralTolerance,
@@ -1927,7 +1923,7 @@ function renderOptimizer() {
           <div class="optimizer-frontier">
             <div>
               <strong>Top frontier points</strong>
-              <span>ranked by margin; gray rows violate a constraint</span>
+              <span>ranked by margin; gray rows violate capacity or filing neutrality</span>
             </div>
             <table>
               <thead>
@@ -2163,6 +2159,9 @@ function renderPopulationChart() {
           const costWidth = (economics.totalCost / maxPerHomeRevenue) * barMaxWidth;
           const margin = economics.grossMargin;
           const marginWidth = (Math.max(margin, 0) / maxPerHomeRevenue) * barMaxWidth;
+          const lossWidthRaw = (Math.max(-margin, 0) / maxPerHomeRevenue) * barMaxWidth;
+          const hasNegativeMargin = margin < -0.05;
+          const lossWidth = hasNegativeMargin ? Math.max(lossWidthRaw, 6) : 0;
           const x = groupX + 12;
           const y = pad.top + caseIndex * rowHeight + 8;
           const barH = Math.max(8, (rowHeight - 15) / 2);
@@ -2174,10 +2173,27 @@ function renderPopulationChart() {
           const marginLabel = money1.format(margin);
           const revenueLabelX = x + revenueWidth - 7;
           const costLabelX = x + costWidth - 7;
-          const marginLabelInside = marginWidth >= 40;
-          const marginLabelX = marginLabelInside
-            ? x + costWidth + marginWidth / 2
-            : x + costWidth + marginWidth + 5;
+          const marginLabelInside = margin >= 0 && marginWidth >= 40;
+          const marginLabelX =
+            margin >= 0
+              ? marginLabelInside
+                ? x + costWidth + marginWidth / 2
+                : x + costWidth + marginWidth + 5
+              : x + Math.max(costWidth, revenueWidth + lossWidth) + 7;
+          const marginLabelFill =
+            margin >= 0 ? (marginLabelInside ? "#fff" : "#2e7d32") : "#a92f29";
+          const marginLabelWeight = margin >= 0 ? 820 : 900;
+          const marginLabelStroke =
+            margin >= 0 ? "" : ' stroke="#fff" stroke-width="2.4" paint-order="stroke"';
+          const positiveMarginBar =
+            margin >= 0
+              ? `<rect x="${(x + costWidth).toFixed(1)}" y="${stackY.toFixed(1)}" width="${marginWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="5" fill="#2e7d32" opacity="${opacity}" stroke="transparent" />`
+              : "";
+          const lossBar =
+            hasNegativeMargin
+              ? `<rect x="${(x + revenueWidth).toFixed(1)}" y="${stackY.toFixed(1)}" width="${lossWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="5" fill="#b13a2f" opacity="0.76" stroke="#842820" stroke-width="0.8" />
+                <line x1="${(x + revenueWidth).toFixed(1)}" x2="${(x + revenueWidth).toFixed(1)}" y1="${(stackY + 2).toFixed(1)}" y2="${(stackY + barH - 2).toFixed(1)}" stroke="#fff" stroke-width="1.2" opacity="0.9" />`
+              : "";
           const active =
             state.selectedCaseId === caseDef.id && state.focusTariff === tariff.id
               ? " active"
@@ -2187,11 +2203,12 @@ function renderPopulationChart() {
               <title>${caseLabel(caseDef)} ${tariff.name}: ${num.format(homes)} homes, revenue ${revenueLabel}, cost ${costLabel}, margin ${marginLabel} per meter</title>
               <rect x="${x.toFixed(1)}" y="${revenueY.toFixed(1)}" width="${revenueWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="5" fill="#3765a3" opacity="${caseDef.behavior === "elastic" ? 0.92 : 0.72}" stroke="transparent" />
               <rect x="${x.toFixed(1)}" y="${stackY.toFixed(1)}" width="${costWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="5" fill="#b13a2f" opacity="0.28" stroke="transparent" />
-              <rect x="${(x + costWidth).toFixed(1)}" y="${stackY.toFixed(1)}" width="${marginWidth.toFixed(1)}" height="${barH.toFixed(1)}" rx="5" fill="#2e7d32" opacity="${opacity}" stroke="transparent" />
+              ${positiveMarginBar}
+              ${lossBar}
               <text x="${(x + 7).toFixed(1)}" y="${(revenueY + barH * 0.72).toFixed(1)}" fill="#fff" font-size="9" font-weight="820">${num.format(homes)} homes</text>
               <text x="${revenueLabelX.toFixed(1)}" y="${(revenueY + barH * 0.72).toFixed(1)}" text-anchor="end" fill="#fff" font-size="9" font-weight="820">${revenueLabel}</text>
               <text x="${costLabelX.toFixed(1)}" y="${(stackY + barH * 0.72).toFixed(1)}" text-anchor="end" fill="#7f2f29" font-size="9" font-weight="820">${costLabel}</text>
-              <text x="${marginLabelX.toFixed(1)}" y="${(stackY + barH * 0.72).toFixed(1)}" text-anchor="${marginLabelInside ? "middle" : "start"}" fill="${marginLabelInside ? "#fff" : "#2e7d32"}" font-size="9" font-weight="820">${marginLabel}</text>
+              <text x="${marginLabelX.toFixed(1)}" y="${(stackY + barH * 0.72).toFixed(1)}" text-anchor="${marginLabelInside ? "middle" : "start"}" fill="${marginLabelFill}" font-size="9" font-weight="${marginLabelWeight}"${marginLabelStroke}>${marginLabel}</text>
             </g>
           `;
         })
@@ -2246,6 +2263,8 @@ function renderPopulationChart() {
     <line x1="154" y1="16" x2="188" y2="16" stroke="#b13a2f" stroke-width="6" opacity="0.28" />
     <text x="206" y="20" fill="#2e7d32" font-size="11" font-weight="800">Margin</text>
     <line x1="254" y1="16" x2="288" y2="16" stroke="#2e7d32" stroke-width="6" opacity="0.78" />
+    <text x="306" y="20" fill="#a92f29" font-size="11" font-weight="800">Loss</text>
+    <line x1="338" y1="16" x2="372" y2="16" stroke="#b13a2f" stroke-width="6" opacity="0.76" />
     ${rowLabels}
     ${bars}
     <text x="${pad.left}" y="${footerY}" fill="#64717b" font-size="11" font-weight="720">Per-meter monthly scale shown under each rate plan; values update with selected rate controls.</text>
@@ -2881,7 +2900,7 @@ function optimizationCsv() {
     [
       "model_layer",
       "objective",
-      "realized_revenue_retention_min",
+      "revenue_retention_rule",
       "filing_neutrality_tolerance",
       "capacity_limit_kw",
       "capacity_limit_kw_per_100_homes",
@@ -2919,8 +2938,8 @@ function optimizationCsv() {
     ranked.forEach((candidate, index) => {
       rows.push([
         state.mode,
-        "maximize_margin_subject_to_revenue_defense",
-        optimizationConfig.revenueRetentionMin,
+        "maximize_margin_subject_to_capacity_and_filing_neutrality",
+        "customer_savings_not_capped",
         optimizationConfig.filingNeutralTolerance,
         optimizationConfig.maxPeakKw,
         nathanLpCalibration.capacityKwPer100Homes,

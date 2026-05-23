@@ -141,7 +141,7 @@
       `${percent.format(row.revenueRetention)} revenue retained, ` +
       `${signedMoneyLabel(row.marginDelta)} margin vs flat, ` +
       `${number.format(row.economics.peakKw)} kW peak, ` +
-      `${row.feasible ? "feasible" : "constraint violation"}`;
+      `${row.feasible ? "feasible" : "capacity or filing violation"}`;
     if (row.kind === "demand") {
       const radius = row.isOverallBest ? 7 : row.isKindBest ? 6 : 5;
       return `
@@ -161,7 +161,7 @@
 
   function renderFrontier() {
     const { rows, overallBest } = collectOptimizationRows();
-    const xMin = Math.floor((Math.min(optimizationConfig.revenueRetentionMin, ...rows.map((row) => row.revenueRetention)) - 0.01) * 100) / 100;
+    const xMin = Math.floor((Math.min(...rows.map((row) => row.revenueRetention)) - 0.01) * 100) / 100;
     const xMax = Math.ceil((Math.max(1, ...rows.map((row) => row.revenueRetention)) + 0.01) * 100) / 100;
     const maxAbsMargin = Math.max(
       5000,
@@ -172,12 +172,10 @@
     const yMin = -yMax;
     const xTicks = uniqueSorted([
       xMin,
-      optimizationConfig.revenueRetentionMin,
       1,
       xMax,
     ]).filter((tick) => tick >= xMin && tick <= xMax);
     const yTicks = [-yMax, -yMax / 2, 0, yMax / 2, yMax];
-    const thresholdX = xFor(optimizationConfig.revenueRetentionMin, xMin, xMax);
     const zeroY = yFor(0, yMin, yMax);
     const points = rows
       .map((row) =>
@@ -209,8 +207,6 @@
           `;
         })
         .join("")}
-      <line x1="${thresholdX.toFixed(1)}" y1="${pad.top}" x2="${thresholdX.toFixed(1)}" y2="${height - pad.bottom}" stroke="${colors.capacity}" stroke-width="2" stroke-dasharray="7 6" />
-      <text x="${(thresholdX + 8).toFixed(1)}" y="${pad.top + 14}" fill="${colors.capacity}" font-size="11" font-weight="820">95% revenue floor</text>
       <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#94a0a8" stroke-width="1.2" />
       <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#94a0a8" stroke-width="1.2" />
       ${points}
@@ -246,9 +242,7 @@
           "Revenue kept",
           percent.format(overallBest.revenueRetention),
           "realized after response",
-          overallBest.revenueRetention >= optimizationConfig.revenueRetentionMin
-            ? "positive"
-            : "negative",
+          "",
         );
     }
   }

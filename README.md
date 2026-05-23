@@ -1,6 +1,6 @@
 # Utility RM Dashboard
 
-Open `index.html` in a browser to start the eight-page presentation site.
+Open `index.html` in a browser to start the nine-page presentation site.
 
 The pages are intentionally static and dependency-free so they can be submitted,
 shared, or hosted anywhere. The interactive Single Price Results and Parallel Options Results pages combine
@@ -9,9 +9,10 @@ and static WattShift tariff outputs.
 
 ## File structure
 
-- `index.html`: Summary / Intro page and eight-page navigation map.
+- `index.html`: Summary / Intro page and nine-page navigation map.
 - `wtp-segmentation.html`: WTP + Segmentation calibration page built from the
   demand-curve source files.
+- `population.html`: standalone population definition and baseline bucket mix.
 - `optimization-model.html`: model objective, variables, and constraints.
 - `implementation-validation.html`: implementation and validation narrative.
 - `phase1.html`: interactive single-price-results dashboard.
@@ -32,8 +33,8 @@ and static WattShift tariff outputs.
 - `data/`: static source and seed CSV/JSON files used for downloads and audit.
 - `scripts/`: one-off data build/pull utilities for regenerating static inputs.
 
-The site follows the presentation structure in eight named pages: Summary /
-Intro, WTP + Segmentation, Optimization Model, Implementation, Single Price Results,
+The site follows the presentation structure in nine named pages: Summary /
+Intro, WTP + Segmentation, Population, Optimization Model, Implementation, Single Price Results,
 Parallel Options Results, Limitations, and Takeaway. The Single Price Results screen is framed as a utility-board case
 study: TOU and
 demand-charge tariffs are calibrated to be approximately revenue-neutral for
@@ -91,17 +92,14 @@ scaled to the 10,000-home case-study population. The objective is:
 
 ```text
 maximize gross margin versus flat
-subject to realized revenue >= 95% of flat revenue
-and portfolio peak <= 27,200 kW
+subject to portfolio peak <= 27,200 kW
 and passive filing-baseline revenue within +/- 0.5% of flat
 ```
 
-The dashboard displays the best feasible candidate when one clears the
-constraints. If a tariff family has no fully feasible point after device
-response, it keeps that fallback frontier point marked as a constraint violation
-rather than treating it as approved. `Download optimization CSV` exports the
-full candidate grid so the paper can cite both the chosen point and the
-surrounding frontier.
+The model does not cap customer savings after the tariff is set: if a home
+uses automation to lower its bill, the lower realized bill flows through to
+utility revenue. `Download optimization CSV` exports the full candidate grid so
+the paper can cite both the chosen point and the surrounding frontier.
 
 ## Exports
 

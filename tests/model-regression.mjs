@@ -104,10 +104,6 @@ for (const kind of ["tou"]) {
   const result = model.optimizeTariff(kind, model.state);
   assert.ok(result.best.feasible, `${kind} optimizer should find a feasible point`);
   assert.ok(
-    result.best.revenueRetention >= model.optimizationConfig.revenueRetentionMin,
-    `${kind} optimizer should satisfy revenue retention`,
-  );
-  assert.ok(
     result.best.economics.peakKw <= model.optimizationConfig.maxPeakKw,
     `${kind} optimizer should satisfy peak capacity screen`,
   );
@@ -119,18 +115,13 @@ for (const kind of ["tou"]) {
 }
 
 const demandOptimization = model.optimizeTariff("demand", model.state);
-assert.equal(
-  demandOptimization.feasibleCandidates.length,
-  0,
-  "demand optimizer should expose that no candidate clears every constraint after strong device response",
+assert.ok(
+  demandOptimization.feasibleCandidates.length > 0,
+  "demand optimizer should allow customer bill savings instead of imposing a revenue retention floor",
 );
 assert.ok(
-  !demandOptimization.best.feasible,
-  "demand optimizer fallback should stay marked as a constraint violation",
-);
-assert.ok(
-  demandOptimization.best.objectiveValue > demandOptimization.candidates[0].objectiveValue,
-  "demand optimizer fallback should still choose the best available frontier point",
+  demandOptimization.best.feasible,
+  "demand optimizer should find a capacity- and filing-feasible point",
 );
 
 const optimizationCsv = model.optimizationCsv();

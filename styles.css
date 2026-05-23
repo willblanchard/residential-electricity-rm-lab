@@ -465,7 +465,7 @@ input[type="range"] {
 }
 
 .outline-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .story-card {
@@ -811,6 +811,32 @@ input[type="range"] {
   font-size: 12px;
   font-weight: 740;
   text-transform: uppercase;
+}
+
+.population-summary-grid {
+  margin-top: 24px;
+}
+
+.population-table-panel {
+  margin-top: 22px;
+}
+
+.population-table-panel .table-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.population-table-panel td:nth-child(3),
+.population-table-panel td:nth-child(4) {
+  color: var(--ink);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.population-table-panel td:nth-child(5),
+.population-table-panel td:nth-child(6) {
+  min-width: 220px;
 }
 
 .population-chart-wrap {
