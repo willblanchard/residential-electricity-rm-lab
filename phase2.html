@@ -5,33 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Parallel Options Results | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260523-costs" />
+    <link rel="stylesheet" href="styles.css?v=20260523-frontier-demand-control" />
+    <script src="site-header.js?v=20260523-reused-header" defer></script>
   </head>
   <body>
     <div class="shell">
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand">
-            <div class="mark" aria-hidden="true">RM</div>
-            <div>
-              <p class="brand-title">Residential Electricity RM Lab</p>
-              <p class="brand-subtitle">parallel options results</p>
-            </div>
-          </div>
-          <nav class="page-nav presentation-nav" aria-label="presentation pages">
-            <a href="index.html">Summary / Intro</a>
-            <a href="wtp-segmentation.html">WTP + Segmentation</a>
-            <a href="optimization-model.html">Optimization Model</a>
-            <a href="implementation-validation.html">Implementation</a>
-            <a href="energy-capacity-costs.html">Energy + Capacity</a>
-            <a href="population.html">Population</a>
-            <a href="phase1.html">Single Price Results</a>
-            <a class="active" aria-current="page" href="phase2.html">Parallel Options Results</a>
-            <a href="limitations-future-work.html">Limitations</a>
-            <a href="final-takeaway.html">Takeaway</a>
-          </nav>
-        </div>
-      </header>
+      <rm-site-header page="parallel-options" subtitle="parallel options results"></rm-site-header>
 
       <main class="main">
         <section class="intro phase2-hero" aria-labelledby="page-title">
@@ -148,6 +127,69 @@
           </div>
         </section>
 
+        <section class="phase2-frontier-section" aria-labelledby="frontier-title">
+          <div class="section-head">
+            <div>
+              <h2 id="frontier-title">Menu margin frontier</h2>
+            </div>
+            <p class="section-note">
+              Required reference lines put every home on TOU or demand. Optional lines keep the
+              fixed plan available, then show whether adding TOU, demand, or both optional plans
+              improves gross margin after self-selection.
+            </p>
+          </div>
+          <div class="panel phase2-frontier-panel">
+            <div class="phase2-frontier-grid">
+              <article class="phase2-frontier-chart">
+                <h3>TOU spread sweep</h3>
+                <p class="panel-subtitle">
+                  The green line keeps the demand option available at the demand price below while TOU spread moves.
+                </p>
+                <div class="frontier-inline-control">
+                  <label for="phase2-frontier-demand">Demand price used by green line</label>
+                  <strong>$<span id="phase2-frontier-demand-value">20</span>/kW-mo</strong>
+                  <input id="phase2-frontier-demand" type="range" min="0" max="30" step="1" value="20" />
+                </div>
+                <div class="choice-chart-wrap">
+                  <svg id="phase2-tou-frontier" viewBox="0 0 700 340" role="img"></svg>
+                </div>
+                <div class="legend frontier-legend">
+                  <span class="legend-item" style="color: var(--muted)">
+                    <span class="swatch"></span>Required TOU
+                  </span>
+                  <span class="legend-item" style="color: var(--amber)">
+                    <span class="swatch"></span>Optional TOU only
+                  </span>
+                  <span class="legend-item" style="color: var(--green)">
+                    <span class="swatch"></span>Optional TOU + demand
+                  </span>
+                </div>
+              </article>
+              <article class="phase2-frontier-chart">
+                <h3>Demand-charge sweep</h3>
+                <p class="panel-subtitle">
+                  TOU spread stays at the current control setting while the demand charge moves.
+                </p>
+                <div class="choice-chart-wrap">
+                  <svg id="phase2-demand-frontier" viewBox="0 0 700 340" role="img"></svg>
+                </div>
+                <div class="legend frontier-legend">
+                  <span class="legend-item" style="color: var(--muted)">
+                    <span class="swatch"></span>Required demand
+                  </span>
+                  <span class="legend-item" style="color: var(--teal)">
+                    <span class="swatch"></span>Optional demand only
+                  </span>
+                  <span class="legend-item" style="color: var(--green)">
+                    <span class="swatch"></span>Optional TOU + demand
+                  </span>
+                </div>
+              </article>
+            </div>
+            <div class="mini-metrics phase2-frontier-metrics" id="phase2-frontier-metrics"></div>
+          </div>
+        </section>
+
         <section class="choice-layout" aria-labelledby="leakage-title">
           <article class="panel">
             <h3 id="leakage-title">Margin bridge and switcher split</h3>
@@ -238,6 +280,6 @@
       </main>
     </div>
 
-    <script src="phase2.js?v=20260522-bridgeui"></script>
+    <script src="phase2.js?v=20260523-frontier-demand-control"></script>
   </body>
 </html>

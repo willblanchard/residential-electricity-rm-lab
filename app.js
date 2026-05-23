@@ -80,6 +80,8 @@ const state = {
   ],
 };
 
+const populationStorageKey = "utility-rm-population-allocation-v1";
+
 const behaviorDefs = {
   passive: {
     name: "Passive / inelastic",
@@ -167,6 +169,40 @@ const num = new Intl.NumberFormat("en-US", {
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
+
+function restorePopulationAllocation() {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = window.localStorage?.getItem(populationStorageKey);
+    if (!stored) return;
+    const savedPopulation = JSON.parse(stored);
+    if (!Array.isArray(savedPopulation)) return;
+
+    populationCases.forEach((caseDef) => {
+      const savedBucket = savedPopulation.find((item) => item.id === caseDef.id);
+      const stateBucket = state.population.find((item) => item.id === caseDef.id);
+      if (!savedBucket || !stateBucket) return;
+      const homes = Number(savedBucket.homes);
+      if (Number.isFinite(homes)) stateBucket.homes = clamp(homes, 0, 100);
+    });
+  } catch {
+    // Ignore stale or unavailable browser storage and keep the default mix.
+  }
+}
+
+function persistPopulationAllocation() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage?.setItem(
+      populationStorageKey,
+      JSON.stringify(state.population.map((item) => ({ ...item }))),
+    );
+  } catch {
+    // The model still works if the browser blocks file-page storage.
+  }
+}
+
+restorePopulationAllocation();
 
 function populationCaseById(id) {
   return populationCases.find((item) => item.id === id) || populationCases[0];
@@ -2079,6 +2115,7 @@ function renderCaseStudy() {
 
 function renderPopulationControls() {
   const container = document.getElementById("population-inputs");
+  if (!container) return;
   container.innerHTML = populationCases
     .map((caseDef) => {
       const behavior = behaviorDefs[caseDef.behavior];
@@ -2092,8 +2129,34 @@ function renderPopulationControls() {
       `;
     })
     .join("");
-  document.getElementById("population-total").textContent =
+  renderPopulationTotal();
+}
+
+function renderPopulationTotal() {
+  const total = document.getElementById("population-total");
+  if (!total) return;
+  total.textContent =
     `Current allocation-share total: ${num.format(populationTotal())}; normalized model denominator: ${num.format(portfolioSize)} homes`;
+}
+
+function updatePopulationFromInput(input) {
+  const bucket = state.population.find(
+    (item) => item.id === input.dataset.population,
+  );
+  if (!bucket) return false;
+  bucket.homes = clamp(Number(input.value), 0, 100);
+  persistPopulationAllocation();
+  return true;
+}
+
+function bindPopulationInputEvents(container, afterChange) {
+  container.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-population]");
+    if (!input) return;
+    if (updatePopulationFromInput(input) && typeof afterChange === "function") {
+      afterChange();
+    }
+  });
 }
 
 function renderPopulationChart() {
@@ -3111,7 +3174,6 @@ function bootstrapDashboardPage() {
     "optimizer-cards",
     "battery",
     "thermostat",
-    "population-inputs",
     "download-scenarios",
     "download-optimization",
     "download-load",
@@ -3182,16 +3244,8 @@ function bootstrapDashboardPage() {
     render();
   });
 
-  elements["population-inputs"].addEventListener("input", (event) => {
-    const input = event.target.closest("[data-population]");
-    if (!input) return;
-    const bucket = state.population.find(
-      (item) => item.id === input.dataset.population,
-    );
-    if (!bucket) return;
-    bucket.homes = clamp(Number(input.value), 0, 100);
-    render();
-  });
+  const populationInputs = document.getElementById("population-inputs");
+  if (populationInputs) bindPopulationInputEvents(populationInputs, render);
 
   document
     .querySelectorAll("details.collapsible-section:not([data-persistent])")
@@ -3229,4 +3283,12 @@ function bootstrapDashboardPage() {
   render();
 }
 
+function bootstrapPopulationPage() {
+  const populationInputs = document.getElementById("population-inputs");
+  if (!populationInputs) return;
+  renderPopulationControls();
+  bindPopulationInputEvents(populationInputs, renderPopulationTotal);
+}
+
+bootstrapPopulationPage();
 bootstrapDashboardPage();

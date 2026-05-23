@@ -164,19 +164,28 @@ function signedMoney(value) {
   return value > 0 ? `+${formatted}` : `-${formatted}`;
 }
 
-function availablePlans() {
-  if (state.menu === "tou") return ["tou"];
-  if (state.menu === "demand") return ["demand"];
+function rangeValues(min, max, step) {
+  const values = [];
+  const count = Math.round((max - min) / step);
+  for (let index = 0; index <= count; index += 1) {
+    values.push(Number((min + index * step).toFixed(4)));
+  }
+  return values;
+}
+
+function availablePlans(overrides = state) {
+  if (overrides.menu === "tou") return ["tou"];
+  if (overrides.menu === "demand") return ["demand"];
   return ["tou", "demand"];
 }
 
-function signalScale(plan) {
-  if (plan === "tou") return clamp(state.spread - 1, 0, 2.3);
-  return clamp(state.demandCharge / 20, 0, 1.7);
+function signalScale(plan, overrides = state) {
+  if (plan === "tou") return clamp(overrides.spread - 1, 0, 2.3);
+  return clamp(overrides.demandCharge / 20, 0, 1.7);
 }
 
-function planOutcome(segment, plan, profile = null) {
-  const scale = signalScale(plan);
+function planOutcome(segment, plan, profile = null, overrides = state) {
+  const scale = signalScale(plan, overrides);
   const fit = profile ? profile.fit[plan] : 1;
   const response = profile ? profile.response[plan] : 1;
   const customerSavings = segment.savings[plan] * scale * fit;
@@ -200,9 +209,11 @@ function switchPullFor(customerSavings, threshold) {
   return clamp(0.18 + surplus / 32, 0.18, 1);
 }
 
-function profileChoice(segment, profile) {
-  const threshold = state.threshold * profile.thresholdMultiplier;
-  const outcomes = availablePlans().map((plan) => planOutcome(segment, plan, profile));
+function profileChoice(segment, profile, overrides = state) {
+  const threshold = overrides.threshold * profile.thresholdMultiplier;
+  const outcomes = availablePlans(overrides).map((plan) =>
+    planOutcome(segment, plan, profile, overrides),
+  );
   const eligible = outcomes.filter(
     (outcome) => switchPullFor(outcome.customerSavings, threshold) > 0,
   );
@@ -214,7 +225,7 @@ function profileChoice(segment, profile) {
 
   const maxSavings = Math.max(...eligible.map((outcome) => outcome.customerSavings));
   const grossSwitchShare = clamp(
-    state.adoption *
+    overrides.adoption *
       profile.adoptionMultiplier *
       switchPullFor(maxSavings, threshold),
     0,
@@ -233,7 +244,7 @@ function profileChoice(segment, profile) {
   return { profile, threshold, shares, outcomes };
 }
 
-function rowsForState() {
+function rowsForState(overrides = state) {
   const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
   return segmentDefs.map((segment) => {
     const homes = (segment.homes / denominator) * portfolioSize;
@@ -248,7 +259,7 @@ function rowsForState() {
 
     householdProfiles.forEach((profile) => {
       const profileHomes = homes * profile.weight;
-      const choice = profileChoice(segment, profile);
+      const choice = profileChoice(segment, profile, overrides);
       const outcomesByPlan = Object.fromEntries(
         choice.outcomes.map((outcome) => [outcome.plan, outcome]),
       );
@@ -382,6 +393,323 @@ function aggregate(rows = rowsForState()) {
     automatedSwitcherShare,
     selectionSkew: automatedSwitcherShare - automatedShare,
   };
+}
+
+function scenarioTotals(total, metadata) {
+  return {
+    ...metadata,
+    baselineRevenue: total.baselineRevenue,
+    baselineCost: total.baselineCost,
+    revenue: total.revenue,
+    utilityCost: total.utilityCost,
+    revenueDelta: total.revenue - total.baselineRevenue,
+    costAvoided: total.costAvoided,
+    leakage: total.leakage,
+    marginDelta: total.marginDelta,
+    switchHomes: total.switchHomes ?? portfolioSize,
+    touSwitchHomes: total.touSwitchHomes ?? 0,
+    demandSwitchHomes: total.demandSwitchHomes ?? 0,
+  };
+}
+
+function evaluateOptionalMenu(menu, overrides = state) {
+  const scenario = { ...overrides, menu };
+  return scenarioTotals(aggregate(rowsForState(scenario)), {
+    type: "optional",
+    menu,
+    label:
+      menu === "tou"
+        ? "Optional TOU"
+        : menu === "demand"
+          ? "Optional demand"
+          : "Optional TOU + demand",
+    spread: scenario.spread,
+    demandCharge: scenario.demandCharge,
+  });
+}
+
+function evaluateRequiredPlan(plan, overrides = state) {
+  const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
+  let baselineRevenue = 0;
+  let baselineCost = 0;
+  let revenue = 0;
+  let utilityCost = 0;
+
+  segmentDefs.forEach((segment) => {
+    const homes = (segment.homes / denominator) * portfolioSize;
+    baselineRevenue += homes * base.fixedBill;
+    baselineCost += homes * base.utilityCost;
+
+    householdProfiles.forEach((profile) => {
+      const profileHomes = homes * profile.weight;
+      const outcome = planOutcome(segment, plan, profile, overrides);
+      revenue += profileHomes * outcome.bill;
+      utilityCost += profileHomes * outcome.utilityCost;
+    });
+  });
+
+  const total = {
+    baselineRevenue,
+    baselineCost,
+    revenue,
+    utilityCost,
+    leakage: baselineRevenue - revenue,
+    costAvoided: baselineCost - utilityCost,
+    marginDelta: revenue - utilityCost - (baselineRevenue - baselineCost),
+    switchHomes: portfolioSize,
+  };
+
+  return scenarioTotals(total, {
+    type: "required",
+    plan,
+    label: plan === "tou" ? "Required TOU" : "Required demand",
+    spread: overrides.spread,
+    demandCharge: overrides.demandCharge,
+  });
+}
+
+function toneFor(value) {
+  if (value > 0.5) return "positive";
+  if (value < -0.5) return "negative";
+  return "neutral";
+}
+
+function formatSpread(value) {
+  return Number(value).toFixed(1);
+}
+
+function formatDemand(value) {
+  return `$${Math.round(value)}`;
+}
+
+function candidateSettingLabel(candidate) {
+  if (candidate.menu === "both") {
+    return `${formatSpread(candidate.spread)}x TOU, ${formatDemand(candidate.demandCharge)}/kW-mo`;
+  }
+  if (candidate.plan === "tou" || candidate.menu === "tou") {
+    return `${formatSpread(candidate.spread)}x TOU`;
+  }
+  return `${formatDemand(candidate.demandCharge)}/kW-mo`;
+}
+
+function bestByMargin(candidates) {
+  return candidates.reduce((best, candidate) =>
+    candidate.marginDelta > best.marginDelta ? candidate : best,
+  );
+}
+
+function phase2FrontierCandidates() {
+  const spreadValues = rangeValues(1, 5, 0.25);
+  const demandValues = rangeValues(0, 30, 1);
+  const candidates = [];
+
+  spreadValues.forEach((spread) => {
+    const scenario = { ...state, spread };
+    candidates.push(evaluateRequiredPlan("tou", scenario));
+    candidates.push(evaluateOptionalMenu("tou", scenario));
+  });
+
+  demandValues.forEach((demandCharge) => {
+    const scenario = { ...state, demandCharge };
+    candidates.push(evaluateRequiredPlan("demand", scenario));
+    candidates.push(evaluateOptionalMenu("demand", scenario));
+  });
+
+  spreadValues.forEach((spread) => {
+    demandValues.forEach((demandCharge) => {
+      candidates.push(evaluateOptionalMenu("both", { ...state, spread, demandCharge }));
+    });
+  });
+
+  return candidates;
+}
+
+function frontierSeries(kind) {
+  const xValues = kind === "tou" ? rangeValues(1, 5, 0.1) : rangeValues(0, 30, 1);
+  const scenarioForX = (x) =>
+    kind === "tou" ? { ...state, spread: x } : { ...state, demandCharge: x };
+  const xKey = kind === "tou" ? "spread" : "demandCharge";
+  const requiredPlan = kind === "tou" ? "tou" : "demand";
+  const optionalMenu = kind === "tou" ? "tou" : "demand";
+  const optionalColor = kind === "tou" ? "#b36b00" : "#087f8c";
+
+  const attachX = (candidate, x) => ({ ...candidate, x });
+
+  return [
+    {
+      key: "required",
+      label: kind === "tou" ? "Required TOU" : "Required demand",
+      color: "#64717b",
+      dash: "5 5",
+      points: xValues.map((x) => attachX(evaluateRequiredPlan(requiredPlan, scenarioForX(x)), x)),
+    },
+    {
+      key: "optional",
+      label: kind === "tou" ? "Optional TOU only" : "Optional demand only",
+      color: optionalColor,
+      dash: "",
+      points: xValues.map((x) => attachX(evaluateOptionalMenu(optionalMenu, scenarioForX(x)), x)),
+    },
+    {
+      key: "both",
+      label: "Optional TOU + demand",
+      color: "#2e7d32",
+      dash: "",
+      points: xValues.map((x) => attachX(evaluateOptionalMenu("both", scenarioForX(x)), x)),
+    },
+  ].map((series) => ({ ...series, xKey }));
+}
+
+function axisDollar(value) {
+  if (Math.abs(value) < 1) return "$0";
+  const prefix = value > 0 ? "+" : "-";
+  const magnitude = Math.abs(value);
+  return `${prefix}$${Math.round(magnitude / 100) / 10}k`;
+}
+
+function renderFrontierChart(kind) {
+  const svg = document.getElementById(
+    kind === "tou" ? "phase2-tou-frontier" : "phase2-demand-frontier",
+  );
+  const width = 700;
+  const height = 340;
+  const pad = { top: 34, right: 32, bottom: 58, left: 78 };
+  const series = frontierSeries(kind);
+  const allPoints = series.flatMap((item) =>
+    item.points.map((point) => ({ ...point, seriesColor: item.color })),
+  );
+  const xMin = series[0].points[0].x;
+  const xMax = series[0].points[series[0].points.length - 1].x;
+  const maxAbs = Math.max(500, ...allPoints.map((point) => Math.abs(point.marginDelta)));
+  const yMax = Math.ceil((maxAbs * 1.12) / 250) * 250;
+  const yMin = -yMax;
+  const chartWidth = width - pad.left - pad.right;
+  const chartHeight = height - pad.top - pad.bottom;
+  const xFor = (value) => pad.left + ((value - xMin) / (xMax - xMin)) * chartWidth;
+  const yFor = (value) => pad.top + ((yMax - value) / (yMax - yMin)) * chartHeight;
+  const xLabel = (value) =>
+    kind === "tou" ? `${formatSpread(value)}x` : formatDemand(value);
+  const currentX = kind === "tou" ? state.spread : state.demandCharge;
+  const currentScreenX = xFor(currentX);
+  const bestPoint = bestByMargin(allPoints);
+  const bestX = xFor(bestPoint.x);
+  const bestY = yFor(bestPoint.marginDelta);
+  const bestAnchor = bestX > width - 150 ? "end" : "start";
+  const bestLabelX = bestAnchor === "end" ? bestX - 9 : bestX + 9;
+  const bestLabelY = Math.max(pad.top + 12, bestY - 10);
+  const grid = [-1, -0.5, 0, 0.5, 1]
+    .map((fraction) => {
+      const value = yMax * fraction;
+      const y = yFor(value);
+      return `
+        <line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${value === 0 ? "#aab6bd" : "#d9e0e4"}" stroke-width="${value === 0 ? "1.4" : "1"}" />
+        <text x="${pad.left - 12}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="#64717b" font-size="11" font-weight="700">${axisDollar(value)}</text>
+      `;
+    })
+    .join("");
+  const xTickInterval = kind === "tou" ? 0.5 : 5;
+  const xTicks = series[0].points
+    .filter((point) => {
+      const scaled = Math.round((point.x - xMin) / xTickInterval);
+      return Math.abs(point.x - (xMin + scaled * xTickInterval)) < 0.001 || point.x === xMax;
+    })
+    .map((point) => {
+      const x = xFor(point.x);
+      return `
+        <line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${height - pad.bottom}" y2="${height - pad.bottom + 5}" stroke="#aab6bd" />
+        <text x="${x.toFixed(1)}" y="${height - 30}" text-anchor="middle" fill="#64717b" font-size="10" font-weight="700">${xLabel(point.x)}</text>
+      `;
+    })
+    .join("");
+  const paths = series
+    .map((item) => {
+      const path = item.points
+        .map((point, index) => {
+          const x = xFor(point.x);
+          const y = yFor(point.marginDelta);
+          return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+        })
+        .join(" ");
+      return `<path d="${path}" fill="none" stroke="${item.color}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${item.dash}" />`;
+    })
+    .join("");
+  const currentMarkers = series
+    .map((item) => {
+      const current = item.points.reduce((closest, point) =>
+        Math.abs(point.x - currentX) < Math.abs(closest.x - currentX) ? point : closest,
+      );
+      return `<circle cx="${xFor(current.x).toFixed(1)}" cy="${yFor(current.marginDelta).toFixed(1)}" r="4.5" fill="${item.color}" stroke="#fff" stroke-width="2" />`;
+    })
+    .join("");
+  const holdLabel =
+    kind === "tou"
+      ? `Demand price held at ${formatDemand(state.demandCharge)}/kW-mo`
+      : `TOU held at ${formatSpread(state.spread)}x`;
+
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.innerHTML = `
+    <title>${kind === "tou" ? "TOU" : "Demand"} menu margin frontier</title>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
+    ${grid}
+    <line x1="${pad.left}" x2="${width - pad.right}" y1="${height - pad.bottom}" y2="${height - pad.bottom}" stroke="#aab6bd" />
+    <line x1="${pad.left}" x2="${pad.left}" y1="${pad.top}" y2="${height - pad.bottom}" stroke="#aab6bd" />
+    ${xTicks}
+    ${paths}
+    <line x1="${currentScreenX.toFixed(1)}" x2="${currentScreenX.toFixed(1)}" y1="${pad.top}" y2="${height - pad.bottom}" stroke="#172026" stroke-width="1.4" stroke-dasharray="5 5" />
+    ${currentMarkers}
+    <circle cx="${bestX.toFixed(1)}" cy="${bestY.toFixed(1)}" r="6" fill="#fbfcfd" stroke="#172026" stroke-width="2" />
+    <text x="${bestLabelX.toFixed(1)}" y="${bestLabelY.toFixed(1)}" text-anchor="${bestAnchor}" fill="#172026" font-size="10" font-weight="860">best ${signedMoney(bestPoint.marginDelta)}</text>
+    <text x="${currentScreenX.toFixed(1)}" y="${pad.top + 13}" text-anchor="middle" fill="#172026" font-size="10" font-weight="820">current</text>
+    <text x="${pad.left}" y="${height - 9}" fill="#64717b" font-size="11" font-weight="720">${kind === "tou" ? "TOU peak/off-peak spread" : "$/kW-month demand charge"}; monthly margin vs flat baseline</text>
+    <text x="20" y="${height / 2}" transform="rotate(-90 20 ${height / 2})" text-anchor="middle" fill="#64717b" font-size="11" font-weight="760">Margin delta</text>
+    <text x="${pad.left}" y="20" fill="#64717b" font-size="10" font-weight="720">${holdLabel}</text>
+  `;
+}
+
+function renderFrontierSummary() {
+  const candidates = phase2FrontierCandidates();
+  const bestOptional = bestByMargin(candidates.filter((candidate) => candidate.type === "optional"));
+  const bestRequired = bestByMargin(candidates.filter((candidate) => candidate.type === "required"));
+  const currentOptional = evaluateOptionalMenu(state.menu, state);
+  const currentRequired = bestByMargin([
+    evaluateRequiredPlan("tou", state),
+    evaluateRequiredPlan("demand", state),
+  ]);
+  const bestAdvantage = bestOptional.marginDelta - bestRequired.marginDelta;
+  const currentAdvantage = currentOptional.marginDelta - currentRequired.marginDelta;
+
+  document.getElementById("phase2-frontier-metrics").innerHTML = `
+    <div class="mini-metric phase2-frontier-metric ${toneFor(currentOptional.marginDelta)}">
+      <label>Current optional menu</label>
+      <strong>${signedMoney(currentOptional.marginDelta)}</strong>
+      <small>${currentOptional.label} at ${candidateSettingLabel(currentOptional)}</small>
+      <small>${num.format(currentOptional.switchHomes)} switchers; revenue ${signedMoney(currentOptional.revenueDelta)}</small>
+    </div>
+    <div class="mini-metric phase2-frontier-metric ${toneFor(bestOptional.marginDelta)}">
+      <label>Best optional menu</label>
+      <strong>${signedMoney(bestOptional.marginDelta)}</strong>
+      <small>${bestOptional.label} at ${candidateSettingLabel(bestOptional)}</small>
+      <small>${num.format(bestOptional.switchHomes)} switchers; revenue ${signedMoney(bestOptional.revenueDelta)}</small>
+    </div>
+    <div class="mini-metric phase2-frontier-metric ${toneFor(bestRequired.marginDelta)}">
+      <label>Best required reference</label>
+      <strong>${signedMoney(bestRequired.marginDelta)}</strong>
+      <small>${bestRequired.label} at ${candidateSettingLabel(bestRequired)}</small>
+      <small>All ${num.format(portfolioSize)} homes on one non-flat plan</small>
+    </div>
+    <div class="mini-metric phase2-frontier-metric ${toneFor(bestAdvantage)}">
+      <label>Best optional vs required</label>
+      <strong>${signedMoney(bestAdvantage)}</strong>
+      <small>Current optional gap: ${signedMoney(currentAdvantage)}</small>
+      <small>Positive means optional menu wins on modeled margin.</small>
+    </div>
+  `;
+}
+
+function renderFrontierCharts() {
+  renderFrontierChart("tou");
+  renderFrontierChart("demand");
+  renderFrontierSummary();
 }
 
 function renderSummary(rows) {
@@ -757,6 +1085,10 @@ function renderTable(rows) {
 function updateControlLabels() {
   document.getElementById("phase2-spread-value").textContent = state.spread.toFixed(1);
   document.getElementById("phase2-demand-value").textContent = state.demandCharge.toFixed(0);
+  document.getElementById("phase2-demand").value = state.demandCharge;
+  document.getElementById("phase2-frontier-demand-value").textContent =
+    state.demandCharge.toFixed(0);
+  document.getElementById("phase2-frontier-demand").value = state.demandCharge;
   document.getElementById("phase2-threshold-value").textContent = state.threshold.toFixed(0);
   document.getElementById("phase2-adoption-value").textContent = Math.round(state.adoption * 100);
   document.querySelectorAll("[data-menu]").forEach((button) => {
@@ -768,6 +1100,7 @@ function render() {
   updateControlLabels();
   const rows = rowsForState();
   renderSummary(rows);
+  renderFrontierCharts();
   renderLeakageChart(rows);
   renderSelectionChart(rows);
   renderTable(rows);
@@ -894,6 +1227,11 @@ document.getElementById("phase2-spread").addEventListener("input", (event) => {
 });
 
 document.getElementById("phase2-demand").addEventListener("input", (event) => {
+  state.demandCharge = Number(event.target.value);
+  render();
+});
+
+document.getElementById("phase2-frontier-demand").addEventListener("input", (event) => {
   state.demandCharge = Number(event.target.value);
   render();
 });

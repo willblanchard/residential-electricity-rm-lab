@@ -6,32 +6,11 @@
     <title>Population | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css?v=20260523-costs" />
+    <script src="site-header.js?v=20260523-reused-header" defer></script>
   </head>
   <body>
     <div class="shell">
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand">
-            <div class="mark" aria-hidden="true">RM</div>
-            <div>
-              <p class="brand-title">Residential Electricity RM Lab</p>
-              <p class="brand-subtitle">population definition</p>
-            </div>
-          </div>
-          <nav class="page-nav presentation-nav" aria-label="presentation pages">
-            <a href="index.html">Summary / Intro</a>
-            <a href="wtp-segmentation.html">WTP + Segmentation</a>
-            <a href="optimization-model.html">Optimization Model</a>
-            <a href="implementation-validation.html">Implementation</a>
-            <a href="energy-capacity-costs.html">Energy + Capacity</a>
-            <a class="active" aria-current="page" href="population.html">Population</a>
-            <a href="phase1.html">Single Price Results</a>
-            <a href="phase2.html">Parallel Options Results</a>
-            <a href="limitations-future-work.html">Limitations</a>
-            <a href="final-takeaway.html">Takeaway</a>
-          </nav>
-        </div>
-      </header>
+      <rm-site-header page="population" subtitle="population definition"></rm-site-header>
 
       <main class="main population-page">
         <section class="intro" aria-labelledby="page-title">
@@ -92,6 +71,29 @@
               kWh, and peak can be compared on the same base.
             </p>
           </article>
+        </section>
+
+        <section class="population-panel population-allocation-panel" aria-labelledby="allocation-title">
+          <div class="section-head">
+            <div>
+              <h2 id="allocation-title">Portfolio allocation</h2>
+              <p>
+                Edit allocation shares here. The model normalizes the shares
+                into a 10,000-home portfolio for the revenue map and totals.
+              </p>
+              <p>
+                The original 3x3 is expanded into 3 rate plans x 2 behavior
+                types x 2 thermostat states x 2 battery states.
+              </p>
+            </div>
+            <p class="section-note">
+              Passive means human behavior and non-controlled loads do not
+              respond. Thermostats and automated home batteries can still act
+              automatically inside those homes.
+            </p>
+          </div>
+          <div class="population-inputs" id="population-inputs"></div>
+          <div class="population-total" id="population-total">--</div>
         </section>
 
         <section class="population-cases" aria-labelledby="population-cases-title">
@@ -303,7 +305,7 @@
             </div>
             <div>
               <strong>Controllable mix</strong>
-              <span>The Single Price Results allocation controls can stress-test the shares without redefining the buckets.</span>
+              <span>The allocation controls above can stress-test the shares without redefining the buckets.</span>
             </div>
             <div>
               <strong>Choice is separate</strong>
@@ -404,22 +406,8 @@
             </table>
           </div>
         </section>
-
-        <section class="panel bottom-export" aria-labelledby="population-next-title">
-          <div>
-            <h2 id="population-next-title">Next results step</h2>
-            <p>
-              With the cost logic explained and the population fixed, Single
-              Price Results applies flat, TOU, and demand-charge pricing to the
-              same portfolio.
-            </p>
-          </div>
-          <nav class="nav-actions" aria-label="population next page">
-            <a class="button primary" href="phase1.html">Open single price results</a>
-            <a class="button" href="energy-capacity-costs.html">Review energy + capacity</a>
-          </nav>
-        </section>
       </main>
     </div>
+    <script src="app.js?v=20260523-population-allocation"></script>
   </body>
 </html>

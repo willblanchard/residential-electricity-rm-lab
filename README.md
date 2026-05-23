@@ -12,7 +12,7 @@ and static WattShift tariff outputs.
 - `index.html`: Summary / Intro page and ten-page navigation map.
 - `wtp-segmentation.html`: WTP + Segmentation calibration page built from the
   demand-curve source files.
-- `population.html`: standalone population definition and baseline bucket mix.
+- `population.html`: standalone population definition and editable allocation mix.
 - `energy-capacity-costs.html`: general primer on energy versus capacity costs.
 - `optimization-model.html`: model objective, variables, and constraints.
 - `implementation-validation.html`: implementation and validation narrative.
@@ -23,6 +23,7 @@ and static WattShift tariff outputs.
 - `phase3.html`: compatibility redirect to `wtp-segmentation.html`.
 - `styles.css`: design tokens, layout, responsive rules, chart containers, and
   control styling.
+- `site-header.js`: shared presentation header and navigation order.
 - `profiles.js`: generated 100-profile building-demand ensemble used to vary
   hourly load shape while preserving the baseline monthly usage level.
 - `app.js`: embedded data, tariff calibration, customer/device response models,
@@ -67,9 +68,10 @@ changes.
 ## Phase boundary
 
 `phase1.html` is Single Price Results: a universal-rate comparison where flat, TOU, and
-demand-charge tariffs are each applied to the same portfolio mix. It does not
-model customers choosing among parallel fixed-rate and optional TOU/demand
-plans.
+demand-charge tariffs are each applied to the same portfolio mix. The editable
+portfolio allocation lives on `population.html` and is reused by the results
+page in the browser. It does not model customers choosing among parallel
+fixed-rate and optional TOU/demand plans.
 
 Population leakage and adverse selection from optional rate choice belong in a
 separate Parallel Options Results page or model. That extension should track switchers versus

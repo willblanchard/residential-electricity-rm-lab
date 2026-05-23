@@ -53,6 +53,10 @@ select {
   backdrop-filter: blur(14px);
 }
 
+rm-site-header {
+  display: block;
+}
+
 .topbar-inner {
   display: flex;
   align-items: center;
@@ -2331,6 +2335,74 @@ tr:hover td {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.phase2-frontier-section {
+  margin-top: 4px;
+}
+
+.phase2-frontier-panel {
+  padding: 16px;
+}
+
+.phase2-frontier-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.phase2-frontier-chart {
+  min-width: 0;
+}
+
+.phase2-frontier-chart h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.frontier-inline-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.frontier-inline-control label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.frontier-inline-control strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 840;
+}
+
+.frontier-inline-control input {
+  grid-column: 1 / -1;
+}
+
+.phase2-frontier-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.phase2-frontier-metric.positive strong {
+  color: var(--green);
+}
+
+.phase2-frontier-metric.negative strong {
+  color: var(--red);
+}
+
+.phase2-frontier-metric.neutral strong {
+  color: var(--muted);
+}
+
 .choice-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
@@ -2526,6 +2598,7 @@ tr:hover td {
   .story-grid,
   .selected-case-layout,
   .choice-layout,
+  .phase2-frontier-grid,
   .phase3-wtp-panel,
   .wtp-behavior-panel,
   .cost-comparison-grid,
@@ -2546,6 +2619,7 @@ tr:hover td {
 
   .mini-metrics,
   .phase2-metrics,
+  .phase2-frontier-metrics,
   .optimization-chart-metrics,
   .phase3-kpi-grid,
   .phase3-wtp-metrics {
@@ -2623,6 +2697,7 @@ tr:hover td {
 
   .mini-metrics,
   .phase2-metrics,
+  .phase2-frontier-metrics,
   .optimization-chart-metrics,
   .phase3-kpi-grid,
   .phase3-wtp-metrics {
