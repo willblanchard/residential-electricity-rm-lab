@@ -416,17 +416,18 @@ function renderLeakageChart(rows) {
   const svg = document.getElementById("phase2-leakage-chart");
   const total = aggregate(rows);
   const width = 760;
-  const height = 390;
+  const height = 430;
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   const red = "#b13a2f";
   const teal = "#087f8c";
   const green = "#2e7d32";
   const muted = "#64717b";
   const text = "#172026";
   const line = "#d9e0e4";
-  const barX = 96;
-  const barY = 64;
+  const barX = 92;
+  const barY = 70;
   const barWidth = 560;
-  const barHeight = 34;
+  const barHeight = 32;
   const marginColor = total.marginDelta >= 0 ? green : red;
   const bridgeMax = Math.max(total.costAvoided, total.leakage, 1);
   const leakageWidth = (total.leakage / bridgeMax) * barWidth;
@@ -448,22 +449,69 @@ function renderLeakageChart(rows) {
       color: red,
     },
   ];
-  const axisX = 370;
-  const splitY0 = 216;
-  const rowGap = 66;
-  const splitScale = 240 / Math.max(1, ...splitRows.map((row) => Math.abs(row.margin)));
+  const splitPlotLeft = 274;
+  const splitAxisX = 398;
+  const splitPlotRight = 684;
+  const splitTrackWidth = splitPlotRight - splitPlotLeft;
+  const splitRowTop = 232;
+  const splitRowGap = 76;
+  const splitRowHeight = 58;
+  const splitBarHeight = 30;
+  const maxPositive = Math.max(
+    0,
+    ...splitRows.map((row) => Math.max(row.margin, 0)),
+  );
+  const maxNegative = Math.max(
+    0,
+    ...splitRows.map((row) => Math.max(-row.margin, 0)),
+  );
+  const positiveScale =
+    maxPositive > 0 ? (splitPlotRight - splitAxisX) / maxPositive : Infinity;
+  const negativeScale =
+    maxNegative > 0 ? (splitAxisX - splitPlotLeft) / maxNegative : Infinity;
+  const splitScale = Number.isFinite(Math.min(positiveScale, negativeScale))
+    ? Math.min(positiveScale, negativeScale)
+    : 1;
   const splitBars = splitRows
     .map((row, index) => {
-      const y = splitY0 + index * rowGap;
-      const bar = Math.abs(row.margin) * splitScale;
-      const x = row.margin >= 0 ? axisX : axisX - bar;
-      const labelX = row.margin >= 0 ? x + bar + 10 : x - 10;
-      const anchor = row.margin >= 0 ? "start" : "end";
+      const rowY = splitRowTop + index * splitRowGap;
+      const barY = rowY + 14;
+      const bar = Math.abs(row.margin) > 0
+        ? Math.max(Math.abs(row.margin) * splitScale, 6)
+        : 0;
+      const x = row.margin >= 0 ? splitAxisX : splitAxisX - bar;
+      const valueInside = bar >= 72;
+      const valueX =
+        row.margin >= 0
+          ? valueInside
+            ? x + bar - 10
+            : x + bar + 10
+          : valueInside
+            ? x + 10
+            : x - 10;
+      const valueAnchor =
+        row.margin >= 0
+          ? valueInside
+            ? "end"
+            : "start"
+          : valueInside
+            ? "start"
+            : "end";
+      const valueFill = valueInside ? "#fff" : row.color;
+      const trackFill =
+        row.margin >= 0 ? "rgba(46, 125, 50, 0.08)" : "rgba(177, 58, 47, 0.08)";
       return `
-        <text x="70" y="${y + 7}" fill="${text}" font-size="12" font-weight="820">${row.label}</text>
-        <text x="70" y="${y + 25}" fill="${muted}" font-size="10" font-weight="720">${num.format(row.homes)} homes</text>
-        <rect x="${x.toFixed(1)}" y="${(y - 12).toFixed(1)}" width="${bar.toFixed(1)}" height="28" rx="6" fill="${row.color}" />
-        <text x="${labelX.toFixed(1)}" y="${y + 6}" text-anchor="${anchor}" fill="${row.color}" font-size="12" font-weight="840">${signedMoney(row.margin)}</text>
+        <rect x="48" y="${rowY.toFixed(1)}" width="${width - 96}" height="${splitRowHeight}" rx="9" fill="#fff" stroke="${line}" />
+        <text x="70" y="${rowY + 23}" fill="${text}" font-size="12" font-weight="840">${row.label}</text>
+        <text x="70" y="${rowY + 42}" fill="${muted}" font-size="10" font-weight="740">${num.format(row.homes)} homes</text>
+        <rect x="${splitPlotLeft}" y="${barY}" width="${splitTrackWidth}" height="${splitBarHeight}" rx="8" fill="${trackFill}" />
+        <line x1="${splitAxisX}" x2="${splitAxisX}" y1="${barY - 5}" y2="${barY + splitBarHeight + 5}" stroke="#aab6bd" stroke-width="1.4" />
+        ${
+          bar > 0
+            ? `<rect x="${x.toFixed(1)}" y="${barY}" width="${bar.toFixed(1)}" height="${splitBarHeight}" rx="8" fill="${row.color}" />
+              <text x="${valueX.toFixed(1)}" y="${barY + 20}" text-anchor="${valueAnchor}" fill="${valueFill}" font-size="12" font-weight="880">${signedMoney(row.margin)}</text>`
+            : `<text x="${(splitAxisX + 10).toFixed(1)}" y="${barY + 20}" fill="${muted}" font-size="12" font-weight="820">${signedMoney(0)}</text>`
+        }
       `;
     })
     .join("");
@@ -484,16 +532,18 @@ function renderLeakageChart(rows) {
     <rect x="${barX}" y="${barY}" width="${leakageWidth.toFixed(1)}" height="${barHeight}" rx="9" fill="${red}" />
     ${marginSegment}
     <line x1="${(barX + avoidedWidth).toFixed(1)}" x2="${(barX + avoidedWidth).toFixed(1)}" y1="${barY - 8}" y2="${barY + barHeight + 8}" stroke="${teal}" stroke-width="2" />
-    <text x="${barX}" y="122" fill="${red}" font-size="11" font-weight="820">Revenue leakage ${money.format(total.leakage)}</text>
-    <text x="${barX + barWidth}" y="122" text-anchor="end" fill="${marginColor}" font-size="11" font-weight="820">${marginLabel} ${signedMoney(total.marginDelta)}</text>
-    <text x="${barX + avoidedWidth}" y="${barY - 12}" text-anchor="middle" fill="${teal}" font-size="12" font-weight="860">Cost avoided ${money.format(total.costAvoided)}</text>
-    <line x1="48" x2="${width - 48}" y1="150" y2="150" stroke="${line}" />
-    <text x="48" y="178" fill="${text}" font-size="13" font-weight="840">Gross-margin split by switcher type</text>
-    <text x="48" y="197" fill="${muted}" font-size="10" font-weight="720">Positive-margin homes more than cover the losses from customers whose bill savings exceed avoided cost.</text>
-    <line x1="${axisX}" x2="${axisX}" y1="205" y2="338" stroke="#aab6bd" stroke-width="1.4" />
-    <text x="${axisX}" y="358" text-anchor="middle" fill="${muted}" font-size="10" font-weight="720">$0 margin</text>
+    <text x="${barX}" y="124" fill="${red}" font-size="11" font-weight="840">Revenue leakage</text>
+    <text x="${barX}" y="143" fill="${red}" font-size="13" font-weight="880">${money.format(total.leakage)}</text>
+    <text x="${barX + barWidth}" y="124" text-anchor="end" fill="${marginColor}" font-size="11" font-weight="840">${marginLabel}</text>
+    <text x="${barX + barWidth}" y="143" text-anchor="end" fill="${marginColor}" font-size="13" font-weight="880">${signedMoney(total.marginDelta)}</text>
+    <text x="${barX + avoidedWidth}" y="${barY - 12}" text-anchor="middle" fill="${teal}" font-size="12" font-weight="880">Cost avoided ${money.format(total.costAvoided)}</text>
+    <line x1="48" x2="${width - 48}" y1="170" y2="170" stroke="${line}" />
+    <text x="48" y="198" fill="${text}" font-size="13" font-weight="840">Gross-margin split by switcher type</text>
+    <text x="48" y="217" fill="${muted}" font-size="10" font-weight="720">Positive-margin homes are shown to the right of zero; negative-margin homes are shown to the left.</text>
+    <text x="${splitAxisX}" y="224" text-anchor="middle" fill="${muted}" font-size="9" font-weight="760">$0</text>
     ${splitBars}
-    <text x="${width - 64}" y="358" text-anchor="end" fill="${marginColor}" font-size="12" font-weight="860">Net ${signedMoney(total.marginDelta)}</text>
+    <rect x="${width - 222}" y="390" width="174" height="28" rx="7" fill="${total.marginDelta >= 0 ? "#e5f2e6" : "#f7e7e4"}" />
+    <text x="${width - 64}" y="409" text-anchor="end" fill="${marginColor}" font-size="12" font-weight="880">Net ${signedMoney(total.marginDelta)}</text>
   `;
 }
 
