@@ -1687,6 +1687,14 @@ tr:hover td {
   color: var(--green);
 }
 
+.phase2-metric.tou strong {
+  color: var(--amber);
+}
+
+.phase2-metric.demand strong {
+  color: var(--teal);
+}
+
 .phase2-table-panel {
   margin-top: 18px;
   padding: 0;
@@ -1697,34 +1705,43 @@ tr:hover td {
 }
 
 .phase2-table-panel table {
-  min-width: 1080px;
+  min-width: 1260px;
 }
 
-.plan-label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: var(--panel-2);
+.plan-mix-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 190px;
   color: var(--muted);
   font-size: 11px;
-  font-weight: 820;
+  font-weight: 760;
 }
 
-.plan-label.tou {
-  background: #f3eadc;
-  color: #7d4b00;
-}
-
-.plan-label.demand {
-  background: #e5f4f5;
-  color: var(--teal-dark);
-}
-
-.plan-label.fixed {
+.plan-mix-bar {
+  display: flex;
+  width: 180px;
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
   background: #eef1f3;
-  color: #4c5961;
+}
+
+.plan-mix-segment {
+  display: block;
+  min-width: 0;
+  height: 100%;
+}
+
+.plan-mix-segment.fixed {
+  background: #eef1f3;
+}
+
+.plan-mix-segment.tou {
+  background: var(--amber);
+}
+
+.plan-mix-segment.demand {
+  background: var(--teal);
 }
 
 @media (max-width: 980px) {

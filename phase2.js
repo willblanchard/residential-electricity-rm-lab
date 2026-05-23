@@ -111,6 +111,49 @@ const segmentDefs = [
   },
 ];
 
+const householdProfiles = [
+  {
+    label: "Low fit / high friction",
+    weight: 0.18,
+    fit: { tou: 0.62, demand: 0.68 },
+    costFit: 0.7,
+    thresholdMultiplier: 1.55,
+    adoptionMultiplier: 0.62,
+  },
+  {
+    label: "Average home",
+    weight: 0.3,
+    fit: { tou: 0.96, demand: 0.96 },
+    costFit: 0.95,
+    thresholdMultiplier: 1,
+    adoptionMultiplier: 0.92,
+  },
+  {
+    label: "TOU-shaped use",
+    weight: 0.18,
+    fit: { tou: 1.38, demand: 0.82 },
+    costFit: 1.05,
+    thresholdMultiplier: 0.86,
+    adoptionMultiplier: 1,
+  },
+  {
+    label: "Peak-kW intensive",
+    weight: 0.2,
+    fit: { tou: 0.84, demand: 1.38 },
+    costFit: 1.1,
+    thresholdMultiplier: 0.82,
+    adoptionMultiplier: 1.05,
+  },
+  {
+    label: "High response / low friction",
+    weight: 0.14,
+    fit: { tou: 1.48, demand: 1.48 },
+    costFit: 1.25,
+    thresholdMultiplier: 0.58,
+    adoptionMultiplier: 1.18,
+  },
+];
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -140,22 +183,15 @@ function signalScale(plan) {
   return clamp(state.demandCharge / 20, 0, 1.7);
 }
 
-function planName(plan) {
-  if (plan === "tou") return "TOU";
-  if (plan === "demand") return "Demand";
-  return "Fixed";
-}
-
-function planClass(plan) {
-  if (plan === "tou") return "tou";
-  if (plan === "demand") return "demand";
-  return "fixed";
-}
-
-function planOutcome(segment, plan) {
+function planOutcome(segment, plan, profile = null) {
   const scale = signalScale(plan);
-  const customerSavings = segment.savings[plan] * scale;
-  const costAvoided = Math.max(0, segment.avoided[plan] * Math.pow(scale, 0.88));
+  const fit = profile ? profile.fit[plan] : 1;
+  const customerSavings = segment.savings[plan] * scale * fit;
+  const avoidedFit = profile ? (0.45 + 0.55 * fit) * profile.costFit : 1;
+  const costAvoided = Math.max(
+    0,
+    segment.avoided[plan] * Math.pow(scale, 0.88) * avoidedFit,
+  );
   return {
     plan,
     customerSavings,
@@ -166,41 +202,94 @@ function planOutcome(segment, plan) {
   };
 }
 
-function bestOptionalPlan(segment) {
-  return availablePlans()
-    .map((plan) => planOutcome(segment, plan))
-    .sort((a, b) => b.customerSavings - a.customerSavings)[0];
+function switchPullFor(customerSavings, threshold) {
+  const surplus = customerSavings - threshold;
+  if (customerSavings <= 0 || surplus < 0) return 0;
+  return clamp(0.18 + surplus / 32, 0.18, 1);
 }
 
-function switchShareFor(customerSavings) {
-  if (customerSavings < state.threshold) return 0;
-  const pull = clamp(0.25 + (customerSavings - state.threshold) / 30, 0.25, 1);
-  return state.adoption * pull;
+function profileChoice(segment, profile) {
+  const threshold = state.threshold * profile.thresholdMultiplier;
+  const outcomes = availablePlans().map((plan) => planOutcome(segment, plan, profile));
+  const eligible = outcomes.filter((outcome) => switchPullFor(outcome.customerSavings, threshold) > 0);
+  const shares = { fixed: 1, tou: 0, demand: 0 };
+
+  if (eligible.length === 0) {
+    return { profile, threshold, shares, outcomes };
+  }
+
+  const maxSavings = Math.max(...eligible.map((outcome) => outcome.customerSavings));
+  const grossSwitchShare = clamp(
+    state.adoption *
+      profile.adoptionMultiplier *
+      switchPullFor(maxSavings, threshold),
+    0,
+    1,
+  );
+  const weights = eligible.map((outcome) =>
+    Math.exp(clamp((outcome.customerSavings - threshold) / 7, -4, 4)),
+  );
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+  eligible.forEach((outcome, index) => {
+    shares[outcome.plan] = grossSwitchShare * (weights[index] / totalWeight);
+  });
+  shares.fixed = 1 - shares.tou - shares.demand;
+
+  return { profile, threshold, shares, outcomes };
 }
 
 function rowsForState() {
   const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
   return segmentDefs.map((segment) => {
     const homes = (segment.homes / denominator) * portfolioSize;
-    const best = bestOptionalPlan(segment);
-    const switchShare = best ? switchShareFor(best.customerSavings) : 0;
-    const switchHomes = homes * switchShare;
-    const stayHomes = homes - switchHomes;
-    const selectedPlan = switchHomes > 0 ? best.plan : "fixed";
-    const customerSavings = switchHomes > 0 ? best.customerSavings : 0;
-    const costAvoided = switchHomes > 0 ? best.costAvoided : 0;
-    const marginDeltaPerSwitcher = switchHomes > 0 ? best.marginDelta : 0;
-    const revenue = stayHomes * base.fixedBill + switchHomes * (base.fixedBill - customerSavings);
-    const utilityCost = stayHomes * base.utilityCost + switchHomes * (base.utilityCost - costAvoided);
+    const planHomes = { fixed: 0, tou: 0, demand: 0 };
+    let revenue = 0;
+    let utilityCost = 0;
+
+    householdProfiles.forEach((profile) => {
+      const profileHomes = homes * profile.weight;
+      const choice = profileChoice(segment, profile);
+      const outcomesByPlan = Object.fromEntries(choice.outcomes.map((outcome) => [outcome.plan, outcome]));
+
+      planHomes.fixed += profileHomes * choice.shares.fixed;
+      revenue += profileHomes * choice.shares.fixed * base.fixedBill;
+      utilityCost += profileHomes * choice.shares.fixed * base.utilityCost;
+
+      ["tou", "demand"].forEach((plan) => {
+        const planShare = choice.shares[plan] || 0;
+        if (planShare <= 0) return;
+        const planHomeCount = profileHomes * planShare;
+        const outcome = outcomesByPlan[plan];
+        planHomes[plan] += planHomeCount;
+        revenue += planHomeCount * outcome.bill;
+        utilityCost += planHomeCount * outcome.utilityCost;
+      });
+    });
+
+    const stayHomes = planHomes.fixed;
+    const switchHomes = planHomes.tou + planHomes.demand;
     const baselineRevenue = homes * base.fixedBill;
     const baselineCost = homes * base.utilityCost;
+    const leakage = baselineRevenue - revenue;
+    const costAvoidedTotal = baselineCost - utilityCost;
+    const customerSavings = switchHomes > 0 ? leakage / switchHomes : 0;
+    const costAvoided = switchHomes > 0 ? costAvoidedTotal / switchHomes : 0;
+    const marginDeltaPerSwitcher = costAvoided - customerSavings;
+    const planShares = {
+      fixed: stayHomes / homes,
+      tou: planHomes.tou / homes,
+      demand: planHomes.demand / homes,
+    };
+
     return {
       ...segment,
       homes,
       stayHomes,
       switchHomes,
-      switchShare,
-      selectedPlan,
+      switchShare: switchHomes / homes,
+      planHomes,
+      planShares,
       customerSavings,
       costAvoided,
       marginDeltaPerSwitcher,
@@ -208,8 +297,8 @@ function rowsForState() {
       utilityCost,
       baselineRevenue,
       baselineCost,
-      leakage: baselineRevenue - revenue,
-      costAvoidedTotal: baselineCost - utilityCost,
+      leakage,
+      costAvoidedTotal,
       marginDelta: revenue - utilityCost - (baselineRevenue - baselineCost),
     };
   });
@@ -222,6 +311,8 @@ function aggregate(rows = rowsForState()) {
   const utilityCost = rows.reduce((sum, row) => sum + row.utilityCost, 0);
   const switchHomes = rows.reduce((sum, row) => sum + row.switchHomes, 0);
   const stayHomes = rows.reduce((sum, row) => sum + row.stayHomes, 0);
+  const touSwitchHomes = rows.reduce((sum, row) => sum + row.planHomes.tou, 0);
+  const demandSwitchHomes = rows.reduce((sum, row) => sum + row.planHomes.demand, 0);
   const leakage = baselineRevenue - revenue;
   const costAvoided = baselineCost - utilityCost;
   const marginDelta = revenue - utilityCost - (baselineRevenue - baselineCost);
@@ -242,6 +333,8 @@ function aggregate(rows = rowsForState()) {
     utilityCost,
     switchHomes,
     stayHomes,
+    touSwitchHomes,
+    demandSwitchHomes,
     leakage,
     costAvoided,
     marginDelta,
@@ -258,28 +351,27 @@ function renderSummary(rows) {
   document.getElementById("phase2-switch-homes").textContent =
     `${num.format(total.switchHomes)} homes`;
   document.getElementById("phase2-switch-note").textContent =
-    `${pct.format(total.switchHomes / portfolioSize)} of the 10,000-home portfolio leaves the fixed-rate pool`;
+    `${pct.format(total.switchHomes / portfolioSize)} of the portfolio leaves fixed: ${num.format(total.touSwitchHomes)} TOU, ${num.format(total.demandSwitchHomes)} demand`;
   document.getElementById("phase2-leakage").textContent = money.format(total.leakage);
   document.getElementById("phase2-cost-avoided").textContent = money.format(total.costAvoided);
   document.getElementById("phase2-margin-delta").textContent = signedMoney(total.marginDelta);
   document.getElementById("phase2-fixed-adder").textContent =
     `${money1.format(total.fixedAdderPerHome)}/mo`;
   document.getElementById("phase2-summary-note").textContent =
-    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Automated homes are ${pct.format(total.automatedShare)} of the portfolio but ${pct.format(total.automatedSwitcherShare)} of switchers.`;
+    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Within each broad segment, household load fit and WTP/friction create the TOU versus demand mix.`;
 
-  const metricClass = total.marginDelta >= 0 ? "positive" : "negative";
   document.getElementById("phase2-metrics").innerHTML = `
-    <div class="mini-metric phase2-metric">
-      <label>Optional revenue</label>
-      <strong>${money.format(total.revenue)}</strong>
-    </div>
     <div class="mini-metric phase2-metric">
       <label>Fixed stayers</label>
       <strong>${num.format(total.stayHomes)}</strong>
     </div>
-    <div class="mini-metric phase2-metric ${metricClass}">
-      <label>Margin vs all-fixed</label>
-      <strong>${signedMoney(total.marginDelta)}</strong>
+    <div class="mini-metric phase2-metric tou">
+      <label>TOU switchers</label>
+      <strong>${num.format(total.touSwitchHomes)}</strong>
+    </div>
+    <div class="mini-metric phase2-metric demand">
+      <label>Demand switchers</label>
+      <strong>${num.format(total.demandSwitchHomes)}</strong>
     </div>
     <div class="mini-metric phase2-metric">
       <label>Automation skew</label>
@@ -366,14 +458,23 @@ function renderSelectionChart(rows) {
     .map((row, index) => {
       const y = pad.top + index * (rowHeight + rowGap);
       const totalWidth = (row.homes / maxHomes) * chartWidth;
-      const switchWidth = (row.switchHomes / row.homes) * totalWidth || 0;
-      const stayWidth = Math.max(0, totalWidth - switchWidth);
-      const switchColor = row.selectedPlan === "demand" ? "#087f8c" : "#b36b00";
+      const stayWidth = (row.planHomes.fixed / row.homes) * totalWidth || 0;
+      const touWidth = (row.planHomes.tou / row.homes) * totalWidth || 0;
+      const demandWidth = (row.planHomes.demand / row.homes) * totalWidth || 0;
       const label = `${row.behaviorShort} / ${row.deviceShort}`;
+      const touRect =
+        touWidth > 0.8
+          ? `<rect x="${(pad.left + stayWidth).toFixed(1)}" y="${y}" width="${touWidth.toFixed(1)}" height="${rowHeight}" rx="7" fill="#b36b00" />`
+          : "";
+      const demandRect =
+        demandWidth > 0.8
+          ? `<rect x="${(pad.left + stayWidth + touWidth).toFixed(1)}" y="${y}" width="${demandWidth.toFixed(1)}" height="${rowHeight}" rx="7" fill="#087f8c" />`
+          : "";
       return `
         <text x="${pad.left - 12}" y="${y + 20}" text-anchor="end" fill="#172026" font-size="12" font-weight="760">${label}</text>
         <rect x="${pad.left}" y="${y}" width="${totalWidth.toFixed(1)}" height="${rowHeight}" rx="7" fill="#eef1f3" />
-        <rect x="${pad.left + stayWidth}" y="${y}" width="${switchWidth.toFixed(1)}" height="${rowHeight}" rx="7" fill="${switchColor}" />
+        ${touRect}
+        ${demandRect}
         <text x="${pad.left + totalWidth + 8}" y="${y + 20}" fill="#64717b" font-size="11" font-weight="720">${num.format(row.switchHomes)}</text>
       `;
     })
@@ -388,15 +489,45 @@ function renderSelectionChart(rows) {
   `;
 }
 
+function planMixText(row) {
+  const parts = [`Fixed ${pct.format(row.planShares.fixed)}`];
+  if (row.planShares.tou > 0.005) parts.push(`TOU ${pct.format(row.planShares.tou)}`);
+  if (row.planShares.demand > 0.005) parts.push(`Demand ${pct.format(row.planShares.demand)}`);
+  return parts.join(" | ");
+}
+
+function renderPlanMix(row) {
+  const segments = [
+    { plan: "fixed", share: row.planShares.fixed },
+    { plan: "tou", share: row.planShares.tou },
+    { plan: "demand", share: row.planShares.demand },
+  ]
+    .filter((item) => item.share > 0.001)
+    .map(
+      (item) =>
+        `<span class="plan-mix-segment ${item.plan}" style="width: ${(item.share * 100).toFixed(2)}%"></span>`,
+    )
+    .join("");
+  const text = planMixText(row);
+  return `
+    <div class="plan-mix-cell">
+      <div class="plan-mix-bar" aria-label="${text}">${segments}</div>
+      <span>${text}</span>
+    </div>
+  `;
+}
+
 function renderTable(rows) {
   document.getElementById("phase2-table").innerHTML = rows
     .map((row) => `
       <tr>
         <td>${row.behavior}</td>
         <td>${row.device}</td>
-        <td><span class="plan-label ${planClass(row.selectedPlan)}">${planName(row.selectedPlan)}</span></td>
+        <td>${renderPlanMix(row)}</td>
         <td>${num.format(row.homes)}</td>
         <td>${num.format(row.switchHomes)}</td>
+        <td>${num.format(row.planHomes.tou)}</td>
+        <td>${num.format(row.planHomes.demand)}</td>
         <td>${money1.format(row.customerSavings)}</td>
         <td>${money1.format(row.costAvoided)}</td>
         <td>${signedMoney(row.marginDeltaPerSwitcher)}</td>
@@ -447,9 +578,11 @@ function downloadCsv() {
       "menu",
       "tou_spread",
       "demand_charge_per_kw_month",
-      "switching_threshold_per_month",
-      "eligible_adoption",
+      "base_switching_threshold_per_month",
+      "max_eligible_adoption",
       "total_switch_homes",
+      "tou_switch_homes",
+      "demand_switch_homes",
       "revenue_leakage",
       "cost_avoided",
       "margin_delta",
@@ -463,6 +596,8 @@ function downloadCsv() {
       state.threshold,
       state.adoption,
       total.switchHomes.toFixed(2),
+      total.touSwitchHomes.toFixed(2),
+      total.demandSwitchHomes.toFixed(2),
       total.leakage.toFixed(2),
       total.costAvoided.toFixed(2),
       total.marginDelta.toFixed(2),
@@ -473,11 +608,16 @@ function downloadCsv() {
     [
       "behavior",
       "device",
-      "selected_plan",
       "homes",
       "switch_homes",
-      "customer_savings_per_switcher",
-      "cost_avoided_per_switcher",
+      "fixed_homes",
+      "tou_homes",
+      "demand_homes",
+      "fixed_share",
+      "tou_share",
+      "demand_share",
+      "avg_customer_savings_per_switcher",
+      "avg_cost_avoided_per_switcher",
       "margin_delta_per_switcher",
       "segment_leakage",
       "segment_margin_delta",
@@ -485,9 +625,14 @@ function downloadCsv() {
     ...rows.map((row) => [
       row.behavior,
       row.device,
-      row.selectedPlan,
       row.homes.toFixed(2),
       row.switchHomes.toFixed(2),
+      row.planHomes.fixed.toFixed(2),
+      row.planHomes.tou.toFixed(2),
+      row.planHomes.demand.toFixed(2),
+      row.planShares.fixed.toFixed(4),
+      row.planShares.tou.toFixed(4),
+      row.planShares.demand.toFixed(4),
       row.customerSavings.toFixed(2),
       row.costAvoided.toFixed(2),
       row.marginDeltaPerSwitcher.toFixed(2),

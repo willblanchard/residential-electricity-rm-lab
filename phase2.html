@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Parallel Options Results | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260522-pages" />
+    <link rel="stylesheet" href="styles.css?v=20260522-planmix" />
   </head>
   <body>
     <div class="shell">
@@ -104,18 +104,19 @@
             </div>
             <p class="section-note">
               The model starts with the same 10,000-home portfolio from Single Price Results.
-              Each behavior/device bucket compares the fixed rate with the
-              optional plans, then a share of economically eligible homes
-              switches into the plan with the highest expected bill savings.
+              Each behavior/device bucket is split into household profiles
+              with different load fit and WTP/friction. Eligible households
+              then distribute across the available optional plans instead of
+              moving as one block.
             </p>
           </div>
           <div class="controls phase2-controls" aria-label="optional rate controls">
             <div class="control">
-              <label for="phase2-menu">Optional menu</label>
+              <label for="phase2-menu">Plans offered</label>
               <div class="segmented phase2-menu" id="phase2-menu">
                 <button type="button" data-menu="tou">TOU only</button>
                 <button type="button" data-menu="demand">Demand only</button>
-                <button type="button" class="active" data-menu="both">Both</button>
+                <button type="button" class="active" data-menu="both">TOU + Demand</button>
               </div>
             </div>
             <div class="control">
@@ -129,12 +130,12 @@
               <input id="phase2-demand" type="range" min="0" max="30" step="1" value="20" />
             </div>
             <div class="control">
-              <label for="phase2-threshold">Switching threshold</label>
+              <label for="phase2-threshold">Base switching threshold</label>
               <div class="control-value">$<span id="phase2-threshold-value">8</span>/mo</div>
               <input id="phase2-threshold" type="range" min="0" max="40" step="1" value="8" />
             </div>
             <div class="control">
-              <label for="phase2-adoption">Eligible adoption</label>
+              <label for="phase2-adoption">Max eligible adoption</label>
               <div class="control-value"><span id="phase2-adoption-value">75</span>%</div>
               <input id="phase2-adoption" type="range" min="0" max="100" step="5" value="75" />
             </div>
@@ -157,8 +158,8 @@
           <article class="panel">
             <h3>Who leaves the fixed pool</h3>
             <p class="panel-subtitle">
-              Bars show each population bucket split between fixed-rate stayers
-              and optional-plan switchers under the current menu.
+              Bars show each population bucket split between fixed-rate stayers,
+              TOU switchers, and demand switchers under the current menu.
             </p>
             <div class="choice-chart-wrap">
               <svg id="phase2-selection-chart" viewBox="0 0 620 420" role="img"></svg>
@@ -183,8 +184,9 @@
               <h3 id="segments-title">Segment-level opt-in results</h3>
             </div>
             <p>
-              Savings and utility economics are monthly per switched home.
-              Segment totals use the normalized 10,000-home portfolio.
+              Per-switcher economics are weighted averages across the modeled
+              household profiles inside each segment. Segment totals use the
+              normalized 10,000-home portfolio.
             </p>
           </div>
           <div class="phase2-table-scroll">
@@ -193,11 +195,13 @@
                 <tr>
                   <th>Behavior</th>
                   <th>Device case</th>
-                  <th>Selected plan</th>
+                  <th>Modeled plan mix</th>
                   <th>Homes</th>
                   <th>Switch homes</th>
-                  <th>Customer savings</th>
-                  <th>Cost avoided</th>
+                  <th>TOU homes</th>
+                  <th>Demand homes</th>
+                  <th>Avg customer savings</th>
+                  <th>Avg cost avoided</th>
                   <th>Margin / switcher</th>
                   <th>Segment leakage</th>
                   <th>Segment margin</th>
@@ -226,6 +230,6 @@
       </main>
     </div>
 
-    <script src="phase2.js?v=20260522-ticks"></script>
+    <script src="phase2.js?v=20260522-planmix"></script>
   </body>
 </html>
