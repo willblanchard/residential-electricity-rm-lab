@@ -271,7 +271,7 @@ const optimizationConfig = {
   touMax: 5,
   touStep: 0.1,
   demandMin: 0,
-  demandMax: 30,
+  demandMax: 50,
   demandStep: 1,
 };
 const sourceDemandProfiles = Array.isArray(globalThis.buildingDemandProfiles)
@@ -355,6 +355,25 @@ function tariffResponseStrength(tariffId, overrides = state) {
 function smoothResponseStrength(value) {
   const bounded = clamp(value, 0, 1);
   return bounded * bounded * (3 - 2 * bounded);
+}
+
+function demandCapacityAvoidanceCredit(overrides = state) {
+  const batteryEffect = clamp(Number(overrides.battery ?? 0) / 20, 0, 1);
+  const thermostatFlex = clamp(Number(overrides.thermostat ?? 3) / 6, 0, 1);
+  return clamp(0.08 + 0.03 * batteryEffect + 0.04 * thermostatFlex, 0.08, 0.16);
+}
+
+function capacityImportAfterDemandShave(
+  capacityImportBefore,
+  gridImportBefore,
+  gridImportAfter,
+  capacityCredit,
+) {
+  if (gridImportAfter >= gridImportBefore) {
+    return Math.max(capacityImportBefore, gridImportAfter);
+  }
+  const clippedKw = gridImportBefore - gridImportAfter;
+  return Math.max(gridImportAfter, capacityImportBefore - clippedKw * capacityCredit);
 }
 
 function interpolateCalibration(points, price) {
@@ -762,6 +781,7 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
     dischargeKw: 0,
     socKwh: 0,
     socPct: 0,
+    capacityGridImport: row.capacityGridImport ?? row.gridImport,
     action: row.action || "no battery",
   }));
 
@@ -785,18 +805,26 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
   const efficiency = 0.9;
   const minSoc = capacity * 0.1;
   const maxSoc = capacity * 0.95;
-  let soc = capacity * 0.35;
+  const initialSoc = capacity * (tariffId === "demand" ? 0.9 : 0.35);
   const dispatchStrength = smoothResponseStrength(responseStrength);
-  const powerLimit = clamp(capacity / 2.5, 1, 5) * dispatchStrength;
+  const powerLimit =
+    (tariffId === "demand"
+      ? clamp(capacity / 2, 1, 7)
+      : clamp(capacity / 2.5, 1, 5)) * dispatchStrength;
   const baselinePeak = Math.max(...loadRows.map((row) => row.gridImport));
-  const shapedImport = (row) =>
-    row.gridImport *
+  const demandProfileFactorForRow = (row) =>
+    row.demandProfileFactor ??
     (tariffId === "demand" ? averageDemandProfileFactors[row.hour] || 1 : 1);
+  const shapedImport = (row) =>
+    row.gridImport * demandProfileFactorForRow(row);
   const dispatchPeak =
     tariffId === "demand"
       ? Math.max(...loadRows.map((row) => shapedImport(row)))
       : baselinePeak;
-  const chargeCeiling = dispatchPeak * (1 - 0.18 * dispatchStrength);
+  const chargeCeiling =
+    tariffId === "demand"
+      ? dispatchPeak
+      : dispatchPeak * (1 - 0.18 * dispatchStrength);
   const targetReduction = tariffId === "demand" ? 0.5 : 0.42;
   const dischargeTarget = dispatchPeak * (1 - targetReduction * dispatchStrength);
   const peakHours = scarcityHoursForTariff(tariffId);
@@ -804,64 +832,171 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
     tariffId === "demand"
       ? new Set([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14])
       : new Set([0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15]);
+  const demandDischargeHours = new Set([15, 16, 17, 18, 19, 20, 21, 22, 23]);
   const maxPrice = Math.max(...loadRows.map((row) => row.price));
   let chargedKwh = 0;
   let dischargedKwh = 0;
   let offPeakReboundKwh = 0;
+  let rows;
 
-  const rows = loadRows.map((row) => {
-    let gridImport = row.gridImport;
-    let chargeKw = 0;
-    let dischargeKw = 0;
-    let action = row.action || "hold";
-    const profileFactor =
-      tariffId === "demand" ? averageDemandProfileFactors[row.hour] || 1 : 1;
+  if (tariffId === "demand") {
+    const capacityCredit =
+      demandCapacityAvoidanceCredit(overrides) * dispatchStrength;
+    const runDemandCap = (targetMetricKw) => {
+      let soc = initialSoc;
+      let runChargedKwh = 0;
+      let runDischargedKwh = 0;
+      let runOffPeakReboundKwh = 0;
+      const runRows = loadRows.map((row) => {
+        const profileFactor = demandProfileFactorForRow(row);
+        const gridImportBefore = row.gridImport;
+        const capacityImportBefore =
+          row.capacityGridImport ?? gridImportBefore;
+        let gridImport = gridImportBefore;
+        let chargeKw = 0;
+        let dischargeKw = 0;
+        let action = row.action || "hold";
 
-    if (chargeHours.has(row.hour) && soc < maxSoc) {
-      const headroom = Math.max(0, (chargeCeiling - gridImport * profileFactor) / profileFactor);
-      chargeKw = Math.min(powerLimit, headroom, (maxSoc - soc) / efficiency);
-      if (chargeKw > 0) {
-        soc += chargeKw * efficiency;
-        gridImport += chargeKw;
-        chargedKwh += chargeKw;
-        offPeakReboundKwh += chargeKw;
-        action = action === "baseline" ? "battery charge" : `${action} + charge`;
-      }
-    }
+        if (chargeHours.has(row.hour) && soc < maxSoc) {
+          const headroom = Math.max(
+            0,
+            (targetMetricKw - gridImport * profileFactor) / profileFactor,
+          );
+          chargeKw = Math.min(powerLimit, headroom, (maxSoc - soc) / efficiency);
+          if (chargeKw > 0) {
+            soc += chargeKw * efficiency;
+            gridImport += chargeKw;
+            runChargedKwh += chargeKw;
+            runOffPeakReboundKwh += chargeKw;
+            action =
+              action === "baseline" ? "battery demand charge" : `${action} + charge`;
+          }
+        }
 
-    if (peakHours.has(row.hour) && soc > minSoc) {
-      const targetDriven = Math.max(
-        0,
-        (gridImport * profileFactor - dischargeTarget) / profileFactor,
-      );
-      const priceDriven =
-        tariffId !== "demand" && row.price === maxPrice
-          ? gridImport * 0.28 * dispatchStrength
-          : 0;
-      dischargeKw = Math.min(
-        powerLimit,
-        soc - minSoc,
-        gridImport,
-        Math.max(targetDriven, priceDriven),
-      );
-      if (dischargeKw > 0) {
-        soc -= dischargeKw;
-        gridImport -= dischargeKw;
-        dischargedKwh += dischargeKw;
-        action = action === "baseline" ? "battery discharge" : `${action} + discharge`;
-      }
-    }
+        const targetDriven = !demandDischargeHours.has(row.hour)
+          ? 0
+          : Math.max(
+              0,
+              (gridImport * profileFactor - targetMetricKw) / profileFactor,
+            );
+        dischargeKw = Math.min(powerLimit, soc - minSoc, gridImport, targetDriven);
+        if (dischargeKw > 0) {
+          soc -= dischargeKw;
+          gridImport -= dischargeKw;
+          runDischargedKwh += dischargeKw;
+          action =
+            action === "baseline"
+              ? "battery demand shave"
+              : `${action} + demand shave`;
+        }
 
-    return {
-      ...row,
-      gridImport,
-      chargeKw,
-      dischargeKw,
-      socKwh: soc,
-      socPct: soc / capacity,
-      action,
+        const capacityGridImport = capacityImportAfterDemandShave(
+          capacityImportBefore,
+          gridImportBefore,
+          gridImport,
+          capacityCredit,
+        );
+        return {
+          ...row,
+          gridImport,
+          capacityGridImport,
+          chargeKw,
+          dischargeKw,
+          socKwh: soc,
+          socPct: soc / capacity,
+          action,
+        };
+      });
+      return {
+        rows: runRows,
+        metricPeak: Math.max(
+          ...runRows.map(
+            (row) => row.gridImport * demandProfileFactorForRow(row),
+          ),
+        ),
+        chargedKwh: runChargedKwh,
+        dischargedKwh: runDischargedKwh,
+        offPeakReboundKwh: runOffPeakReboundKwh,
+      };
     };
-  });
+
+    let lowTarget = 0;
+    let highTarget = dispatchPeak;
+    for (let index = 0; index < 28; index += 1) {
+      const candidateTarget = (lowTarget + highTarget) / 2;
+      const candidate = runDemandCap(candidateTarget);
+      if (candidate.metricPeak <= candidateTarget + 0.003) {
+        highTarget = candidateTarget;
+      } else {
+        lowTarget = candidateTarget;
+      }
+    }
+    const feasibleTarget = highTarget;
+    const responsiveTarget =
+      dispatchPeak - (dispatchPeak - feasibleTarget) * dispatchStrength;
+    const finalDispatch = runDemandCap(responsiveTarget);
+    rows = finalDispatch.rows;
+    chargedKwh = finalDispatch.chargedKwh;
+    dischargedKwh = finalDispatch.dischargedKwh;
+    offPeakReboundKwh = finalDispatch.offPeakReboundKwh;
+  } else {
+    let soc = initialSoc;
+    rows = loadRows.map((row) => {
+      let gridImport = row.gridImport;
+      let chargeKw = 0;
+      let dischargeKw = 0;
+      let action = row.action || "hold";
+      const profileFactor = 1;
+
+      if (chargeHours.has(row.hour) && soc < maxSoc) {
+        const headroom = Math.max(
+          0,
+          (chargeCeiling - gridImport * profileFactor) / profileFactor,
+        );
+        chargeKw = Math.min(powerLimit, headroom, (maxSoc - soc) / efficiency);
+        if (chargeKw > 0) {
+          soc += chargeKw * efficiency;
+          gridImport += chargeKw;
+          chargedKwh += chargeKw;
+          offPeakReboundKwh += chargeKw;
+          action = action === "baseline" ? "battery charge" : `${action} + charge`;
+        }
+      }
+
+      if (peakHours.has(row.hour) && soc > minSoc) {
+        const targetDriven = Math.max(
+          0,
+          (gridImport * profileFactor - dischargeTarget) / profileFactor,
+        );
+        const priceDriven =
+          row.price === maxPrice ? gridImport * 0.28 * dispatchStrength : 0;
+        dischargeKw = Math.min(
+          powerLimit,
+          soc - minSoc,
+          gridImport,
+          Math.max(targetDriven, priceDriven),
+        );
+        if (dischargeKw > 0) {
+          soc -= dischargeKw;
+          gridImport -= dischargeKw;
+          dischargedKwh += dischargeKw;
+          action =
+            action === "baseline" ? "battery discharge" : `${action} + discharge`;
+        }
+      }
+
+      return {
+        ...row,
+        gridImport,
+        capacityGridImport: row.capacityGridImport ?? gridImport,
+        chargeKw,
+        dischargeKw,
+        socKwh: soc,
+        socPct: soc / capacity,
+        action,
+      };
+    });
+  }
 
   const baselineCost = loadRows.reduce(
     (sum, row) => sum + row.gridImport * row.price,
@@ -873,21 +1008,24 @@ function batteryDispatchForLoad(loadRows, overrides = state, tariffId = state.fo
   );
   const optimizedPeak = Math.max(...rows.map((row) => row.gridImport));
   const peakWindowRows = rows.filter((row) => peakHours.has(row.hour));
-  const baselinePeakWindow = Math.max(
-    ...peakWindowRows.map((row) => row.homeLoad),
-  );
-  const optimizedPeakWindow = Math.max(
-    ...peakWindowRows.map((row) => row.gridImport),
-  );
+  const baselinePeakWindow =
+    tariffId === "demand"
+      ? baselinePeak
+      : Math.max(...peakWindowRows.map((row) => row.homeLoad));
+  const optimizedPeakWindow =
+    tariffId === "demand"
+      ? optimizedPeak
+      : Math.max(...peakWindowRows.map((row) => row.gridImport));
   const billRowsForShape = (billRows) => {
     if (tariffId !== "demand") return billRows;
     return billRows.map((row) => {
-      const factor = averageDemandProfileFactors[row.hour] || 1;
+      const factor = demandProfileFactorForRow(row);
       return {
         ...row,
         baselineLoad: (row.baselineLoad ?? row.homeLoad) * factor,
         homeLoad: row.homeLoad * factor,
         gridImport: row.gridImport * factor,
+        capacityGridImport: (row.capacityGridImport ?? row.gridImport) * factor,
         chargeKw: (row.chargeKw || 0) * factor,
         dischargeKw: (row.dischargeKw || 0) * factor,
       };
@@ -971,14 +1109,14 @@ function coordinatedThermostatBatteryRows(
   const thermostatFlex = clamp(Number(overrides.thermostat ?? 3) / 6, 0, 1);
   const elasticCoordination =
     behavior === "elastic" ? (tariffId === "tou" ? 0.1 : 0.05) : 0;
+  const coordinationBase =
+    tariffId === "demand"
+      ? 0.1 + 0.12 * batteryEffect + 0.08 * thermostatFlex
+      : 0.08 + 0.08 * batteryEffect + 0.05 * thermostatFlex;
   const coordinationShare = clamp(
-    responseStrength *
-      (0.08 +
-        0.08 * batteryEffect +
-        0.05 * thermostatFlex +
-        elasticCoordination),
+    responseStrength * (coordinationBase + elasticCoordination),
     0,
-    0.24,
+    tariffId === "demand" ? 0.32 : 0.24,
   );
   const coordinatedRows = rows.map((row) => ({ ...row }));
   let rechargeNeed = 0;
@@ -1000,12 +1138,23 @@ function coordinatedThermostatBatteryRows(
   if (tariffId === "demand") {
     const currentPeak = Math.max(...coordinatedRows.map((row) => row.gridImport));
     const targetPeak = currentPeak * (1 - coordinationShare);
+    const capacityCredit =
+      demandCapacityAvoidanceCredit(overrides) * responseStrength;
     coordinatedRows.forEach((row) => {
       if (row.gridImport <= targetPeak) return;
+      const gridImportBefore = row.gridImport;
+      const capacityImportBefore =
+        row.capacityGridImport ?? gridImportBefore;
       const reduction = row.gridImport - targetPeak;
       row.gridImport = targetPeak;
       row.homeLoad = Math.max(0, row.homeLoad - reduction * 0.25);
       row.dischargeKw = (row.dischargeKw || 0) + reduction * 0.75;
+      row.capacityGridImport = capacityImportAfterDemandShave(
+        capacityImportBefore,
+        gridImportBefore,
+        row.gridImport,
+        capacityCredit,
+      );
       row.action = appendAction(row.action, "coordinated peak shave");
       rechargeNeed += reduction * 0.72;
     });
@@ -1040,6 +1189,10 @@ function coordinatedThermostatBatteryRows(
         : plannedCharge;
     if (charge <= 0) return;
     row.gridImport += charge;
+    row.capacityGridImport = Math.max(
+      row.capacityGridImport ?? 0,
+      row.gridImport,
+    );
     row.chargeKw = (row.chargeKw || 0) + charge;
     row.action = appendAction(row.action, "coordinated charge");
   });
@@ -1122,6 +1275,9 @@ function economicsForRows(rows, tariffId, overrides = state) {
     0,
   );
   const peakKw = Math.max(...rows.map((row) => row.gridImport));
+  const capacityPeakKw = Math.max(
+    ...rows.map((row) => row.capacityGridImport ?? row.gridImport),
+  );
   const demandRevenue = tariff.demandCharge * peakKw;
   const revenue = revenueEnergy + demandRevenue;
   const energyCost = rows.reduce(
@@ -1129,10 +1285,11 @@ function economicsForRows(rows, tariffId, overrides = state) {
       sum + row.gridImport * monthlyScale * wholesaleCostForHour(row.hour),
     0,
   );
-  const capacityCost = peakKw * capacityCostPerKwMonth;
+  const capacityCost = capacityPeakKw * capacityCostPerKwMonth;
   return {
     monthlyKwh,
     peakKw,
+    capacityPeakKw,
     revenue,
     energyCost,
     capacityCost,
@@ -1188,6 +1345,7 @@ function profiledRowsForCase(
       baselineLoad: (row.baselineLoad ?? endUseProfile[row.hour].total) * factor,
       homeLoad: (row.homeLoad ?? endUseProfile[row.hour].total) * factor,
       gridImport: row.gridImport * factor,
+      capacityGridImport: (row.capacityGridImport ?? row.gridImport) * factor,
       chargeKw: (row.chargeKw || 0) * factor,
       dischargeKw: (row.dischargeKw || 0) * factor,
       action: row.action === "baseline" ? "baseline" : "profile ensemble",
@@ -1201,6 +1359,7 @@ function economicsForProfileEnsemble(
   tariffId = state.focusTariff,
   overrides = state,
 ) {
+  const deviceDef = deviceDefs[device];
   const representativeRows = cachedHomeRowsForCase(
     behavior,
     device,
@@ -1208,27 +1367,104 @@ function economicsForProfileEnsemble(
     tariffId,
   );
   const tariff = calibratedTariff(tariffId, overrides);
+
+  if (tariffId === "demand" && deviceDef?.hasBattery) {
+    const preBatteryDevice = deviceDef.hasThermostat ? "thermostat" : "none";
+    const preBatteryRows = cachedHomeRowsForCase(
+      behavior,
+      preBatteryDevice,
+      overrides,
+      tariffId,
+    );
+    const totals = demandProfileEnsemble.reduce(
+      (acc, profile) => {
+        const profileRows = preBatteryRows.map((row) => {
+          const baseLoad =
+            endUseProfile[row.hour]?.total || row.baselineLoad || 1;
+          const profileLoad = profile.loads[row.hour] ?? baseLoad;
+          const homeDelta = (row.homeLoad ?? baseLoad) - baseLoad;
+          const gridDelta = row.gridImport - baseLoad;
+          const capacityDelta =
+            (row.capacityGridImport ?? row.gridImport) - baseLoad;
+          const homeLoad = profileLoad + homeDelta;
+          const gridImport = profileLoad + gridDelta;
+          return {
+            ...row,
+            baselineLoad: profileLoad,
+            homeLoad,
+            gridImport,
+            capacityGridImport: profileLoad + capacityDelta,
+            demandProfileFactor: 1,
+          };
+        });
+        const batteryRows = batteryDispatchForLoad(
+          profileRows,
+          overrides,
+          tariffId,
+        ).rows;
+        const finalRows = deviceDef.hasThermostat
+          ? coordinatedThermostatBatteryRows(
+              batteryRows,
+              overrides,
+              tariffId,
+              behavior,
+            )
+          : batteryRows;
+        const economics = economicsForRows(finalRows, tariffId, overrides);
+        acc.monthlyKwh += economics.monthlyKwh;
+        acc.peakKw += economics.peakKw;
+        acc.capacityPeakKw += economics.capacityPeakKw;
+        acc.revenue += economics.revenue;
+        acc.energyCost += economics.energyCost;
+        acc.capacityCost += economics.capacityCost;
+        acc.totalCost += economics.totalCost;
+        acc.grossMargin += economics.grossMargin;
+        return acc;
+      },
+      {
+        monthlyKwh: 0,
+        peakKw: 0,
+        capacityPeakKw: 0,
+        revenue: 0,
+        energyCost: 0,
+        capacityCost: 0,
+        totalCost: 0,
+        grossMargin: 0,
+      },
+    );
+    const count = demandProfileEnsemble.length || 1;
+    Object.keys(totals).forEach((key) => {
+      totals[key] /= count;
+    });
+    return totals;
+  }
+
   const totals = demandProfileEnsemble.reduce(
     (acc, profile) => {
       let monthlyKwh = 0;
       let revenueEnergy = 0;
       let energyCost = 0;
       let peakKw = 0;
+      let capacityPeakKw = 0;
       representativeRows.forEach((row) => {
         const baseLoad = endUseProfile[row.hour]?.total || row.baselineLoad || 1;
         const profileLoad = profile.loads[row.hour] ?? baseLoad;
         const factor = baseLoad > 0 ? profileLoad / baseLoad : 1;
         const gridImport = row.gridImport * factor;
+        const capacityGridImport =
+          (row.capacityGridImport ?? row.gridImport) * factor;
         monthlyKwh += gridImport * monthlyScale;
         revenueEnergy +=
           gridImport * monthlyScale * rateForTariff(tariffId, row.hour, overrides);
         energyCost += gridImport * monthlyScale * wholesaleCostForHour(row.hour);
         peakKw = Math.max(peakKw, gridImport);
+        capacityPeakKw = Math.max(capacityPeakKw, capacityGridImport);
       });
       const demandRevenue = tariff.demandCharge * peakKw;
-      const capacityCost = peakKw * capacityCostPerKwMonth;
+      const capacityCost = capacityPeakKw * capacityCostPerKwMonth;
       acc.monthlyKwh += monthlyKwh;
       acc.peakKw += peakKw;
+      acc.capacityPeakKw += capacityPeakKw;
       acc.revenue += revenueEnergy + demandRevenue;
       acc.energyCost += energyCost;
       acc.capacityCost += capacityCost;
@@ -1239,6 +1475,7 @@ function economicsForProfileEnsemble(
     {
       monthlyKwh: 0,
       peakKw: 0,
+      capacityPeakKw: 0,
       revenue: 0,
       energyCost: 0,
       capacityCost: 0,
@@ -1306,6 +1543,8 @@ function portfolioEconomics(tariffId = state.focusTariff, overrides = state) {
       acc.monthlyKwh += component.economics.monthlyKwh * weight;
       component.rows.forEach((row) => {
         acc.hourlyGrid[row.hour] += row.gridImport * weight;
+        acc.hourlyCapacityGrid[row.hour] +=
+          (row.capacityGridImport ?? row.gridImport) * weight;
       });
       return acc;
     },
@@ -1317,11 +1556,14 @@ function portfolioEconomics(tariffId = state.focusTariff, overrides = state) {
       grossMargin: 0,
       monthlyKwh: 0,
       peakKw: 0,
+      capacityPeakKw: 0,
       hourlyGrid: Array.from({ length: 24 }, () => 0),
+      hourlyCapacityGrid: Array.from({ length: 24 }, () => 0),
     },
   );
   total.peakKw = Math.max(...total.hourlyGrid);
-  total.capacityCost = total.peakKw * capacityCostPerKwMonth;
+  total.capacityPeakKw = Math.max(...total.hourlyCapacityGrid);
+  total.capacityCost = total.capacityPeakKw * capacityCostPerKwMonth;
   total.totalCost = total.energyCost + total.capacityCost;
   total.grossMargin = total.revenue - total.totalCost;
   const result = { tariff: tariffById(tariffId), components, total };
@@ -1433,14 +1675,15 @@ function optimizeTariff(kind, overrides = state) {
     optimizationCandidate(kind, value, overrides, flatTotal),
   );
   const feasibleCandidates = candidates.filter((candidate) => candidate.feasible);
-  const best =
-    feasibleCandidates.reduce(
+  const bestByObjective = (pool) =>
+    pool.reduce(
       (winner, candidate) =>
         !winner || candidate.objectiveValue > winner.objectiveValue
           ? candidate
           : winner,
       null,
-    ) || candidates[0];
+    );
+  const best = bestByObjective(feasibleCandidates) || bestByObjective(candidates);
   const currentValue =
     kind === "tou" ? effectiveTouSpread(overrides) : Number(overrides.demandCharge);
   const selected = optimizationCandidate(kind, currentValue, overrides, flatTotal);
@@ -2366,7 +2609,11 @@ function sensitivityRows(kind, overrides = state) {
           { length: Math.floor((5 - minimumTouPeakSpread()) / 0.1) + 1 },
           (_, index) => minimumTouPeakSpread() + index * 0.1,
         )
-      : Array.from({ length: 31 }, (_, index) => index);
+      : rangeValues(
+          optimizationConfig.demandMin,
+          optimizationConfig.demandMax,
+          optimizationConfig.demandStep,
+        );
   const tariffId = kind === "tou" ? "tou" : "demand";
   const flat = portfolioEconomics("flat", overrides).total;
   return xValues.map((x) => {
@@ -2840,9 +3087,6 @@ function render() {
   document.getElementById("demand-charge").value = state.demandCharge;
   document.getElementById("matrix-demand-charge-value").textContent =
     state.demandCharge;
-  document.getElementById("matrix-demand-ratio-value").textContent = (
-    Number(state.demandCharge) / 20
-  ).toFixed(2);
   document.getElementById("matrix-demand-charge").value =
     state.demandCharge;
   document.getElementById("thermostat").value = state.thermostat;

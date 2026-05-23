@@ -116,7 +116,7 @@ const householdProfiles = [
     label: "Low fit / high friction",
     weight: 0.18,
     fit: { tou: 0.62, demand: 0.68 },
-    costFit: 0.7,
+    response: { tou: 0.55, demand: 0.6 },
     thresholdMultiplier: 1.55,
     adoptionMultiplier: 0.62,
   },
@@ -124,7 +124,7 @@ const householdProfiles = [
     label: "Average home",
     weight: 0.3,
     fit: { tou: 0.96, demand: 0.96 },
-    costFit: 0.95,
+    response: { tou: 0.9, demand: 0.95 },
     thresholdMultiplier: 1,
     adoptionMultiplier: 0.92,
   },
@@ -132,7 +132,7 @@ const householdProfiles = [
     label: "TOU-shaped use",
     weight: 0.18,
     fit: { tou: 1.38, demand: 0.82 },
-    costFit: 1.05,
+    response: { tou: 0.42, demand: 0.7 },
     thresholdMultiplier: 0.86,
     adoptionMultiplier: 1,
   },
@@ -140,7 +140,7 @@ const householdProfiles = [
     label: "Peak-kW intensive",
     weight: 0.2,
     fit: { tou: 0.84, demand: 1.38 },
-    costFit: 1.1,
+    response: { tou: 0.68, demand: 0.55 },
     thresholdMultiplier: 0.82,
     adoptionMultiplier: 1.05,
   },
@@ -148,7 +148,7 @@ const householdProfiles = [
     label: "High response / low friction",
     weight: 0.14,
     fit: { tou: 1.48, demand: 1.48 },
-    costFit: 1.25,
+    response: { tou: 1.45, demand: 1.55 },
     thresholdMultiplier: 0.58,
     adoptionMultiplier: 1.18,
   },
@@ -162,14 +162,6 @@ function signedMoney(value) {
   if (Math.abs(value) < 0.5) return money.format(0);
   const formatted = money.format(Math.abs(value));
   return value > 0 ? `+${formatted}` : `-${formatted}`;
-}
-
-function signedCompactMoney(value) {
-  if (Math.abs(value) < 0.5) return "$0";
-  const sign = value > 0 ? "+" : "-";
-  const magnitude = Math.abs(value);
-  if (magnitude >= 1000) return `${sign}$${(magnitude / 1000).toFixed(1)}k`;
-  return `${sign}${money.format(magnitude)}`;
 }
 
 function availablePlans() {
@@ -186,11 +178,11 @@ function signalScale(plan) {
 function planOutcome(segment, plan, profile = null) {
   const scale = signalScale(plan);
   const fit = profile ? profile.fit[plan] : 1;
+  const response = profile ? profile.response[plan] : 1;
   const customerSavings = segment.savings[plan] * scale * fit;
-  const avoidedFit = profile ? (0.45 + 0.55 * fit) * profile.costFit : 1;
   const costAvoided = Math.max(
     0,
-    segment.avoided[plan] * Math.pow(scale, 0.88) * avoidedFit,
+    segment.avoided[plan] * Math.pow(scale, 0.88) * response,
   );
   return {
     plan,
@@ -211,7 +203,9 @@ function switchPullFor(customerSavings, threshold) {
 function profileChoice(segment, profile) {
   const threshold = state.threshold * profile.thresholdMultiplier;
   const outcomes = availablePlans().map((plan) => planOutcome(segment, plan, profile));
-  const eligible = outcomes.filter((outcome) => switchPullFor(outcome.customerSavings, threshold) > 0);
+  const eligible = outcomes.filter(
+    (outcome) => switchPullFor(outcome.customerSavings, threshold) > 0,
+  );
   const shares = { fixed: 1, tou: 0, demand: 0 };
 
   if (eligible.length === 0) {
@@ -244,13 +238,19 @@ function rowsForState() {
   return segmentDefs.map((segment) => {
     const homes = (segment.homes / denominator) * portfolioSize;
     const planHomes = { fixed: 0, tou: 0, demand: 0 };
+    const marginGroups = {
+      profitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
+      unprofitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
+    };
     let revenue = 0;
     let utilityCost = 0;
 
     householdProfiles.forEach((profile) => {
       const profileHomes = homes * profile.weight;
       const choice = profileChoice(segment, profile);
-      const outcomesByPlan = Object.fromEntries(choice.outcomes.map((outcome) => [outcome.plan, outcome]));
+      const outcomesByPlan = Object.fromEntries(
+        choice.outcomes.map((outcome) => [outcome.plan, outcome]),
+      );
 
       planHomes.fixed += profileHomes * choice.shares.fixed;
       revenue += profileHomes * choice.shares.fixed * base.fixedBill;
@@ -261,7 +261,12 @@ function rowsForState() {
         if (planShare <= 0) return;
         const planHomeCount = profileHomes * planShare;
         const outcome = outcomesByPlan[plan];
+        const group = outcome.marginDelta >= 0 ? marginGroups.profitable : marginGroups.unprofitable;
         planHomes[plan] += planHomeCount;
+        group.homes += planHomeCount;
+        group.leakage += planHomeCount * outcome.customerSavings;
+        group.costAvoided += planHomeCount * outcome.costAvoided;
+        group.margin += planHomeCount * outcome.marginDelta;
         revenue += planHomeCount * outcome.bill;
         utilityCost += planHomeCount * outcome.utilityCost;
       });
@@ -290,6 +295,9 @@ function rowsForState() {
       switchShare: switchHomes / homes,
       planHomes,
       planShares,
+      marginGroups,
+      negativeMarginSwitchHomes: marginGroups.unprofitable.homes,
+      negativeMarginShare: switchHomes > 0 ? marginGroups.unprofitable.homes / switchHomes : 0,
       customerSavings,
       costAvoided,
       marginDeltaPerSwitcher,
@@ -313,6 +321,25 @@ function aggregate(rows = rowsForState()) {
   const stayHomes = rows.reduce((sum, row) => sum + row.stayHomes, 0);
   const touSwitchHomes = rows.reduce((sum, row) => sum + row.planHomes.tou, 0);
   const demandSwitchHomes = rows.reduce((sum, row) => sum + row.planHomes.demand, 0);
+  const negativeMarginSwitchHomes = rows.reduce(
+    (sum, row) => sum + row.negativeMarginSwitchHomes,
+    0,
+  );
+  const marginGroups = rows.reduce(
+    (groups, row) => {
+      for (const key of ["profitable", "unprofitable"]) {
+        groups[key].homes += row.marginGroups[key].homes;
+        groups[key].leakage += row.marginGroups[key].leakage;
+        groups[key].costAvoided += row.marginGroups[key].costAvoided;
+        groups[key].margin += row.marginGroups[key].margin;
+      }
+      return groups;
+    },
+    {
+      profitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
+      unprofitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
+    },
+  );
   const leakage = baselineRevenue - revenue;
   const costAvoided = baselineCost - utilityCost;
   const marginDelta = revenue - utilityCost - (baselineRevenue - baselineCost);
@@ -335,6 +362,9 @@ function aggregate(rows = rowsForState()) {
     stayHomes,
     touSwitchHomes,
     demandSwitchHomes,
+    negativeMarginSwitchHomes,
+    negativeMarginShare: switchHomes > 0 ? negativeMarginSwitchHomes / switchHomes : 0,
+    marginGroups,
     leakage,
     costAvoided,
     marginDelta,
@@ -355,10 +385,12 @@ function renderSummary(rows) {
   document.getElementById("phase2-leakage").textContent = money.format(total.leakage);
   document.getElementById("phase2-cost-avoided").textContent = money.format(total.costAvoided);
   document.getElementById("phase2-margin-delta").textContent = signedMoney(total.marginDelta);
+  document.getElementById("phase2-negative-margin-switchers").textContent =
+    `${num.format(total.negativeMarginSwitchHomes)} homes`;
   document.getElementById("phase2-fixed-adder").textContent =
     `${money1.format(total.fixedAdderPerHome)}/mo`;
   document.getElementById("phase2-summary-note").textContent =
-    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Within each broad segment, household load fit and WTP/friction create the TOU versus demand mix.`;
+    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Negative-margin switchers save more on bills than the utility avoids in cost.`;
 
   document.getElementById("phase2-metrics").innerHTML = `
     <div class="mini-metric phase2-metric">
@@ -373,9 +405,9 @@ function renderSummary(rows) {
       <label>Demand switchers</label>
       <strong>${num.format(total.demandSwitchHomes)}</strong>
     </div>
-    <div class="mini-metric phase2-metric">
-      <label>Automation skew</label>
-      <strong>${pct.format(total.selectionSkew)}</strong>
+    <div class="mini-metric phase2-metric negative">
+      <label>Neg-margin switchers</label>
+      <strong>${num.format(total.negativeMarginSwitchHomes)}</strong>
     </div>
   `;
 }
@@ -383,55 +415,85 @@ function renderSummary(rows) {
 function renderLeakageChart(rows) {
   const svg = document.getElementById("phase2-leakage-chart");
   const total = aggregate(rows);
-  const values = [
-    { label: "Revenue leakage", value: -total.leakage, color: "#b13a2f" },
-    { label: "Cost avoided", value: total.costAvoided, color: "#087f8c" },
+  const width = 760;
+  const height = 390;
+  const red = "#b13a2f";
+  const teal = "#087f8c";
+  const green = "#2e7d32";
+  const muted = "#64717b";
+  const text = "#172026";
+  const line = "#d9e0e4";
+  const barX = 96;
+  const barY = 64;
+  const barWidth = 560;
+  const barHeight = 34;
+  const marginColor = total.marginDelta >= 0 ? green : red;
+  const bridgeMax = Math.max(total.costAvoided, total.leakage, 1);
+  const leakageWidth = (total.leakage / bridgeMax) * barWidth;
+  const avoidedWidth = (total.costAvoided / bridgeMax) * barWidth;
+  const marginWidth = (Math.abs(total.marginDelta) / bridgeMax) * barWidth;
+  const profitable = total.marginGroups.profitable;
+  const unprofitable = total.marginGroups.unprofitable;
+  const splitRows = [
     {
-      label: "Margin impact",
-      value: total.marginDelta,
-      color: total.marginDelta >= 0 ? "#2e7d32" : "#b13a2f",
+      label: "Profitable switchers",
+      homes: profitable.homes,
+      margin: profitable.margin,
+      color: green,
+    },
+    {
+      label: "Negative-margin switchers",
+      homes: unprofitable.homes,
+      margin: unprofitable.margin,
+      color: red,
     },
   ];
-  const width = 760;
-  const height = 340;
-  const pad = { top: 38, right: 42, bottom: 70, left: 82 };
-  const plotHeight = height - pad.top - pad.bottom;
-  const zeroY = pad.top + plotHeight / 2;
-  const maxAbs = Math.max(1, ...values.map((item) => Math.abs(item.value))) * 1.22;
-  const yFor = (value) => zeroY - (value / maxAbs) * (plotHeight / 2);
-  const barWidth = 118;
-  const gap = 72;
-  const x0 = 132;
-
-  const bars = values
-    .map((item, index) => {
-      const x = x0 + index * (barWidth + gap);
-      const barHeight = (Math.abs(item.value) / maxAbs) * (plotHeight / 2);
-      const y = item.value >= 0 ? yFor(item.value) : zeroY;
-      const labelY = item.value >= 0 ? y - 10 : y + barHeight + 20;
+  const axisX = 370;
+  const splitY0 = 216;
+  const rowGap = 66;
+  const splitScale = 240 / Math.max(1, ...splitRows.map((row) => Math.abs(row.margin)));
+  const splitBars = splitRows
+    .map((row, index) => {
+      const y = splitY0 + index * rowGap;
+      const bar = Math.abs(row.margin) * splitScale;
+      const x = row.margin >= 0 ? axisX : axisX - bar;
+      const labelX = row.margin >= 0 ? x + bar + 10 : x - 10;
+      const anchor = row.margin >= 0 ? "start" : "end";
       return `
-        <rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${barHeight.toFixed(1)}" rx="6" fill="${item.color}" />
-        <text x="${x + barWidth / 2}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="${item.color}" font-size="13" font-weight="820">${signedMoney(item.value)}</text>
-        <text x="${x + barWidth / 2}" y="${height - 32}" text-anchor="middle" fill="#64717b" font-size="12" font-weight="760">${item.label}</text>
+        <text x="70" y="${y + 7}" fill="${text}" font-size="12" font-weight="820">${row.label}</text>
+        <text x="70" y="${y + 25}" fill="${muted}" font-size="10" font-weight="720">${num.format(row.homes)} homes</text>
+        <rect x="${x.toFixed(1)}" y="${(y - 12).toFixed(1)}" width="${bar.toFixed(1)}" height="28" rx="6" fill="${row.color}" />
+        <text x="${labelX.toFixed(1)}" y="${y + 6}" text-anchor="${anchor}" fill="${row.color}" font-size="12" font-weight="840">${signedMoney(row.margin)}</text>
       `;
     })
     .join("");
-  const yTicks = [-maxAbs, -maxAbs / 2, 0, maxAbs / 2, maxAbs]
-    .map((value) => {
-      const y = yFor(value);
-      return `
-        <line x1="${pad.left}" x2="${width - pad.right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${Math.abs(value) < 1 ? "#aab6bd" : "#d9e0e4"}" stroke-width="${Math.abs(value) < 1 ? "1.4" : "1"}" />
-        <text x="${pad.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="#64717b" font-size="10" font-weight="700">${signedCompactMoney(value)}</text>
-      `;
-    })
-    .join("");
+  const marginSegment =
+    total.marginDelta >= 0
+      ? `<rect x="${(barX + leakageWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="8" fill="${green}" />`
+      : `<rect x="${(barX + avoidedWidth).toFixed(1)}" y="${barY}" width="${marginWidth.toFixed(1)}" height="${barHeight}" rx="8" fill="${red}" opacity="0.82" />`;
+  const marginLabel =
+    total.marginDelta >= 0
+      ? "Net margin left after bill savings"
+      : "Margin shortfall after avoided cost";
 
   svg.innerHTML = `
     <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
-    ${yTicks}
-    <line x1="${pad.left}" x2="${pad.left}" y1="${pad.top}" y2="${height - pad.bottom}" stroke="#d9e0e4" />
-    <text x="${pad.left}" y="22" fill="#172026" font-size="13" font-weight="820">Change versus all-fixed baseline</text>
-    ${bars}
+    <text x="48" y="29" fill="${text}" font-size="13" font-weight="840">Total cost avoided bridge</text>
+    <text x="48" y="48" fill="${muted}" font-size="10" font-weight="720">Cost avoided equals bill savings paid to switchers plus net margin impact.</text>
+    <rect x="${barX}" y="${barY}" width="${barWidth}" height="${barHeight}" rx="9" fill="#eef1f3" />
+    <rect x="${barX}" y="${barY}" width="${leakageWidth.toFixed(1)}" height="${barHeight}" rx="9" fill="${red}" />
+    ${marginSegment}
+    <line x1="${(barX + avoidedWidth).toFixed(1)}" x2="${(barX + avoidedWidth).toFixed(1)}" y1="${barY - 8}" y2="${barY + barHeight + 8}" stroke="${teal}" stroke-width="2" />
+    <text x="${barX}" y="122" fill="${red}" font-size="11" font-weight="820">Revenue leakage ${money.format(total.leakage)}</text>
+    <text x="${barX + barWidth}" y="122" text-anchor="end" fill="${marginColor}" font-size="11" font-weight="820">${marginLabel} ${signedMoney(total.marginDelta)}</text>
+    <text x="${barX + avoidedWidth}" y="${barY - 12}" text-anchor="middle" fill="${teal}" font-size="12" font-weight="860">Cost avoided ${money.format(total.costAvoided)}</text>
+    <line x1="48" x2="${width - 48}" y1="150" y2="150" stroke="${line}" />
+    <text x="48" y="178" fill="${text}" font-size="13" font-weight="840">Gross-margin split by switcher type</text>
+    <text x="48" y="197" fill="${muted}" font-size="10" font-weight="720">Positive-margin homes more than cover the losses from customers whose bill savings exceed avoided cost.</text>
+    <line x1="${axisX}" x2="${axisX}" y1="205" y2="338" stroke="#aab6bd" stroke-width="1.4" />
+    <text x="${axisX}" y="358" text-anchor="middle" fill="${muted}" font-size="10" font-weight="720">$0 margin</text>
+    ${splitBars}
+    <text x="${width - 64}" y="358" text-anchor="end" fill="${marginColor}" font-size="12" font-weight="860">Net ${signedMoney(total.marginDelta)}</text>
   `;
 }
 
@@ -517,7 +579,45 @@ function renderPlanMix(row) {
   `;
 }
 
+function renderLinearMetric(value, maxValue, formatted, tone) {
+  const width = maxValue > 0 ? clamp((Math.abs(value) / maxValue) * 100, 0, 100) : 0;
+  const valueTone = Math.abs(value) > 0.05 ? tone : "neutral";
+  return `
+    <div class="table-metric-cell">
+      <span class="table-metric-value ${valueTone}">${formatted}</span>
+      <span class="table-bar-track">
+        <span class="table-bar-fill ${tone}" style="width: ${width.toFixed(1)}%"></span>
+      </span>
+    </div>
+  `;
+}
+
+function renderDivergingMetric(value, maxAbsValue, formatted) {
+  const width = maxAbsValue > 0 ? clamp((Math.abs(value) / maxAbsValue) * 50, 0, 50) : 0;
+  const left = value >= 0 ? 50 : 50 - width;
+  const tone = value > 0 ? "positive" : value < 0 ? "negative" : "neutral";
+  return `
+    <div class="table-metric-cell">
+      <span class="table-metric-value ${tone}">${formatted}</span>
+      <span class="table-diverging-track">
+        <span class="table-diverging-zero"></span>
+        <span class="table-diverging-fill ${tone}" style="left: ${left.toFixed(1)}%; width: ${width.toFixed(1)}%"></span>
+      </span>
+    </div>
+  `;
+}
+
 function renderTable(rows) {
+  const maxCustomerSavings = Math.max(1, ...rows.map((row) => row.customerSavings));
+  const maxCostAvoided = Math.max(1, ...rows.map((row) => row.costAvoided));
+  const maxNegativeMarginHomes = Math.max(1, ...rows.map((row) => row.negativeMarginSwitchHomes));
+  const maxLeakage = Math.max(1, ...rows.map((row) => row.leakage));
+  const maxMarginPerSwitcher = Math.max(
+    1,
+    ...rows.map((row) => Math.abs(row.marginDeltaPerSwitcher)),
+  );
+  const maxSegmentMargin = Math.max(1, ...rows.map((row) => Math.abs(row.marginDelta)));
+
   document.getElementById("phase2-table").innerHTML = rows
     .map((row) => `
       <tr>
@@ -528,11 +628,12 @@ function renderTable(rows) {
         <td>${num.format(row.switchHomes)}</td>
         <td>${num.format(row.planHomes.tou)}</td>
         <td>${num.format(row.planHomes.demand)}</td>
-        <td>${money1.format(row.customerSavings)}</td>
-        <td>${money1.format(row.costAvoided)}</td>
-        <td>${signedMoney(row.marginDeltaPerSwitcher)}</td>
-        <td>${money.format(row.leakage)}</td>
-        <td>${signedMoney(row.marginDelta)}</td>
+        <td>${renderLinearMetric(row.negativeMarginSwitchHomes, maxNegativeMarginHomes, num.format(row.negativeMarginSwitchHomes), "negative")}</td>
+        <td>${renderLinearMetric(row.customerSavings, maxCustomerSavings, money1.format(row.customerSavings), "negative")}</td>
+        <td>${renderLinearMetric(row.costAvoided, maxCostAvoided, money1.format(row.costAvoided), "teal")}</td>
+        <td>${renderDivergingMetric(row.marginDeltaPerSwitcher, maxMarginPerSwitcher, signedMoney(row.marginDeltaPerSwitcher))}</td>
+        <td>${renderLinearMetric(row.leakage, maxLeakage, money.format(row.leakage), "negative")}</td>
+        <td>${renderDivergingMetric(row.marginDelta, maxSegmentMargin, signedMoney(row.marginDelta))}</td>
       </tr>
     `)
     .join("");
@@ -583,6 +684,8 @@ function downloadCsv() {
       "total_switch_homes",
       "tou_switch_homes",
       "demand_switch_homes",
+      "negative_margin_switch_homes",
+      "negative_margin_switch_share",
       "revenue_leakage",
       "cost_avoided",
       "margin_delta",
@@ -598,6 +701,8 @@ function downloadCsv() {
       total.switchHomes.toFixed(2),
       total.touSwitchHomes.toFixed(2),
       total.demandSwitchHomes.toFixed(2),
+      total.negativeMarginSwitchHomes.toFixed(2),
+      total.negativeMarginShare.toFixed(4),
       total.leakage.toFixed(2),
       total.costAvoided.toFixed(2),
       total.marginDelta.toFixed(2),
@@ -613,6 +718,8 @@ function downloadCsv() {
       "fixed_homes",
       "tou_homes",
       "demand_homes",
+      "negative_margin_switch_homes",
+      "negative_margin_switch_share",
       "fixed_share",
       "tou_share",
       "demand_share",
@@ -630,6 +737,8 @@ function downloadCsv() {
       row.planHomes.fixed.toFixed(2),
       row.planHomes.tou.toFixed(2),
       row.planHomes.demand.toFixed(2),
+      row.negativeMarginSwitchHomes.toFixed(2),
+      row.negativeMarginShare.toFixed(4),
       row.planShares.fixed.toFixed(4),
       row.planShares.tou.toFixed(4),
       row.planShares.demand.toFixed(4),

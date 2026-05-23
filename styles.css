@@ -258,6 +258,10 @@ h1 {
   font-weight: 820;
 }
 
+.summary-metric.negative strong {
+  color: var(--red);
+}
+
 .summary-metric.primary {
   display: block;
   padding: 0 0 14px;
@@ -1705,7 +1709,7 @@ tr:hover td {
 }
 
 .phase2-table-panel table {
-  min-width: 1260px;
+  min-width: 1540px;
 }
 
 .plan-mix-cell {
@@ -1742,6 +1746,82 @@ tr:hover td {
 
 .plan-mix-segment.demand {
   background: var(--teal);
+}
+
+.table-metric-cell {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  min-width: 116px;
+}
+
+.table-metric-value {
+  font-weight: 780;
+}
+
+.table-metric-value.negative {
+  color: var(--red);
+}
+
+.table-metric-value.positive {
+  color: var(--green);
+}
+
+.table-metric-value.teal {
+  color: var(--teal);
+}
+
+.table-metric-value.neutral {
+  color: var(--text);
+}
+
+.table-bar-track,
+.table-diverging-track {
+  position: relative;
+  display: block;
+  width: 112px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef1f3;
+}
+
+.table-bar-fill,
+.table-diverging-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.table-bar-fill {
+  right: 0;
+}
+
+.table-bar-fill.negative,
+.table-diverging-fill.negative {
+  background: var(--red);
+}
+
+.table-bar-fill.teal {
+  background: var(--teal);
+}
+
+.table-diverging-zero {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: #aab6bd;
+}
+
+.table-diverging-fill.positive {
+  background: var(--green);
+}
+
+.table-diverging-fill.neutral {
+  background: #aab6bd;
 }
 
 @media (max-width: 980px) {

@@ -136,7 +136,7 @@
           </summary>
           <div class="collapsible-body grid-2 sensitivity-grid">
             <article class="panel">
-              <h3>TOU peak spread</h3>
+              <h3>TOU peak/off-peak ratio</h3>
               <p class="panel-subtitle">
                 More spread strengthens the customer incentive to shift away
                 from peak hours, but it can also reduce collected revenue.
@@ -147,7 +147,7 @@
               <div class="mini-metrics" id="tou-sensitivity-metrics"></div>
             </article>
             <article class="panel">
-              <h3>Demand charge level</h3>
+              <h3>Demand charge</h3>
               <p class="panel-subtitle">
                 A higher $/kW-month charge moves the tariff from volumetric
                 collection toward explicit capacity-cost recovery.
@@ -199,14 +199,14 @@
               <input id="battery" type="range" min="0" max="20" step="1" value="10" />
             </div>
             <div class="control">
-              <label for="spread">TOU peak spread</label>
+              <label for="spread">TOU peak/off-peak ratio</label>
               <div class="control-value"><span id="spread-value">2.0</span>x</div>
               <input id="spread" type="range" min="1" max="5" step="0.05" value="2" />
             </div>
             <div class="control">
               <label for="demand-charge">Demand charge</label>
               <div class="control-value">$<span id="demand-charge-value">20</span>/kW-mo</div>
-              <input id="demand-charge" type="range" min="0" max="30" step="1" value="20" />
+              <input id="demand-charge" type="range" min="0" max="50" step="1" value="20" />
             </div>
           </div>
           </div>
@@ -232,10 +232,9 @@
                 <input id="matrix-spread" type="range" min="1" max="5" step="0.05" value="2" />
               </div>
               <div class="map-rate-control">
-                <label for="matrix-demand-charge">Demand charge ratio</label>
-                <strong><span id="matrix-demand-ratio-value">1.00</span>x</strong>
-                <span>$<span id="matrix-demand-charge-value">20</span>/kW-mo</span>
-                <input id="matrix-demand-charge" type="range" min="0" max="30" step="1" value="20" />
+                <label for="matrix-demand-charge">Demand charge</label>
+                <strong>$<span id="matrix-demand-charge-value">20</span>/kW-mo</strong>
+                <input id="matrix-demand-charge" type="range" min="0" max="50" step="1" value="20" />
               </div>
             </div>
             <div class="population-chart-wrap">

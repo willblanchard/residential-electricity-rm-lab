@@ -79,7 +79,7 @@ The optimizer is a transparent grid search over the two non-flat tariff decision
 variables:
 
 - TOU decision variable: peak/off-peak spread from 1.0x to 5.0x in 0.10x steps.
-- Demand-charge decision variable: $0 to $30/kW-month in $1 steps.
+- Demand-charge decision variable: $0 to $50/kW-month in $1 steps.
 
 For each candidate, the tariff is first calibrated to match the passive
 flat-rate filing baseline. The model then applies the current population mix,
@@ -96,9 +96,10 @@ and portfolio peak <= 27,200 kW
 and passive filing-baseline revenue within +/- 0.5% of flat
 ```
 
-The dashboard displays the best feasible TOU and demand-charge candidates and
-the top frontier points near each optimum, and lets the viewer apply either
-setting to the interactive controls. `Download optimization CSV` exports the
+The dashboard displays the best feasible candidate when one clears the
+constraints. If a tariff family has no fully feasible point after device
+response, it keeps that fallback frontier point marked as a constraint violation
+rather than treating it as approved. `Download optimization CSV` exports the
 full candidate grid so the paper can cite both the chosen point and the
 surrounding frontier.
 
@@ -230,11 +231,13 @@ Default controls use a 2.0x TOU peak spread and 3°F thermostat adjustment.
 The dashboard also includes an automated home-battery dispatch policy. It can be
 applied by itself or layered on top of thermostat control. The battery charges
 when the price signal is low, preserves state of charge for the late-day peak,
-and discharges to reduce high-price grid imports under TOU or clip the
-highest-load hours under the demand-charge tariff. This is a transparent
-heuristic dispatch model, not a solved household battery LP. The `Battery size`
-control changes capacity and the exported `utility_rm_battery_response.csv`
-contains hourly SOC, charge/discharge, home load, grid import, and price.
+and discharges to reduce high-price grid imports under TOU. Under a demand
+charge, it solves a simple meter-peak cap for each normalized demand profile so
+the home battery can materially lower the customer's billed kW rather than only
+following the average portfolio peak window. This is a transparent heuristic
+dispatch model, not a solved household battery LP. The `Battery size` control
+changes capacity and the exported `utility_rm_battery_response.csv` contains
+hourly SOC, charge/discharge, home load, grid import, and price.
 
 ## Utility economics model
 
@@ -258,6 +261,12 @@ claim about every ISO:
   $10/kW-month.
 - MISO's 2025 summer PRA price of $666.50/MW-day converts to roughly
   $20/kW-month, which is the value used in the dashboard.
+
+For demand-charge customers with behind-the-meter automation, billed demand and
+utility capacity risk are intentionally separated. A battery can lower the
+customer's non-coincident meter peak more sharply than it lowers the utility's
+coincident planning obligation, so only a bounded share of shaved billed kW is
+credited as avoided capacity cost.
 
 Source anchors for the paper write-up:
 
