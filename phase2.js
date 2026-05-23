@@ -238,6 +238,7 @@ function rowsForState() {
   return segmentDefs.map((segment) => {
     const homes = (segment.homes / denominator) * portfolioSize;
     const planHomes = { fixed: 0, tou: 0, demand: 0 };
+    const negativeMarginPlanHomes = { tou: 0, demand: 0 };
     const marginGroups = {
       profitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
       unprofitable: { homes: 0, leakage: 0, costAvoided: 0, margin: 0 },
@@ -267,6 +268,7 @@ function rowsForState() {
         group.leakage += planHomeCount * outcome.customerSavings;
         group.costAvoided += planHomeCount * outcome.costAvoided;
         group.margin += planHomeCount * outcome.marginDelta;
+        if (outcome.marginDelta < 0) negativeMarginPlanHomes[plan] += planHomeCount;
         revenue += planHomeCount * outcome.bill;
         utilityCost += planHomeCount * outcome.utilityCost;
       });
@@ -295,6 +297,7 @@ function rowsForState() {
       switchShare: switchHomes / homes,
       planHomes,
       planShares,
+      negativeMarginPlanHomes,
       marginGroups,
       negativeMarginSwitchHomes: marginGroups.unprofitable.homes,
       negativeMarginShare: switchHomes > 0 ? marginGroups.unprofitable.homes / switchHomes : 0,
@@ -325,6 +328,10 @@ function aggregate(rows = rowsForState()) {
     (sum, row) => sum + row.negativeMarginSwitchHomes,
     0,
   );
+  const negativeMarginPlanHomes = {
+    tou: rows.reduce((sum, row) => sum + row.negativeMarginPlanHomes.tou, 0),
+    demand: rows.reduce((sum, row) => sum + row.negativeMarginPlanHomes.demand, 0),
+  };
   const marginGroups = rows.reduce(
     (groups, row) => {
       for (const key of ["profitable", "unprofitable"]) {
@@ -363,6 +370,7 @@ function aggregate(rows = rowsForState()) {
     touSwitchHomes,
     demandSwitchHomes,
     negativeMarginSwitchHomes,
+    negativeMarginPlanHomes,
     negativeMarginShare: switchHomes > 0 ? negativeMarginSwitchHomes / switchHomes : 0,
     marginGroups,
     leakage,
@@ -386,11 +394,11 @@ function renderSummary(rows) {
   document.getElementById("phase2-cost-avoided").textContent = money.format(total.costAvoided);
   document.getElementById("phase2-margin-delta").textContent = signedMoney(total.marginDelta);
   document.getElementById("phase2-negative-margin-switchers").textContent =
-    `${num.format(total.negativeMarginSwitchHomes)} homes`;
+    `${num.format(total.negativeMarginSwitchHomes)} / ${num.format(total.switchHomes)}`;
   document.getElementById("phase2-fixed-adder").textContent =
     `${money1.format(total.fixedAdderPerHome)}/mo`;
   document.getElementById("phase2-summary-note").textContent =
-    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Negative-margin switchers save more on bills than the utility avoids in cost.`;
+    `Recovering lost revenue only from stayers would add ${total.fixedAdderCents.toFixed(2)} cents/kWh to the remaining fixed-rate pool. Negative-margin switchers are ${pct.format(total.negativeMarginShare)} of all switchers.`;
 
   document.getElementById("phase2-metrics").innerHTML = `
     <div class="mini-metric phase2-metric">
@@ -408,6 +416,8 @@ function renderSummary(rows) {
     <div class="mini-metric phase2-metric negative">
       <label>Neg-margin switchers</label>
       <strong>${num.format(total.negativeMarginSwitchHomes)}</strong>
+      <small>${pct.format(total.negativeMarginShare)} of switchers</small>
+      <small>TOU ${num.format(total.negativeMarginPlanHomes.tou)} | Demand ${num.format(total.negativeMarginPlanHomes.demand)}</small>
     </div>
   `;
 }
@@ -673,6 +683,31 @@ function renderLinearMetric(value, maxValue, formatted, tone) {
   `;
 }
 
+function renderNegativeMarginMetric(row) {
+  const touHomes = row.negativeMarginPlanHomes.tou;
+  const demandHomes = row.negativeMarginPlanHomes.demand;
+  const formatted = `${num.format(row.negativeMarginSwitchHomes)} / ${num.format(row.switchHomes)}`;
+  const context =
+    row.switchHomes > 0 ? `${pct.format(row.negativeMarginShare)} of switchers` : "No switch homes";
+  const split = `TOU ${num.format(touHomes)} | Demand ${num.format(demandHomes)}`;
+  const valueTone = row.negativeMarginSwitchHomes > 0.05 ? "negative" : "neutral";
+  const touWidth = row.switchHomes > 0 ? clamp((touHomes / row.switchHomes) * 100, 0, 100) : 0;
+  const demandWidth =
+    row.switchHomes > 0 ? clamp((demandHomes / row.switchHomes) * 100, 0, 100 - touWidth) : 0;
+
+  return `
+    <div class="table-metric-cell">
+      <span class="table-metric-value ${valueTone}">${formatted}</span>
+      <span class="table-metric-context">${context}</span>
+      <span class="table-metric-context">${split}</span>
+      <span class="table-stacked-track" aria-label="${formatted}; ${context}; ${split}">
+        <span class="table-stacked-segment tou" style="width: ${touWidth.toFixed(1)}%"></span>
+        <span class="table-stacked-segment demand" style="width: ${demandWidth.toFixed(1)}%"></span>
+      </span>
+    </div>
+  `;
+}
+
 function renderDivergingMetric(value, maxAbsValue, formatted) {
   const width = maxAbsValue > 0 ? clamp((Math.abs(value) / maxAbsValue) * 50, 0, 50) : 0;
   const left = value >= 0 ? 50 : 50 - width;
@@ -691,7 +726,6 @@ function renderDivergingMetric(value, maxAbsValue, formatted) {
 function renderTable(rows) {
   const maxCustomerSavings = Math.max(1, ...rows.map((row) => row.customerSavings));
   const maxCostAvoided = Math.max(1, ...rows.map((row) => row.costAvoided));
-  const maxNegativeMarginHomes = Math.max(1, ...rows.map((row) => row.negativeMarginSwitchHomes));
   const maxLeakage = Math.max(1, ...rows.map((row) => row.leakage));
   const maxMarginPerSwitcher = Math.max(
     1,
@@ -709,7 +743,7 @@ function renderTable(rows) {
         <td>${num.format(row.switchHomes)}</td>
         <td>${num.format(row.planHomes.tou)}</td>
         <td>${num.format(row.planHomes.demand)}</td>
-        <td>${renderLinearMetric(row.negativeMarginSwitchHomes, maxNegativeMarginHomes, num.format(row.negativeMarginSwitchHomes), "negative")}</td>
+        <td>${renderNegativeMarginMetric(row)}</td>
         <td>${renderLinearMetric(row.customerSavings, maxCustomerSavings, money1.format(row.customerSavings), "negative")}</td>
         <td>${renderLinearMetric(row.costAvoided, maxCostAvoided, money1.format(row.costAvoided), "teal")}</td>
         <td>${renderDivergingMetric(row.marginDeltaPerSwitcher, maxMarginPerSwitcher, signedMoney(row.marginDeltaPerSwitcher))}</td>
@@ -766,6 +800,8 @@ function downloadCsv() {
       "tou_switch_homes",
       "demand_switch_homes",
       "negative_margin_switch_homes",
+      "negative_margin_tou_homes",
+      "negative_margin_demand_homes",
       "negative_margin_switch_share",
       "revenue_leakage",
       "cost_avoided",
@@ -783,6 +819,8 @@ function downloadCsv() {
       total.touSwitchHomes.toFixed(2),
       total.demandSwitchHomes.toFixed(2),
       total.negativeMarginSwitchHomes.toFixed(2),
+      total.negativeMarginPlanHomes.tou.toFixed(2),
+      total.negativeMarginPlanHomes.demand.toFixed(2),
       total.negativeMarginShare.toFixed(4),
       total.leakage.toFixed(2),
       total.costAvoided.toFixed(2),
@@ -800,6 +838,8 @@ function downloadCsv() {
       "tou_homes",
       "demand_homes",
       "negative_margin_switch_homes",
+      "negative_margin_tou_homes",
+      "negative_margin_demand_homes",
       "negative_margin_switch_share",
       "fixed_share",
       "tou_share",
@@ -819,6 +859,8 @@ function downloadCsv() {
       row.planHomes.tou.toFixed(2),
       row.planHomes.demand.toFixed(2),
       row.negativeMarginSwitchHomes.toFixed(2),
+      row.negativeMarginPlanHomes.tou.toFixed(2),
+      row.negativeMarginPlanHomes.demand.toFixed(2),
       row.negativeMarginShare.toFixed(4),
       row.planShares.fixed.toFixed(4),
       row.planShares.tou.toFixed(4),

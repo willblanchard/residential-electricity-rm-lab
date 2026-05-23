@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Energy vs Capacity Costs | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260523-peak-shift" />
+    <link rel="stylesheet" href="styles.css?v=20260523-classroom-short" />
   </head>
   <body>
     <div class="shell">
@@ -135,7 +135,7 @@
               </div>
               <svg
                 class="cost-chart"
-                viewBox="0 0 760 330"
+                viewBox="0 0 760 360"
                 role="img"
                 aria-labelledby="area-height-title area-height-desc"
               >
@@ -152,84 +152,93 @@
                     <stop offset="100%" stop-color="#087f8c" stop-opacity="0.08" />
                   </linearGradient>
                 </defs>
-                <line class="chart-axis" x1="72" y1="260" x2="708" y2="260" />
-                <line class="chart-axis" x1="72" y1="56" x2="72" y2="260" />
-                <line class="chart-grid" x1="72" y1="205" x2="708" y2="205" />
-                <line class="chart-grid" x1="72" y1="150" x2="708" y2="150" />
-                <line class="chart-grid" x1="72" y1="95" x2="708" y2="95" />
-                <line class="chart-limit" x1="72" y1="112" x2="708" y2="112" />
+                <line class="chart-axis" x1="72" y1="264" x2="708" y2="264" />
+                <line class="chart-axis" x1="72" y1="70" x2="72" y2="264" />
+                <line class="chart-grid" x1="72" y1="211" x2="708" y2="211" />
+                <line class="chart-grid" x1="72" y1="158" x2="708" y2="158" />
+                <line class="chart-grid" x1="72" y1="105" x2="708" y2="105" />
+                <line class="chart-limit" x1="72" y1="121" x2="708" y2="121" />
                 <polygon
                   class="energy-area"
-                  points="72,260 72,216 120,206 168,198 216,192 264,181 312,166 360,150 408,132 456,104 504,82 552,96 600,144 648,190 708,216 708,260"
+                  points="72,264 72,222 120,213 168,205 216,199 264,188 312,174 360,159 408,142 456,116 504,94 552,107 600,153 648,197 708,222 708,264"
                 />
                 <path
                   class="demand-line"
-                  d="M72 216 L120 206 L168 198 L216 192 L264 181 L312 166 L360 150 L408 132 L456 104 L504 82 L552 96 L600 144 L648 190 L708 216"
+                  d="M72 222 L120 213 L168 205 L216 199 L264 188 L312 174 L360 159 L408 142 L456 116 L504 94 L552 107 L600 153 L648 197 L708 222"
                 />
-                <circle class="peak-dot" cx="504" cy="82" r="6" />
-                <line class="peak-marker" x1="504" y1="82" x2="504" y2="260" />
-                <text class="chart-label strong" x="514" y="76">Peak summer demand</text>
-                <text class="chart-label" x="514" y="93">capacity cost trigger</text>
-                <text class="chart-label strong" x="494" y="106">Existing grid capacity</text>
-                <text class="chart-label" x="320" y="218">Production cost accumulates across the day</text>
-                <text class="axis-label" x="350" y="306">Hour on peak summer day</text>
+                <circle class="peak-dot" cx="504" cy="94" r="6" />
+                <line class="peak-marker" x1="504" y1="94" x2="504" y2="264" />
+                <path class="callout-line" d="M508 90 L548 54" />
+                <rect class="chart-callout-bg" x="552" y="28" width="160" height="55" rx="8" />
+                <text class="chart-label strong" x="564" y="50">Peak summer demand</text>
+                <text class="chart-label" x="564" y="68">Capacity cost trigger</text>
+                <rect class="chart-pill-bg" x="86" y="96" width="150" height="28" rx="7" />
+                <text class="chart-label strong" x="98" y="115">Existing grid capacity</text>
+                <rect class="chart-pill-bg muted" x="300" y="226" width="260" height="25" rx="7" />
+                <text class="chart-label" x="316" y="244">Production cost accumulates across the day</text>
+                <text class="axis-label" x="350" y="318">Hour on peak summer day</text>
                 <text class="axis-label vertical" x="22" y="165" transform="rotate(-90 22 165)">Grid load</text>
-                <text class="tick-label" x="64" y="282">12a</text>
-                <text class="tick-label" x="344" y="282">12p</text>
-                <text class="tick-label" x="682" y="282">11p</text>
+                <text class="tick-label" x="64" y="287">12a</text>
+                <text class="tick-label" x="344" y="287">12p</text>
+                <text class="tick-label" x="682" y="287">11p</text>
               </svg>
             </article>
 
             <article class="cost-visual-panel">
               <div class="cost-visual-copy">
-                <span class="cost-label">Same production, different capacity cost</span>
-                <h2>A peaky summer load can force a capacity upgrade.</h2>
+                <span class="cost-label">Equal energy, unequal capacity</span>
+                <h2>Equal energy use, unequal grid hardware.</h2>
                 <p>
-                  These simplified customers require similar energy production
-                  over the day. The peaky customer is more expensive for the
-                  system because the load arrives when the grid is already
-                  near its summer limit.
+                  Both profiles below serve the same daily energy. The cost
+                  difference is the peak: grid hardware is sized for the
+                  highest load, so the summer spike needs a larger feeder,
+                  transformer, and capacity reserve.
                 </p>
               </div>
               <svg
                 class="cost-chart compact"
                 viewBox="0 0 560 330"
                 role="img"
-                aria-labelledby="same-energy-title same-energy-desc"
+                aria-label="Two load shapes with equal daily energy use but unequal grid capacity and hardware requirements"
               >
-                <title id="same-energy-title">Similar production cost with different peak capacity cost</title>
-                <desc id="same-energy-desc">
-                  Two bar charts show similar total daily energy served. The
-                  flatter load stays well below the summer capacity threshold,
-                  while the evening spike approaches the threshold and creates
-                  higher capacity cost.
-                </desc>
                 <line class="chart-axis" x1="50" y1="238" x2="250" y2="238" />
                 <line class="chart-axis" x1="310" y1="238" x2="510" y2="238" />
-                <text class="chart-label strong" x="54" y="48">Flatter load</text>
-                <text class="chart-label strong" x="314" y="48">Summer spike</text>
-                <text class="chart-label" x="54" y="68">similar production cost</text>
-                <text class="chart-label warning" x="314" y="68">higher capacity cost</text>
-                <rect class="steady-bar" x="58" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="82" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="106" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="130" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="154" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="178" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="202" y="148" width="17" height="90" rx="4" />
-                <rect class="steady-bar" x="226" y="148" width="17" height="90" rx="4" />
+                <text class="chart-label strong" x="54" y="36">Flatter load</text>
+                <text class="chart-label strong" x="314" y="36">Summer spike</text>
+                <text class="chart-label teal" x="54" y="54">same total energy</text>
+                <text class="chart-label teal" x="314" y="54">same total energy</text>
+                <rect class="steady-bar" x="58" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="82" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="106" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="130" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="154" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="178" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="202" y="168" width="17" height="70" rx="4" />
+                <rect class="steady-bar" x="226" y="168" width="17" height="70" rx="4" />
                 <rect class="peaky-bar" x="318" y="216" width="17" height="22" rx="4" />
                 <rect class="peaky-bar" x="342" y="216" width="17" height="22" rx="4" />
                 <rect class="peaky-bar" x="366" y="216" width="17" height="22" rx="4" />
                 <rect class="peaky-bar" x="390" y="172" width="17" height="66" rx="4" />
                 <rect class="peaky-bar warning-fill" x="414" y="82" width="17" height="156" rx="4" />
                 <rect class="peaky-bar warning-fill" x="438" y="60" width="17" height="178" rx="4" />
-                <rect class="peaky-bar" x="462" y="194" width="17" height="44" rx="4" />
+                <rect class="peaky-bar" x="462" y="166" width="17" height="72" rx="4" />
                 <rect class="peaky-bar" x="486" y="216" width="17" height="22" rx="4" />
-                <line class="peak-line muted" x1="50" y1="148" x2="250" y2="148" />
+                <line class="peak-line muted" x1="50" y1="168" x2="250" y2="168" />
                 <line class="peak-line" x1="310" y1="60" x2="510" y2="60" />
-                <text class="tick-label" x="78" y="266">energy still served</text>
-                <text class="tick-label" x="328" y="266">capacity risk rises</text>
+                <line class="capacity-bracket muted" x1="244" y1="168" x2="244" y2="238" />
+                <line class="capacity-bracket muted" x1="237" y1="168" x2="250" y2="168" />
+                <line class="capacity-bracket muted" x1="237" y1="238" x2="250" y2="238" />
+                <line class="capacity-bracket warning" x1="510" y1="60" x2="510" y2="238" />
+                <line class="capacity-bracket warning" x1="500" y1="60" x2="510" y2="60" />
+                <line class="capacity-bracket warning" x1="500" y1="238" x2="510" y2="238" />
+                <rect class="chart-pill-bg muted" x="64" y="138" width="150" height="24" rx="7" />
+                <text class="tick-label" x="76" y="154">smaller grid hardware</text>
+                <rect class="chart-pill-bg" x="326" y="74" width="158" height="24" rx="7" />
+                <text class="tick-label warning" x="338" y="90">larger grid hardware</text>
+                <text class="tick-label" x="78" y="266">same daily energy</text>
+                <text class="chart-label strong" x="255" y="266">=</text>
+                <text class="tick-label" x="330" y="266">same daily energy</text>
+                <text class="tick-label warning" x="326" y="290">higher peak sets hardware size</text>
               </svg>
             </article>
 
@@ -277,8 +286,7 @@
                 <rect class="violation-band" x="315" y="58" width="84" height="54" rx="8" />
                 <text class="chart-label strong" x="72" y="100">Existing grid capacity</text>
                 <text class="chart-label warning" x="320" y="48">Expansion needed</text>
-                <text class="chart-label teal" x="134" y="126">Shoulder use rises</text>
-                <text class="chart-label teal" x="360" y="158">Shoulder use rises</text>
+                <text class="chart-label teal" x="126" y="126">Shoulder load rises</text>
                 <text class="chart-label" x="320" y="146">Peak stays under ceiling</text>
                 <g class="chart-legend">
                   <line class="warning-line" x1="78" y1="292" x2="116" y2="292" />
@@ -349,113 +357,57 @@
           </article>
         </section>
 
-        <section class="cost-bridge-grid" aria-labelledby="practical-title">
-          <article class="case-study narrative-card cost-bridge">
-            <div class="case-copy">
-              <h2 id="practical-title">The practical distinction</h2>
-              <p>
-                Two rate designs can require similar energy production, but
-                create different utility economics if one pushes the system
-                toward a summer capacity expansion.
-              </p>
-            </div>
-            <div class="case-points">
-              <div>
-                <strong>Each unit served</strong>
-                <span>Generation or market purchases create variable cost.</span>
-              </div>
-              <div>
-                <strong>Peak summer day</strong>
-                <span>The system must be expanded or reserved for rare extremes.</span>
-              </div>
-              <div>
-                <strong>Managerial value</strong>
-                <span>Peak reduction can defer a grid build or capacity contract.</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="panel cost-ladder-panel" aria-labelledby="rate-link-title">
-            <h2 id="rate-link-title">How this connects to the rate options</h2>
-            <div class="cost-ladder">
-              <div class="cost-ladder-step">
-                <span>1</span>
-                <div>
-                  <strong>Flat rate</strong>
-                  <p>
-                    Simple and stable, but weak at distinguishing ordinary
-                    consumption from hours that push the grid toward expansion.
-                  </p>
-                </div>
-              </div>
-              <div class="cost-ladder-step">
-                <span>2</span>
-                <div>
-                  <strong>Time-of-use rate</strong>
-                  <p>
-                    Makes high-cost supply hours visible, especially when hot
-                    summer peaks drive expensive generation or market purchases.
-                  </p>
-                </div>
-              </div>
-              <div class="cost-ladder-step">
-                <span>3</span>
-                <div>
-                  <strong>Demand charge</strong>
-                  <p>
-                    Charges for contribution to peak-day capacity need, which
-                    can better align bills with grid expansion pressure.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </article>
+        <section class="panel rate-options-slide" aria-labelledby="rate-link-title">
+          <div class="presentation-heading">
+            <span class="cost-label">Rate-design link</span>
+            <h2 id="rate-link-title">What each rate is trying to price</h2>
+          </div>
+          <div class="rate-option-strip" aria-label="rate option cost signals">
+            <article class="rate-option-card">
+              <span>Flat rate</span>
+              <strong>Usage</strong>
+              <small>weak peak signal</small>
+            </article>
+            <article class="rate-option-card tou">
+              <span>Time-of-use</span>
+              <strong>Costly hours</strong>
+              <small>energy timing signal</small>
+            </article>
+            <article class="rate-option-card demand">
+              <span>Demand charge</span>
+              <strong>Peak load</strong>
+              <small>capacity signal</small>
+            </article>
+          </div>
         </section>
 
-        <section class="panel cost-table-panel" aria-labelledby="model-use-title">
-          <div class="table-heading">
-            <div>
-              <h2 id="model-use-title">How to read it in this model</h2>
-            </div>
-            <p>
-              The dashboard uses simplified cost proxies, but the distinction
-              is the same one utilities use when they ask whether a rate design
-              only changes customer bills or actually avoids production and
-              peak-capacity costs.
-            </p>
+        <section class="panel model-takeaway-slide" aria-labelledby="model-use-title">
+          <div class="presentation-heading">
+            <span class="cost-label">Model takeaway</span>
+            <h2 id="model-use-title">The optimizer rewards avoided cost, not just revenue.</h2>
           </div>
-          <div class="segment-table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Model term</th>
-                  <th>Plain-English meaning</th>
-                  <th>Why it matters for rate design</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Production cost</td>
-                  <td>Cost of producing or buying each unit of electricity served.</td>
-                  <td>TOU pricing can reduce use during expensive supply hours.</td>
-                </tr>
-                <tr>
-                  <td>Peak capacity cost</td>
-                  <td>Cost of expanding or reserving grid capability for rare peak summer demand.</td>
-                  <td>Peak reduction can avoid or defer infrastructure and capacity-contract costs.</td>
-                </tr>
-                <tr>
-                  <td>Gross margin</td>
-                  <td>Revenue minus production and peak-capacity costs.</td>
-                  <td>A rate can reduce revenue but still improve economics if it avoids enough cost.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="model-takeaway-grid" aria-label="model cost terms">
+            <article>
+              <span>Production cost</span>
+              <strong>Every unit served</strong>
+            </article>
+            <article>
+              <span>Capacity cost</span>
+              <strong>Highest summer peak</strong>
+            </article>
+            <article>
+              <span>Gross margin</span>
+              <strong>Revenue minus both costs</strong>
+            </article>
           </div>
+          <p class="stage-line">
+            Same energy can have different economics if one rate creates a
+            bigger peak.
+          </p>
         </section>
 
         <p class="footer">
-          Next page: <a href="population.html">Population definition</a>.
+          Next page: <a href="optimization-model.html">Optimization model</a>.
         </p>
       </main>
     </div>

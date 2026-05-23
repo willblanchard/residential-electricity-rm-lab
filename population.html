@@ -105,55 +105,126 @@
               result.
             </p>
           </div>
-          <div class="population-case-grid">
-            <article class="population-case-card">
-              <span>Case 1</span>
-              <h3>Inelastic / no devices</h3>
-              <strong>2,000 homes</strong>
-              <small>20% of portfolio</small>
-            </article>
-            <article class="population-case-card">
-              <span>Case 2</span>
-              <h3>Inelastic / thermostat</h3>
-              <strong>1,000 homes</strong>
-              <small>10% of portfolio</small>
-            </article>
-            <article class="population-case-card">
-              <span>Case 3</span>
-              <h3>Inelastic / battery</h3>
-              <strong>500 homes</strong>
-              <small>5% of portfolio</small>
-            </article>
-            <article class="population-case-card">
-              <span>Case 4</span>
-              <h3>Inelastic / thermostat + battery</h3>
-              <strong>1,000 homes</strong>
-              <small>10% of portfolio</small>
-            </article>
-            <article class="population-case-card elastic">
-              <span>Case 5</span>
-              <h3>Elastic / no devices</h3>
-              <strong>1,500 homes</strong>
-              <small>15% of portfolio</small>
-            </article>
-            <article class="population-case-card elastic">
-              <span>Case 6</span>
-              <h3>Elastic / thermostat</h3>
-              <strong>1,500 homes</strong>
-              <small>15% of portfolio</small>
-            </article>
-            <article class="population-case-card elastic">
-              <span>Case 7</span>
-              <h3>Elastic / battery</h3>
-              <strong>500 homes</strong>
-              <small>5% of portfolio</small>
-            </article>
-            <article class="population-case-card elastic">
-              <span>Case 8</span>
-              <h3>Elastic / thermostat + battery</h3>
-              <strong>2,000 homes</strong>
-              <small>20% of portfolio</small>
-            </article>
+          <div
+            class="population-case-table-panel"
+            role="region"
+            aria-label="Modeled population cases by behavior and device ownership"
+            tabindex="0"
+          >
+            <table class="population-case-table">
+              <caption>
+                Homes and portfolio share by behavior type and thermostat or battery ownership.
+              </caption>
+              <thead>
+                <tr>
+                  <th class="axis-heading" scope="col">Behavior type</th>
+                  <th scope="col">
+                    <span>No devices</span>
+                    <small>Thermostat: no<br />Battery: no</small>
+                  </th>
+                  <th scope="col">
+                    <span>Thermostat only</span>
+                    <small>Thermostat: yes<br />Battery: no</small>
+                  </th>
+                  <th scope="col">
+                    <span>Battery only</span>
+                    <small>Thermostat: no<br />Battery: yes</small>
+                  </th>
+                  <th scope="col">
+                    <span>Thermostat + battery</span>
+                    <small>Thermostat: yes<br />Battery: yes</small>
+                  </th>
+                  <th class="total-col" scope="col">Behavior total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">
+                    <span>Inelastic</span>
+                    <small>Passive customer behavior</small>
+                  </th>
+                  <td>
+                    <span class="case-tag">Case 1</span>
+                    <strong>2,000 homes</strong>
+                    <small>20% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 2</span>
+                    <strong>1,000 homes</strong>
+                    <small>10% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 3</span>
+                    <strong>500 homes</strong>
+                    <small>5% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 4</span>
+                    <strong>1,000 homes</strong>
+                    <small>10% of portfolio</small>
+                  </td>
+                  <td class="total-cell">
+                    <strong>4,500 homes</strong>
+                    <small>45% behavior split</small>
+                  </td>
+                </tr>
+                <tr class="elastic-row">
+                  <th scope="row">
+                    <span>Elastic</span>
+                    <small>Price-responsive behavior</small>
+                  </th>
+                  <td>
+                    <span class="case-tag">Case 5</span>
+                    <strong>1,500 homes</strong>
+                    <small>15% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 6</span>
+                    <strong>1,500 homes</strong>
+                    <small>15% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 7</span>
+                    <strong>500 homes</strong>
+                    <small>5% of portfolio</small>
+                  </td>
+                  <td>
+                    <span class="case-tag">Case 8</span>
+                    <strong>2,000 homes</strong>
+                    <small>20% of portfolio</small>
+                  </td>
+                  <td class="total-cell">
+                    <strong>5,500 homes</strong>
+                    <small>55% behavior split</small>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">Device total</th>
+                  <td>
+                    <strong>3,500 homes</strong>
+                    <small>35% of portfolio</small>
+                  </td>
+                  <td>
+                    <strong>2,500 homes</strong>
+                    <small>25% of portfolio</small>
+                  </td>
+                  <td>
+                    <strong>1,000 homes</strong>
+                    <small>10% of portfolio</small>
+                  </td>
+                  <td>
+                    <strong>3,000 homes</strong>
+                    <small>30% of portfolio</small>
+                  </td>
+                  <td class="total-cell">
+                    <strong>10,000 homes</strong>
+                    <small>100% modeled base</small>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </section>
 
