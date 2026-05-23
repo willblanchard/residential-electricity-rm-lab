@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Parallel Options Results | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260523-frontier-synced-controls" />
+    <link rel="stylesheet" href="styles.css?v=20260523-dynamic-demand-choice" />
     <script src="site-header.js?v=20260523-reused-header" defer></script>
   </head>
   <body>
@@ -135,7 +135,9 @@
             <p class="section-note">
               Required reference lines put every home on TOU or demand. Optional lines keep the
               fixed plan available, then show whether adding TOU, demand, or both optional plans
-              improves gross margin after self-selection.
+              improves gross margin after self-selection. Each x value recomputes customer bills,
+              adoption, and plan shares rather than holding a fixed split; demand adopters compare
+              the flat bill with the modeled energy charge plus billed peak charge.
             </p>
           </div>
           <div class="panel phase2-frontier-panel">
@@ -285,6 +287,6 @@
       </main>
     </div>
 
-    <script src="phase2.js?v=20260523-frontier-synced-controls"></script>
+    <script src="phase2.js?v=20260523-dynamic-demand-choice"></script>
   </body>
 </html>

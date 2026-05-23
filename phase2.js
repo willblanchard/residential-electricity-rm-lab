@@ -43,6 +43,8 @@ const segmentDefs = [
     device: "No energy devices",
     deviceShort: "None",
     homes: 20,
+    peakKw: 4.7,
+    controllableKw: 0,
     savings: { tou: 0, demand: -3 },
     avoided: { tou: 0, demand: 0 },
   },
@@ -52,6 +54,8 @@ const segmentDefs = [
     device: "Just thermostat",
     deviceShort: "Thermostat",
     homes: 10,
+    peakKw: 4.4,
+    controllableKw: 0.55,
     savings: { tou: 6, demand: 8 },
     avoided: { tou: 8, demand: 15 },
   },
@@ -61,6 +65,8 @@ const segmentDefs = [
     device: "Just battery",
     deviceShort: "Battery",
     homes: 5,
+    peakKw: 4.9,
+    controllableKw: 1.25,
     savings: { tou: 10, demand: 18 },
     avoided: { tou: 14, demand: 35 },
   },
@@ -70,6 +76,8 @@ const segmentDefs = [
     device: "Thermostat + battery",
     deviceShort: "Both",
     homes: 10,
+    peakKw: 4.8,
+    controllableKw: 1.55,
     savings: { tou: 17, demand: 25 },
     avoided: { tou: 25, demand: 48 },
   },
@@ -79,6 +87,8 @@ const segmentDefs = [
     device: "No energy devices",
     deviceShort: "None",
     homes: 15,
+    peakKw: 4.3,
+    controllableKw: 0.25,
     savings: { tou: 4, demand: 2 },
     avoided: { tou: 6, demand: 8 },
   },
@@ -88,6 +98,8 @@ const segmentDefs = [
     device: "Just thermostat",
     deviceShort: "Thermostat",
     homes: 15,
+    peakKw: 4.2,
+    controllableKw: 0.75,
     savings: { tou: 12, demand: 10 },
     avoided: { tou: 18, demand: 24 },
   },
@@ -97,6 +109,8 @@ const segmentDefs = [
     device: "Just battery",
     deviceShort: "Battery",
     homes: 5,
+    peakKw: 4.6,
+    controllableKw: 1.45,
     savings: { tou: 17, demand: 24 },
     avoided: { tou: 28, demand: 52 },
   },
@@ -106,6 +120,8 @@ const segmentDefs = [
     device: "Thermostat + battery",
     deviceShort: "Both",
     homes: 20,
+    peakKw: 4.5,
+    controllableKw: 1.8,
     savings: { tou: 26, demand: 34 },
     avoided: { tou: 42, demand: 68 },
   },
@@ -117,6 +133,7 @@ const householdProfiles = [
     weight: 0.18,
     fit: { tou: 0.62, demand: 0.68 },
     response: { tou: 0.55, demand: 0.6 },
+    peakMultiplier: 1.18,
     thresholdMultiplier: 1.55,
     adoptionMultiplier: 0.62,
   },
@@ -125,6 +142,7 @@ const householdProfiles = [
     weight: 0.3,
     fit: { tou: 0.96, demand: 0.96 },
     response: { tou: 0.9, demand: 0.95 },
+    peakMultiplier: 1,
     thresholdMultiplier: 1,
     adoptionMultiplier: 0.92,
   },
@@ -133,6 +151,7 @@ const householdProfiles = [
     weight: 0.18,
     fit: { tou: 1.38, demand: 0.82 },
     response: { tou: 0.42, demand: 0.7 },
+    peakMultiplier: 0.82,
     thresholdMultiplier: 0.86,
     adoptionMultiplier: 1,
   },
@@ -141,6 +160,7 @@ const householdProfiles = [
     weight: 0.2,
     fit: { tou: 0.84, demand: 1.38 },
     response: { tou: 0.68, demand: 0.55 },
+    peakMultiplier: 1.42,
     thresholdMultiplier: 0.82,
     adoptionMultiplier: 1.05,
   },
@@ -149,6 +169,7 @@ const householdProfiles = [
     weight: 0.14,
     fit: { tou: 1.48, demand: 1.48 },
     response: { tou: 1.45, demand: 1.55 },
+    peakMultiplier: 0.92,
     thresholdMultiplier: 0.58,
     adoptionMultiplier: 1.18,
   },
@@ -181,43 +202,76 @@ function availablePlans(overrides = state) {
 
 function signalScale(plan, overrides = state) {
   if (plan === "tou") return clamp(overrides.spread - 1, 0, 2.3);
-  return clamp(overrides.demandCharge / 20, 0, 1.7);
+  return demandResponseStrength(overrides);
 }
 
-function demandSavingsScale(overrides = state) {
+function demandResponseStrength(overrides = state) {
   const charge = Number(overrides.demandCharge || 0);
-  const rawSignal = charge / 20;
-  const peakBillRiskDiscount = Math.exp(-Math.max(0, charge - 7) / 8);
-  return clamp(rawSignal * peakBillRiskDiscount, 0, 0.7);
+  return clamp(1 - Math.exp(-charge / 10), 0, 1);
 }
 
-function demandCostAvoidanceScale(overrides = state) {
-  const charge = Number(overrides.demandCharge || 0);
-  const saturation = 1 - Math.exp(-charge / 9);
-  return clamp(saturation / (1 - Math.exp(-20 / 9)), 0, 1.12);
+function demandReferencePeakKw() {
+  const segmentTotal = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
+  return segmentDefs.reduce((segmentSum, segment) => {
+    const segmentWeight = segment.homes / segmentTotal;
+    const profilePeak = householdProfiles.reduce(
+      (profileSum, profile) =>
+        profileSum + profile.weight * segment.peakKw * profile.peakMultiplier,
+      0,
+    );
+    return segmentSum + segmentWeight * profilePeak;
+  }, 0);
 }
 
-function demandBillRiskPremium(profile, overrides = state) {
-  if (!profile) return 0;
+function demandEnergyRate(overrides = state) {
   const charge = Number(overrides.demandCharge || 0);
-  const riskExposure = Math.max(0, charge - 7);
-  const friction = 0.68 + 0.34 * profile.thresholdMultiplier;
-  return riskExposure * friction;
+  return Math.max(
+    0.02,
+    (base.fixedBill - charge * demandReferencePeakKw()) / base.monthlyKwh,
+  );
+}
+
+function demandPeakAfterResponse(segment, profile = null, overrides = state) {
+  const profilePeakMultiplier = profile ? profile.peakMultiplier : 1;
+  const profileResponse = profile ? profile.response.demand : 1;
+  const baselinePeakKw = segment.peakKw * profilePeakMultiplier;
+  const responseKw =
+    segment.controllableKw * profileResponse * demandResponseStrength(overrides);
+  const peakReductionKw = Math.min(baselinePeakKw * 0.55, responseKw);
+  return Math.max(0.1, baselinePeakKw - peakReductionKw);
+}
+
+function demandPlanOutcome(segment, profile = null, overrides = state) {
+  const demandCharge = Number(overrides.demandCharge || 0);
+  const peakKw = demandPeakAfterResponse(segment, profile, overrides);
+  const bill = base.monthlyKwh * demandEnergyRate(overrides) + demandCharge * peakKw;
+  const customerSavings = base.fixedBill - bill;
+  const response = profile ? profile.response.demand : 1;
+  const responseScale = demandResponseStrength(overrides);
+  const costAvoided = Math.max(
+    0,
+    segment.avoided.demand * Math.pow(responseScale, 0.88) * response,
+  );
+  return {
+    plan: "demand",
+    customerSavings,
+    costAvoided,
+    bill,
+    utilityCost: base.utilityCost - costAvoided,
+    marginDelta: costAvoided - customerSavings,
+    peakKw,
+  };
 }
 
 function planOutcome(segment, plan, profile = null, overrides = state) {
-  const savingsScale =
-    plan === "demand" ? demandSavingsScale(overrides) : signalScale(plan, overrides);
-  const costAvoidanceScale =
-    plan === "demand" ? demandCostAvoidanceScale(overrides) : signalScale(plan, overrides);
+  if (plan === "demand") return demandPlanOutcome(segment, profile, overrides);
+  const scale = signalScale(plan, overrides);
   const fit = profile ? profile.fit[plan] : 1;
   const response = profile ? profile.response[plan] : 1;
-  const customerSavings =
-    segment.savings[plan] * savingsScale * fit -
-    (plan === "demand" ? demandBillRiskPremium(profile, overrides) : 0);
+  const customerSavings = segment.savings[plan] * scale * fit;
   const costAvoided = Math.max(
     0,
-    segment.avoided[plan] * Math.pow(costAvoidanceScale, 0.88) * response,
+    segment.avoided[plan] * Math.pow(scale, 0.88) * response,
   );
   return {
     plan,
