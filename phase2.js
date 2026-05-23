@@ -36,6 +36,8 @@ const state = {
   adoption: 0.75,
 };
 
+let singleRateRequiredReferences = null;
+
 const segmentDefs = [
   {
     behavior: "Passive / inelastic",
@@ -508,7 +510,100 @@ function evaluateOptionalMenu(menu, overrides = state) {
   });
 }
 
-function evaluateRequiredPlan(plan, overrides = state) {
+function normalizeSingleRateReferenceRows(rows) {
+  return rows
+    .map((row) => ({
+      x: Number(row.x),
+      revenueDelta: Number(row.revenueDelta),
+      marginDelta: Number(row.marginDelta),
+      peakKw: Number(row.peakKw),
+    }))
+    .filter((row) =>
+      [row.x, row.revenueDelta, row.marginDelta, row.peakKw].every(Number.isFinite),
+    )
+    .sort((left, right) => left.x - right.x);
+}
+
+function interpolateSingleRateReference(kind, x) {
+  const rows = singleRateRequiredReferences?.[kind];
+  if (!rows?.length) return null;
+  if (x <= rows[0].x) return rows[0];
+  const last = rows[rows.length - 1];
+  if (x >= last.x) return last;
+
+  for (let index = 1; index < rows.length; index += 1) {
+    const right = rows[index];
+    const left = rows[index - 1];
+    if (x > right.x) continue;
+    const span = right.x - left.x || 1;
+    const t = (x - left.x) / span;
+    return {
+      x,
+      revenueDelta: left.revenueDelta + (right.revenueDelta - left.revenueDelta) * t,
+      marginDelta: left.marginDelta + (right.marginDelta - left.marginDelta) * t,
+      peakKw: left.peakKw + (right.peakKw - left.peakKw) * t,
+    };
+  }
+  return last;
+}
+
+function singleRateRequiredPlan(plan, overrides = state) {
+  const kind = plan === "tou" ? "tou" : "demand";
+  const x = kind === "tou" ? Number(overrides.spread) : Number(overrides.demandCharge);
+  const reference = interpolateSingleRateReference(kind, x);
+  if (!reference) return null;
+
+  const baselineRevenue = base.fixedBill * portfolioSize;
+  const baselineCost = base.utilityCost * portfolioSize;
+  const costAvoided = reference.marginDelta - reference.revenueDelta;
+
+  return {
+    type: "required",
+    plan,
+    label: plan === "tou" ? "Required TOU" : "Required demand",
+    spread: overrides.spread,
+    demandCharge: overrides.demandCharge,
+    baselineRevenue,
+    baselineCost,
+    revenue: baselineRevenue + reference.revenueDelta,
+    utilityCost: baselineCost - costAvoided,
+    revenueDelta: reference.revenueDelta,
+    costAvoided,
+    leakage: -reference.revenueDelta,
+    marginDelta: reference.marginDelta,
+    switchHomes: portfolioSize,
+    touSwitchHomes: 0,
+    demandSwitchHomes: 0,
+    peakKw: reference.peakKw,
+  };
+}
+
+function initializeSingleRateReferenceFrame() {
+  if (typeof document === "undefined") return;
+  const frame = document.createElement("iframe");
+  frame.title = "Single-rate reference model";
+  frame.src = "single-rate-reference-frame.html";
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.display = "none";
+  frame.addEventListener("load", () => {
+    try {
+      const model = frame.contentWindow?.utilitySingleRateModel;
+      if (!model?.sensitivityRows) return;
+      singleRateRequiredReferences = {
+        tou: normalizeSingleRateReferenceRows(model.sensitivityRows("tou")),
+        demand: normalizeSingleRateReferenceRows(
+          model.sensitivityRows("demand").filter((row) => row.x <= 30),
+        ),
+      };
+      render();
+    } catch (error) {
+      console.warn("Single-rate reference model could not be loaded.", error);
+    }
+  });
+  document.body.appendChild(frame);
+}
+
+function evaluateRequiredPlanFallback(plan, overrides = state) {
   const denominator = segmentDefs.reduce((sum, item) => sum + item.homes, 0);
   let baselineRevenue = 0;
   let baselineCost = 0;
@@ -546,6 +641,10 @@ function evaluateRequiredPlan(plan, overrides = state) {
     spread: overrides.spread,
     demandCharge: overrides.demandCharge,
   });
+}
+
+function evaluateRequiredPlan(plan, overrides = state) {
+  return singleRateRequiredPlan(plan, overrides) || evaluateRequiredPlanFallback(plan, overrides);
 }
 
 function toneFor(value) {
@@ -1337,4 +1436,5 @@ document.getElementById("phase2-adoption").addEventListener("input", (event) => 
 
 document.getElementById("download-phase2").addEventListener("click", downloadCsv);
 
+initializeSingleRateReferenceFrame();
 render();

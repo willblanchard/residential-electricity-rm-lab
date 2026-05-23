@@ -3292,3 +3292,9 @@ function bootstrapPopulationPage() {
 
 bootstrapPopulationPage();
 bootstrapDashboardPage();
+
+if (typeof window !== "undefined") {
+  window.utilitySingleRateModel = {
+    sensitivityRows,
+  };
+}
