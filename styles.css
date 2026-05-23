@@ -987,6 +987,88 @@ svg {
   background: currentColor;
 }
 
+.optimization-visuals {
+  margin-top: 18px;
+}
+
+.optimization-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.optimization-chart-panel {
+  min-width: 0;
+}
+
+.optimization-chart-copy {
+  min-height: 104px;
+}
+
+.optimization-chart-copy h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.optimization-chart-copy p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.optimization-chart-wrap {
+  margin-top: 0;
+}
+
+.optimization-chart-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.optimization-chart-metric {
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.optimization-chart-metric label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.optimization-chart-metric strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 840;
+  line-height: 1.12;
+}
+
+.optimization-chart-metric span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.optimization-chart-metric.positive strong {
+  color: var(--green);
+}
+
+.optimization-chart-metric.negative strong {
+  color: var(--red);
+}
+
 .wide-panel {
   margin-top: 18px;
 }
@@ -1226,7 +1308,7 @@ svg {
   align-items: stretch;
   margin-top: 16px;
   padding: 16px;
-  border: 1px dashed #b9c5cb;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fbfcfd;
 }
@@ -1657,6 +1739,7 @@ tr:hover td {
   .phase3-wtp-panel,
   .lp-section-head,
   .lp-formula-grid,
+  .optimization-chart-grid,
   .phase3-grid {
     grid-template-columns: 1fr;
   }
@@ -1669,6 +1752,7 @@ tr:hover td {
 
   .mini-metrics,
   .phase2-metrics,
+  .optimization-chart-metrics,
   .phase3-kpi-grid,
   .phase3-wtp-metrics {
     grid-template-columns: 1fr 1fr;
@@ -1718,6 +1802,11 @@ tr:hover td {
     flex: 1;
   }
 
+  .lp-formula {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
   .main {
     padding: 22px 14px 36px;
   }
@@ -1730,6 +1819,7 @@ tr:hover td {
 
   .mini-metrics,
   .phase2-metrics,
+  .optimization-chart-metrics,
   .phase3-kpi-grid,
   .phase3-wtp-metrics {
     grid-template-columns: 1fr;

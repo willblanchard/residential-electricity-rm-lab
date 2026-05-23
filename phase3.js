@@ -73,6 +73,7 @@ function buildingResult(building, energyPrice, demandCharge, mode = phase3.mode)
   return {
     ...building,
     effectivePrice,
+    baselineAnnualKwh: building.annualKwh,
     rawAnnualKwh,
     annualKwh,
     demandRatio,
@@ -285,16 +286,24 @@ function renderScatter(rows) {
       return `<circle cx="${xFor(row.slope).toFixed(1)}" cy="${yFor(row.intercept).toFixed(1)}" r="${radius.toFixed(1)}" fill="${color}" opacity="0.68"><title>${row.id}: intercept ${row.intercept}, slope ${row.slope}</title></circle>`;
     })
     .join("");
-  const xTicks = [
-    { value: xScale.min, label: "lower" },
-    { value: (xScale.min + xScale.max) / 2, label: "typical" },
-    { value: xScale.max, label: "higher" },
-  ].map((tick) => ({ x: xFor(tick.value), label: tick.label }));
-  const yTicks = [
-    { value: yScale.min, label: "lower" },
-    { value: (yScale.min + yScale.max) / 2, label: "typical" },
-    { value: yScale.max, label: "higher" },
-  ].map((tick) => ({ y: yFor(tick.value), label: tick.label }));
+  const slopeValues = rows.map((row) => row.slope);
+  const interceptValues = rows.map((row) => row.intercept);
+  const slopeMin = Math.min(...slopeValues);
+  const slopeMax = Math.max(...slopeValues);
+  const interceptMin = Math.min(...interceptValues);
+  const interceptMax = Math.max(...interceptValues);
+  const xTicks = [slopeMin, (slopeMin + slopeMax) / 2, slopeMax].map(
+    (value) => ({
+      x: xFor(value),
+      label: value.toFixed(5),
+    }),
+  );
+  const yTicks = [interceptMin, (interceptMin + interceptMax) / 2, interceptMax].map(
+    (value) => ({
+      y: yFor(value),
+      label: value.toFixed(2),
+    }),
+  );
   svg.innerHTML = `
     ${renderAxes(width, height, pad, "Demand-curve slope (price sensitivity)", "Demand-curve intercept (WTP proxy)")}
     ${renderTicks(width, height, pad, xTicks, yTicks)}
@@ -360,7 +369,7 @@ function renderWtpPreview(selected) {
 
   const width = 420;
   const height = 220;
-  const pad = { top: 24, right: 18, bottom: 42, left: 54 };
+  const pad = { top: 24, right: 18, bottom: 54, left: 62 };
   const points = frontierRows(phase3.mode).map((row) => ({
     price: row.price,
     ratio: row.averageDemandRatio,
@@ -386,9 +395,20 @@ function renderWtpPreview(selected) {
   const selectedPrice = phase3.energyPriceCents / 100;
   const selectedX = xFor(selectedPrice);
   const selectedY = yFor(selected.averageDemandRatio);
+  const xTicks = [0.1, 0.2, 0.3, 0.4]
+    .filter((price) => price >= minPrice && price <= maxPrice)
+    .map((price) => ({
+      x: xFor(price),
+      label: `${Math.round(price * 100)}¢`,
+    }));
+  const yTicks = [1].map((ratio) => ({
+    y: yFor(ratio),
+    label: "100% baseline",
+  }));
   svg.innerHTML = `
     <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#9aa7af" />
     <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#9aa7af" />
+    ${renderTicks(width, height, pad, xTicks, yTicks)}
     <line x1="${pad.left}" y1="${yFor(1).toFixed(1)}" x2="${width - pad.right}" y2="${yFor(1).toFixed(1)}" stroke="#9aa7af" stroke-dasharray="5 5" />
     <path d="${path}" fill="none" stroke="#087f8c" stroke-width="3" stroke-linecap="round" />
     ${points
@@ -400,7 +420,7 @@ function renderWtpPreview(selected) {
       .join("")}
     <circle cx="${selectedX.toFixed(1)}" cy="${selectedY.toFixed(1)}" r="5" fill="#b36b00" stroke="#fff" stroke-width="2" />
     <text x="${pad.left}" y="${pad.top - 6}" fill="#087f8c" font-size="12" font-weight="820">WTP demand ratio by price</text>
-    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price ($/kWh)</text>
+    <text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720">effective price (¢/kWh)</text>
     <text x="15" y="${height / 2}" text-anchor="middle" fill="#64717b" font-size="11" font-weight="720" transform="rotate(-90 15 ${height / 2})">demand ratio</text>
   `;
 }
@@ -426,10 +446,94 @@ function renderKpis(selected) {
     .join("");
 }
 
+function sortedBuildingRows(rows) {
+  return [...rows].sort((a, b) => b.reductionRatio - a.reductionRatio);
+}
+
+function toCsv(rows) {
+  return rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const value = String(cell ?? "");
+          return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+        })
+        .join(","),
+    )
+    .join("\n");
+}
+
+function currentBuildingExportRows() {
+  const energyPrice = phase3.energyPriceCents / 100;
+  const selected = portfolioAt(energyPrice, phase3.demandCharge, phase3.mode);
+  return sortedBuildingRows(selected.rows);
+}
+
+function wtpBuildingCsv() {
+  const rows = [
+    [
+      "building",
+      "segment",
+      "intercept",
+      "slope",
+      "energy_price_cents_per_kwh",
+      "demand_charge_per_kw_month",
+      "curve_mode",
+      "effective_price_cents_per_kwh",
+      "demand_ratio",
+      "baseline_annual_kwh",
+      "raw_annual_kwh",
+      "modeled_annual_kwh",
+      "monthly_revenue",
+      "baseline_peak_kw",
+      "peak_proxy_kw",
+      "demand_reduction_ratio",
+    ],
+    ...currentBuildingExportRows().map((row) => [
+      row.id,
+      row.segment.replace("_", " "),
+      row.intercept.toFixed(4),
+      row.slope.toFixed(8),
+      phase3.energyPriceCents.toFixed(1),
+      phase3.demandCharge,
+      phase3.mode,
+      (row.effectivePrice * 100).toFixed(4),
+      row.demandRatio.toFixed(6),
+      row.baselineAnnualKwh.toFixed(4),
+      row.rawAnnualKwh.toFixed(4),
+      row.annualKwh.toFixed(4),
+      row.monthlyRevenue.toFixed(4),
+      row.peakKw.toFixed(4),
+      row.peakProxyKw.toFixed(4),
+      row.reductionRatio.toFixed(6),
+    ]),
+  ];
+  return toCsv(rows);
+}
+
+function downloadCsv(filename, content) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function renderBuildingExportSummary(rows) {
+  document.getElementById("wtp-export-row-count").textContent =
+    `${fmtNum.format(rows.length)} rows`;
+  document.getElementById("wtp-export-mode").textContent =
+    phase3.mode === "raw" ? "Raw LP curve" : "Bounded mode";
+}
+
 function renderBuildingRows(rows) {
   const tbody = document.getElementById("phase3-building-rows");
-  tbody.innerHTML = [...rows]
-    .sort((a, b) => b.reductionRatio - a.reductionRatio)
+  if (!tbody) return;
+  tbody.innerHTML = sortedBuildingRows(rows)
     .slice(0, 40)
     .map(
       (row) => `
@@ -463,6 +567,7 @@ function renderPhase3() {
   renderScatter(selected.rows);
   renderCapacityChart(selected);
   renderWtpPreview(selected);
+  renderBuildingExportSummary(selected.rows);
   renderBuildingRows(selected.rows);
 }
 
@@ -479,6 +584,10 @@ document.getElementById("phase3-demand-charge").addEventListener("input", (event
 document.getElementById("phase3-mode").addEventListener("change", (event) => {
   phase3.mode = event.target.value;
   renderPhase3();
+});
+
+document.getElementById("download-wtp-buildings").addEventListener("click", () => {
+  downloadCsv("utility_rm_building_wtp_outputs.csv", wtpBuildingCsv());
 });
 
 renderPhase3();

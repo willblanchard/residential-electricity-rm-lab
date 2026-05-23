@@ -43,10 +43,6 @@
               The full LP below follows Nathan's MATLAB structure and then
               maps it to the dashboard's finite tariff menu.
             </p>
-            <nav class="nav-actions" aria-label="model links">
-              <a class="button primary" href="phase1.html">See optimizer output</a>
-              <a class="button" href="implementation-validation.html">See implementation</a>
-            </nav>
           </div>
           <aside class="summary-panel" aria-label="model summary">
             <p class="summary-title">Model structure</p>
@@ -95,6 +91,75 @@
               and portfolio peak-capacity screen.
             </p>
           </article>
+        </section>
+
+        <section class="optimization-visuals narrative-card" aria-labelledby="optimization-visuals-title">
+          <div class="lp-section-head">
+            <div>
+              <h2 id="optimization-visuals-title">Solver visuals</h2>
+              <p>
+                The LP is easier to interpret as a candidate frontier and an
+                operating-capacity check. Each point below is one tariff
+                candidate from the same finite menu exported by the browser
+                model.
+              </p>
+            </div>
+            <div class="lp-source-card">
+              <span>Chart source</span>
+              <strong>Dashboard optimization grid</strong>
+              <small>TOU spreads from 1.0x to 5.0x and demand charges from $0 to $30/kW-month.</small>
+            </div>
+          </div>
+
+          <div class="optimization-chart-grid">
+            <article class="optimization-chart-panel" aria-labelledby="frontier-title">
+              <div class="optimization-chart-copy">
+                <h3 id="frontier-title">Feasible frontier</h3>
+                <p>
+                  Revenue retention is the defense constraint; margin delta is
+                  the objective. Dark points pass revenue, filing, and capacity
+                  screens.
+                </p>
+              </div>
+              <div class="chart-wrap optimization-chart-wrap">
+                <svg
+                  id="optimization-frontier-chart"
+                  viewBox="0 0 760 420"
+                  role="img"
+                  aria-labelledby="frontier-title"
+                ></svg>
+              </div>
+              <div
+                id="optimization-frontier-summary"
+                class="optimization-chart-metrics"
+                aria-label="frontier summary"
+              ></div>
+            </article>
+
+            <article class="optimization-chart-panel" aria-labelledby="capacity-title">
+              <div class="optimization-chart-copy">
+                <h3 id="capacity-title">Capacity utilization</h3>
+                <p>
+                  Hourly portfolio kW is compared against Nathan's MATLAB
+                  capacity screen after scaling 100 source buildings to 10,000
+                  homes.
+                </p>
+              </div>
+              <div class="chart-wrap optimization-chart-wrap">
+                <svg
+                  id="optimization-capacity-chart"
+                  viewBox="0 0 760 420"
+                  role="img"
+                  aria-labelledby="capacity-title"
+                ></svg>
+              </div>
+              <div
+                id="optimization-capacity-summary"
+                class="optimization-chart-metrics"
+                aria-label="capacity summary"
+              ></div>
+            </article>
+          </div>
         </section>
 
         <section class="lp-section narrative-card" aria-labelledby="lp-title">
@@ -270,5 +335,8 @@ P_t <= Capacity</code></pre>
         </p>
       </main>
     </div>
+    <script src="profiles.js?v=20260522-optimization-visuals"></script>
+    <script src="app.js?v=20260522-optimization-visuals"></script>
+    <script src="optimization-model.js?v=20260522-optimization-visuals"></script>
   </body>
 </html>

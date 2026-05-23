@@ -178,39 +178,37 @@
           </article>
         </section>
 
-        <section class="table-panel segment-economics-panel" aria-labelledby="wtp-buildings-title">
-          <div class="section-head">
-            <div>
-              <h2 id="wtp-buildings-title">Building-level WTP outputs</h2>
-            </div>
-            <p class="section-note">
-              Sorted by the largest demand reduction under the selected price
-              and capacity assumptions.
+        <section class="case-study narrative-card" aria-labelledby="wtp-buildings-title">
+          <div class="case-copy">
+            <h2 id="wtp-buildings-title">Building-level WTP outputs</h2>
+            <p>
+              The full 100-building WTP output is available as a CSV export for
+              the selected price, capacity, and curve-mode controls.
             </p>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Building</th>
-                  <th>Segment</th>
-                  <th>Intercept</th>
-                  <th>Slope</th>
-                  <th>Effective price</th>
-                  <th>Demand ratio</th>
-                  <th>Annual kWh</th>
-                  <th>Revenue / month</th>
-                  <th>Peak proxy</th>
-                </tr>
-              </thead>
-              <tbody id="phase3-building-rows"></tbody>
-            </table>
+          <div class="case-points">
+            <div>
+              <strong id="wtp-export-row-count">100 rows</strong>
+              <span>One row per source building, sorted by demand reduction.</span>
+            </div>
+            <div>
+              <strong id="wtp-export-mode">Bounded mode</strong>
+              <span>Export follows the currently selected WTP curve mode.</span>
+            </div>
+            <div>
+              <strong>CSV</strong>
+              <span>
+                <button class="button primary" id="download-wtp-buildings" type="button">
+                  Download building-level WTP
+                </button>
+              </span>
+            </div>
           </div>
         </section>
       </main>
     </div>
 
-    <script src="phase3-data.js?v=20260522-pages"></script>
-    <script src="phase3.js?v=20260522-pages"></script>
+    <script src="phase3-data.js?v=20260522-ticks"></script>
+    <script src="phase3.js?v=20260522-ticks"></script>
   </body>
 </html>

@@ -2862,109 +2862,131 @@ function render() {
   renderAdoptionChart();
 }
 
-document.querySelectorAll("[data-tariff]").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.focusTariff = button.dataset.tariff;
-    document
-      .querySelectorAll("[data-tariff]")
-      .forEach((el) => el.classList.toggle("active", el === button));
-    render();
-  });
-});
+function bootstrapDashboardPage() {
+  const requiredIds = [
+    "spread",
+    "demand-charge",
+    "matrix-spread",
+    "matrix-demand-charge",
+    "optimizer-cards",
+    "battery",
+    "thermostat",
+    "population-inputs",
+    "download-scenarios",
+    "download-optimization",
+    "download-load",
+    "download-hvac",
+    "download-battery",
+  ];
+  const elements = Object.fromEntries(
+    requiredIds.map((id) => [id, document.getElementById(id)]),
+  );
+  if (Object.values(elements).some((element) => !element)) return;
 
-document.getElementById("spread").addEventListener("input", (event) => {
-  state.spread = Number(event.target.value);
-  render();
-});
-
-document.getElementById("demand-charge").addEventListener("input", (event) => {
-  state.demandCharge = Number(event.target.value);
-  render();
-});
-
-document.getElementById("matrix-spread").addEventListener("input", (event) => {
-  state.spread = Number(event.target.value);
-  render();
-});
-
-document.getElementById("matrix-demand-charge").addEventListener("input", (event) => {
-  state.demandCharge = Number(event.target.value);
-  render();
-});
-
-document.getElementById("optimizer-cards").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-apply-optimized]");
-  if (!button) return;
-  const kind = button.dataset.applyOptimized;
-  const optimized = optimizeTariff(kind, state).best;
-  if (kind === "tou") {
-    state.spread = optimized.value;
-  } else {
-    state.demandCharge = Math.round(optimized.value);
-  }
-  state.focusTariff = optimized.tariffId;
-  document
-    .querySelectorAll("[data-tariff]")
-    .forEach((el) =>
-      el.classList.toggle("active", el.dataset.tariff === state.focusTariff),
-    );
-  render();
-});
-
-document.getElementById("battery").addEventListener("input", (event) => {
-  state.battery = Number(event.target.value);
-  render();
-});
-
-document.getElementById("thermostat").addEventListener("change", (event) => {
-  state.thermostat = Number(event.target.value);
-  render();
-});
-
-document.getElementById("population-inputs").addEventListener("input", (event) => {
-  const input = event.target.closest("[data-population]");
-  if (!input) return;
-  const bucket = state.population.find((item) => item.id === input.dataset.population);
-  if (!bucket) return;
-  bucket.homes = clamp(Number(input.value), 0, 100);
-  render();
-});
-
-document
-  .querySelectorAll("details.collapsible-section:not([data-persistent])")
-  .forEach((detail) => {
-    detail.addEventListener("toggle", () => {
-      if (!detail.open) return;
+  document.querySelectorAll("[data-tariff]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.focusTariff = button.dataset.tariff;
       document
-        .querySelectorAll("details.collapsible-section:not([data-persistent])")
-        .forEach((other) => {
-          if (other !== detail) other.open = false;
-        });
+        .querySelectorAll("[data-tariff]")
+        .forEach((el) => el.classList.toggle("active", el === button));
+      render();
     });
   });
 
-document
-  .getElementById("download-scenarios")
-  .addEventListener("click", () => {
+  elements.spread.addEventListener("input", (event) => {
+    state.spread = Number(event.target.value);
+    render();
+  });
+
+  elements["demand-charge"].addEventListener("input", (event) => {
+    state.demandCharge = Number(event.target.value);
+    render();
+  });
+
+  elements["matrix-spread"].addEventListener("input", (event) => {
+    state.spread = Number(event.target.value);
+    render();
+  });
+
+  elements["matrix-demand-charge"].addEventListener("input", (event) => {
+    state.demandCharge = Number(event.target.value);
+    render();
+  });
+
+  elements["optimizer-cards"].addEventListener("click", (event) => {
+    const button = event.target.closest("[data-apply-optimized]");
+    if (!button) return;
+    const kind = button.dataset.applyOptimized;
+    const optimized = optimizeTariff(kind, state).best;
+    if (kind === "tou") {
+      state.spread = optimized.value;
+    } else {
+      state.demandCharge = Math.round(optimized.value);
+    }
+    state.focusTariff = optimized.tariffId;
+    document
+      .querySelectorAll("[data-tariff]")
+      .forEach((el) =>
+        el.classList.toggle("active", el.dataset.tariff === state.focusTariff),
+      );
+    render();
+  });
+
+  elements.battery.addEventListener("input", (event) => {
+    state.battery = Number(event.target.value);
+    render();
+  });
+
+  elements.thermostat.addEventListener("change", (event) => {
+    state.thermostat = Number(event.target.value);
+    render();
+  });
+
+  elements["population-inputs"].addEventListener("input", (event) => {
+    const input = event.target.closest("[data-population]");
+    if (!input) return;
+    const bucket = state.population.find(
+      (item) => item.id === input.dataset.population,
+    );
+    if (!bucket) return;
+    bucket.homes = clamp(Number(input.value), 0, 100);
+    render();
+  });
+
+  document
+    .querySelectorAll("details.collapsible-section:not([data-persistent])")
+    .forEach((detail) => {
+      detail.addEventListener("toggle", () => {
+        if (!detail.open) return;
+        document
+          .querySelectorAll("details.collapsible-section:not([data-persistent])")
+          .forEach((other) => {
+            if (other !== detail) other.open = false;
+          });
+      });
+    });
+
+  elements["download-scenarios"].addEventListener("click", () => {
     download("utility_rm_scenario_results.csv", scenarioCsv());
   });
 
-document
-  .getElementById("download-optimization")
-  .addEventListener("click", () => {
+  elements["download-optimization"].addEventListener("click", () => {
     download("utility_rm_tariff_optimization.csv", optimizationCsv());
   });
 
-document.getElementById("download-load").addEventListener("click", () => {
-  download("utility_rm_load_profile.csv", loadCsv());
-});
+  elements["download-load"].addEventListener("click", () => {
+    download("utility_rm_load_profile.csv", loadCsv());
+  });
 
-document.getElementById("download-hvac").addEventListener("click", () => {
-  download("utility_rm_hvac_response.csv", hvacCsv());
-});
+  elements["download-hvac"].addEventListener("click", () => {
+    download("utility_rm_hvac_response.csv", hvacCsv());
+  });
 
-document.getElementById("download-battery").addEventListener("click", () => {
-  download("utility_rm_battery_response.csv", batteryCsv());
-});
+  elements["download-battery"].addEventListener("click", () => {
+    download("utility_rm_battery_response.csv", batteryCsv());
+  });
 
-render();
+  render();
+}
+
+bootstrapDashboardPage();

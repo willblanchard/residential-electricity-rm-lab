@@ -339,8 +339,6 @@ function renderLeakageChart(rows) {
     ${yTicks}
     <line x1="${pad.left}" x2="${pad.left}" y1="${pad.top}" y2="${height - pad.bottom}" stroke="#d9e0e4" />
     <text x="${pad.left}" y="22" fill="#172026" font-size="13" font-weight="820">Change versus all-fixed baseline</text>
-    <text x="${pad.left - 10}" y="${pad.top + 5}" text-anchor="end" fill="#64717b" font-size="11" font-weight="720">better</text>
-    <text x="${pad.left - 10}" y="${height - pad.bottom}" text-anchor="end" fill="#64717b" font-size="11" font-weight="720">worse</text>
     ${bars}
   `;
 }
