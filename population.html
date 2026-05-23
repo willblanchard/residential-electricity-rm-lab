@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Population | Residential Electricity RM</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=20260523-population" />
+    <link rel="stylesheet" href="styles.css?v=20260523-costs" />
   </head>
   <body>
     <div class="shell">
@@ -21,9 +21,10 @@
           <nav class="page-nav presentation-nav" aria-label="presentation pages">
             <a href="index.html">Summary / Intro</a>
             <a href="wtp-segmentation.html">WTP + Segmentation</a>
-            <a class="active" aria-current="page" href="population.html">Population</a>
             <a href="optimization-model.html">Optimization Model</a>
             <a href="implementation-validation.html">Implementation</a>
+            <a href="energy-capacity-costs.html">Energy + Capacity</a>
+            <a class="active" aria-current="page" href="population.html">Population</a>
             <a href="phase1.html">Single Price Results</a>
             <a href="phase2.html">Parallel Options Results</a>
             <a href="limitations-future-work.html">Limitations</a>
@@ -335,16 +336,16 @@
 
         <section class="panel bottom-export" aria-labelledby="population-next-title">
           <div>
-            <h2 id="population-next-title">Next modeling step</h2>
+            <h2 id="population-next-title">Next results step</h2>
             <p>
-              Once the population is fixed, the optimization page chooses
-              tariff candidates and the results pages test realized economics
-              against this same customer base.
+              With the cost logic explained and the population fixed, Single
+              Price Results applies flat, TOU, and demand-charge pricing to the
+              same portfolio.
             </p>
           </div>
           <nav class="nav-actions" aria-label="population next page">
-            <a class="button primary" href="optimization-model.html">Open optimization model</a>
-            <a class="button" href="phase1.html">Open single price results</a>
+            <a class="button primary" href="phase1.html">Open single price results</a>
+            <a class="button" href="energy-capacity-costs.html">Review energy + capacity</a>
           </nav>
         </section>
       </main>

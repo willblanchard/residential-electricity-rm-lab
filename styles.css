@@ -978,6 +978,378 @@ input[type="range"] {
   min-width: 220px;
 }
 
+.cost-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.cost-column {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.cost-column.energy-cost {
+  border-color: #c8d8e4;
+  background: #f8fbfd;
+}
+
+.cost-column.capacity-cost {
+  border-color: #c4ddd9;
+  background: #f7fbfa;
+}
+
+.cost-label {
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 840;
+  text-transform: uppercase;
+}
+
+.cost-column h2,
+.cost-ladder-panel h2 {
+  margin: 8px 0 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.cost-column p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cost-metric-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cost-metric-list div {
+  display: grid;
+  gap: 5px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.cost-metric-list span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.cost-metric-list strong {
+  font-size: 16px;
+  font-weight: 830;
+  line-height: 1.15;
+}
+
+.cost-equation {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  border-radius: var(--radius);
+  background: #11181d;
+  color: #eff7f7;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cost-equation code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cost-bridge-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 28px;
+}
+
+.cost-bridge {
+  margin-top: 0;
+}
+
+.cost-ladder-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.cost-ladder {
+  display: grid;
+  gap: 10px;
+}
+
+.cost-ladder-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.cost-ladder-step > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 860;
+}
+
+.cost-ladder-step strong {
+  font-size: 14px;
+  font-weight: 820;
+}
+
+.cost-ladder-step p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.cost-table-panel {
+  margin-top: 28px;
+}
+
+.cost-table-panel .table-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.cost-table-panel table {
+  min-width: 720px;
+}
+
+.cost-table-panel td {
+  vertical-align: top;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.cost-visual-section {
+  margin-top: 34px;
+}
+
+.cost-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cost-visual-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.cost-visual-panel-wide {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(260px, 0.55fr) minmax(420px, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.cost-visual-copy h2 {
+  margin: 8px 0 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.cost-visual-copy p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cost-visual-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cost-visual-metrics div {
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.cost-visual-metrics span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.cost-visual-metrics strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 860;
+}
+
+.cost-chart {
+  min-height: 280px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfcfd;
+}
+
+.cost-chart.compact {
+  min-height: 250px;
+}
+
+.cost-chart text {
+  fill: var(--muted);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.cost-chart .chart-label.strong,
+.cost-chart .axis-label {
+  fill: var(--ink);
+  font-weight: 840;
+}
+
+.cost-chart .chart-label.warning {
+  fill: var(--red);
+  font-weight: 840;
+}
+
+.cost-chart .chart-label.teal {
+  fill: var(--teal);
+  font-weight: 840;
+}
+
+.cost-chart .tick-label {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.chart-axis {
+  stroke: #aebbc2;
+  stroke-width: 1.4;
+}
+
+.chart-grid {
+  stroke: #dbe3e7;
+  stroke-width: 1;
+}
+
+.chart-limit {
+  stroke: var(--red);
+  stroke-dasharray: 7 6;
+  stroke-width: 2.2;
+}
+
+.energy-area {
+  fill: url("#energy-fill");
+}
+
+.demand-line {
+  fill: none;
+  stroke: var(--teal);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.warning-line {
+  fill: none;
+  stroke: var(--red);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.shifted-line {
+  fill: none;
+  stroke: var(--teal);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.peak-marker {
+  stroke: #667680;
+  stroke-dasharray: 5 5;
+  stroke-width: 1.5;
+}
+
+.peak-dot {
+  fill: var(--teal);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.shift-dot {
+  fill: var(--teal);
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+
+.warning-fill {
+  fill: var(--red);
+}
+
+.steady-bar {
+  fill: rgba(8, 127, 140, 0.52);
+}
+
+.peaky-bar {
+  fill: rgba(8, 127, 140, 0.34);
+}
+
+.peak-line {
+  stroke: var(--red);
+  stroke-dasharray: 5 5;
+  stroke-width: 1.7;
+}
+
+.peak-line.muted {
+  stroke: #9fb2b8;
+}
+
+.violation-band {
+  fill: rgba(177, 58, 47, 0.09);
+  stroke: rgba(177, 58, 47, 0.24);
+}
+
+.chart-legend line {
+  stroke-width: 4;
+}
+
 .population-chart-wrap {
   margin-top: 14px;
   border: 1px solid var(--line);
@@ -2000,6 +2372,10 @@ tr:hover td {
   .choice-layout,
   .phase3-wtp-panel,
   .wtp-behavior-panel,
+  .cost-comparison-grid,
+  .cost-bridge-grid,
+  .cost-visual-grid,
+  .cost-visual-panel-wide,
   .lp-section-head,
   .lp-formula-grid,
   .optimization-chart-grid,
@@ -2019,6 +2395,14 @@ tr:hover td {
   .phase3-kpi-grid,
   .phase3-wtp-metrics {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .cost-metric-list {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-visual-panel-wide {
+    grid-column: auto;
   }
 
   .rate-cards {
@@ -2112,6 +2496,77 @@ tr:hover td {
 
   .population-table-panel .table-heading {
     flex-direction: column;
+  }
+
+  .cost-table-panel .table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cost-table-panel .segment-table-scroll {
+    overflow: visible;
+  }
+
+  .cost-table-panel table,
+  .cost-table-panel thead,
+  .cost-table-panel tbody,
+  .cost-table-panel tr,
+  .cost-table-panel td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .cost-table-panel thead {
+    display: none;
+  }
+
+  .cost-table-panel tr {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cost-table-panel tr:last-child {
+    border-bottom: 0;
+  }
+
+  .cost-table-panel td {
+    padding: 0;
+    border-bottom: 0;
+    text-align: left;
+  }
+
+  .cost-table-panel td + td {
+    margin-top: 8px;
+  }
+
+  .cost-table-panel td::before {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 820;
+    text-transform: uppercase;
+  }
+
+  .cost-table-panel td:nth-child(1)::before {
+    content: "Model term";
+  }
+
+  .cost-table-panel td:nth-child(2)::before {
+    content: "Plain-English meaning";
+  }
+
+  .cost-table-panel td:nth-child(3)::before {
+    content: "Why it matters";
+  }
+
+  .cost-visual-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-chart {
+    min-height: 220px;
   }
 
   .section-head {

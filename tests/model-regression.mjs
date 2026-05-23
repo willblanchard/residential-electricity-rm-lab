@@ -29,6 +29,7 @@ vm.runInContext(
 	    economicsForCase,
 	    portfolioEconomics,
 	    homeRowsForCase,
+	    hvacResponse,
 	    batteryDispatchForLoad,
 	    batteryDispatchEconomics,
 	    optimizeTariff,
@@ -137,6 +138,36 @@ assert.ok(
   "thermostat response should remain available below the battery arbitrage hurdle",
 );
 
+const thermostatSweep = Array.from({ length: 15 }, (_, index) => {
+  const spread = Number((1 + index * 0.1).toFixed(1));
+  return model.hvacResponse(
+    {
+      ...model.state,
+      spread,
+      battery: 0,
+      thermostat: 3,
+      population: model.state.population.map((item) => ({ ...item })),
+    },
+    "tou",
+  ).removedKwh;
+});
+const thermostatIncrements = thermostatSweep
+  .slice(1)
+  .map((value, index) => value - thermostatSweep[index]);
+assert.ok(
+  thermostatIncrements.every((increment) => increment > 0),
+  "thermostat response should increase smoothly as TOU spread rises",
+);
+const largestThermostatAcceleration = Math.max(
+  ...thermostatIncrements.slice(1).map((increment, index) =>
+    Math.abs(increment - thermostatIncrements[index]),
+  ),
+);
+assert.ok(
+  largestThermostatAcceleration < 0.02,
+  "thermostat response should not contain a hard spread threshold",
+);
+
 const assertRowsMatch = (actual, expected, label) => {
   assert.equal(actual.length, expected.length, `${label} row count`);
   actual.forEach((row, index) => {
@@ -202,20 +233,34 @@ for (const kind of ["tou"]) {
 }
 
 const demandOptimization = model.optimizeTariff("demand", model.state);
-assert.equal(
-  demandOptimization.feasibleCandidates.length,
-  0,
-  "demand optimizer should expose that no candidate clears capacity and filing neutrality",
-);
-assert.equal(
-  demandOptimization.best.feasible,
-  false,
-  "demand optimizer fallback should remain marked as a constraint violation",
+const filingNeutralDemandCandidates = demandOptimization.candidates.filter(
+  (candidate) =>
+    Math.abs(candidate.filing.deltaPct) <=
+    model.optimizationConfig.filingNeutralTolerance,
 );
 assert.ok(
-  demandOptimization.best.objectiveValue > demandOptimization.candidates[0].objectiveValue,
-  "demand optimizer fallback should still choose the best available frontier point",
+  filingNeutralDemandCandidates.some((candidate) => candidate.revenueRetention < 1),
+  "demand optimizer should allow customer bill savings instead of imposing a revenue retention floor",
 );
+if (demandOptimization.feasibleCandidates.length > 0) {
+  assert.ok(
+    demandOptimization.best.feasible,
+    "demand optimizer should prefer a capacity- and filing-feasible point when one exists",
+  );
+} else {
+  assert.ok(
+    filingNeutralDemandCandidates.every(
+      (candidate) =>
+        candidate.economics.peakKw > model.optimizationConfig.maxPeakKw,
+    ),
+    "demand optimizer should only report no feasible point when filing-neutral candidates miss the capacity screen",
+  );
+  assert.equal(
+    demandOptimization.best.feasible,
+    false,
+    "demand optimizer fallback should remain marked as a constraint violation",
+  );
+}
 
 const optimizationCsv = model.optimizationCsv();
 assert.equal(optimizationCsv.split("\n").length, 1 + 41 + 51);

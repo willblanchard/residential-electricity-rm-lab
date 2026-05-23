@@ -343,6 +343,19 @@ function touHighSpreadEffect(overrides = state) {
   return clamp((effectiveTouSpread(overrides) - 2) / 3, 0, 1);
 }
 
+function thermostatTouSignalStrength(overrides = state) {
+  const spreadAboveFlat = Math.max(0, effectiveTouSpread(overrides) - 1);
+  return clamp(1 - Math.exp(-1.5 * spreadAboveFlat), 0, 1);
+}
+
+function thermostatDemandSignalStrength(overrides = state) {
+  const demandCharge = Math.max(
+    0,
+    calibratedTariff("demand", overrides).demandCharge,
+  );
+  return clamp(1.15 * (1 - Math.exp(-demandCharge / 13)), 0, 1.15);
+}
+
 function tariffResponseStrength(tariffId, overrides = state) {
   if (tariffId === "tou") return touSignalStrength(overrides);
   if (tariffId === "demand") {
@@ -687,8 +700,12 @@ function priceSignalForHour(hour, overrides = state, tariffId = state.focusTarif
 
 function hvacResponse(overrides = state, tariffId = state.focusTariff) {
   const adjustment = Number(overrides.thermostat ?? 3);
-  const touEffect = tariffId === "tou" ? touSignalStrength(overrides) : 0;
-  const spreadEffect = tariffId === "tou" ? touHighSpreadEffect(overrides) : 0;
+  const thermostatSignal =
+    tariffId === "tou"
+      ? thermostatTouSignalStrength(overrides)
+      : tariffId === "demand"
+        ? thermostatDemandSignalStrength(overrides)
+        : 0;
   const thermostatFlex = clamp(adjustment / 6, 0, 1);
   const peakHours = scarcityHoursForTariff(tariffId);
   const preCoolWeights =
@@ -707,18 +724,13 @@ function hvacResponse(overrides = state, tariffId = state.focusTariff) {
           [14, 0.14],
           [15, 0.12],
         ]);
-  const demandEffect = clamp(
-    calibratedTariff("demand", overrides).demandCharge / 22,
-    0,
-    1.15,
-  );
   const peakReductionShare = clamp(
     tariffId === "flat"
       ? 0
       : thermostatFlex *
           (tariffId === "demand"
-            ? 0.24 * demandEffect
-            : (0.18 + 0.12 * spreadEffect) * touEffect),
+            ? 0.24 * thermostatSignal
+            : 0.18 * thermostatSignal + 0.12 * thermostatSignal ** 2),
     0,
     0.4,
   );
@@ -749,7 +761,7 @@ function hvacResponse(overrides = state, tariffId = state.focusTariff) {
   const recapturedKwh =
     tariffId === "demand"
       ? removedKwh * 0.74
-      : removedKwh * (1.08 + 0.14 * spreadEffect);
+      : removedKwh * (1.08 + 0.14 * thermostatSignal ** 2);
   const originalPeak = Math.max(...rows.map((row) => row.baselineTotal));
   let actualRecapturedKwh = 0;
   rows.forEach((row) => {
@@ -2502,7 +2514,7 @@ function renderBatteryChart() {
   `;
 
   document.getElementById("battery-cost-savings").textContent =
-    money2.format(response.costSavings);
+    money2.format(response.netBillSavings);
   document.getElementById("battery-peak-cut").textContent = pct.format(
     response.peakWindowReduction,
   );

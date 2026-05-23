@@ -1,6 +1,6 @@
 # Utility RM Dashboard
 
-Open `index.html` in a browser to start the nine-page presentation site.
+Open `index.html` in a browser to start the ten-page presentation site.
 
 The pages are intentionally static and dependency-free so they can be submitted,
 shared, or hosted anywhere. The interactive Single Price Results and Parallel Options Results pages combine
@@ -9,10 +9,11 @@ and static WattShift tariff outputs.
 
 ## File structure
 
-- `index.html`: Summary / Intro page and nine-page navigation map.
+- `index.html`: Summary / Intro page and ten-page navigation map.
 - `wtp-segmentation.html`: WTP + Segmentation calibration page built from the
   demand-curve source files.
 - `population.html`: standalone population definition and baseline bucket mix.
+- `energy-capacity-costs.html`: general primer on energy versus capacity costs.
 - `optimization-model.html`: model objective, variables, and constraints.
 - `implementation-validation.html`: implementation and validation narrative.
 - `phase1.html`: interactive single-price-results dashboard.
@@ -33,9 +34,10 @@ and static WattShift tariff outputs.
 - `data/`: static source and seed CSV/JSON files used for downloads and audit.
 - `scripts/`: one-off data build/pull utilities for regenerating static inputs.
 
-The site follows the presentation structure in nine named pages: Summary /
-Intro, WTP + Segmentation, Population, Optimization Model, Implementation, Single Price Results,
-Parallel Options Results, Limitations, and Takeaway. The Single Price Results screen is framed as a utility-board case
+The site follows the presentation structure in ten named pages: Summary /
+Intro, WTP + Segmentation, Optimization Model, Implementation, Energy vs
+Capacity Costs, Population, Single Price Results, Parallel Options Results,
+Limitations, and Takeaway. The Single Price Results screen is framed as a utility-board case
 study: TOU and
 demand-charge tariffs are calibrated to be approximately revenue-neutral for
 an all-inelastic baseline, then the dashboard tests how that neutrality evolves
@@ -224,19 +226,28 @@ it uses the NLR HVAC category as controllable load, shifts a bounded share of
 late-day peak HVAC demand into pre-cooling hours under TOU, and clips the
 home's highest-load hours under the demand-charge tariff. It applies an
 efficiency benefit for moving cooling earlier in the day and exposes the
-adjusted profile through `Download HVAC CSV`.
+adjusted profile through `Download HVAC CSV`. Unlike the battery model, the
+thermostat response uses a smooth comfort/rebound curve rather than an
+arbitrage threshold.
 
 Default controls use a 2.0x TOU peak spread and 3°F thermostat adjustment.
 
 ## Battery response model
 
 The dashboard also includes an automated home-battery dispatch policy. It can be
-applied by itself or layered on top of thermostat control. The battery charges
-when the price signal is low, preserves state of charge for the late-day peak,
-and discharges to reduce high-price grid imports under TOU. Under a demand
-charge, it solves a simple meter-peak cap for each normalized demand profile so
-the home battery can materially lower the customer's billed kW rather than only
-following the average portfolio peak window. This is a transparent heuristic
+applied by itself or layered on top of thermostat control. The battery only
+dispatches when the modeled discharge value clears the cost of charging energy,
+80% round-trip efficiency losses, and a 3 cents/kWh discharged wear cost. Under
+TOU, that creates an arbitrage hurdle: modest spreads can move thermostat load
+without cycling the battery. Under a demand charge, the discharge value includes
+both the energy rate and the monthly billed-kW savings amortized over the
+modeled month. If the simulated cycle does not lower the customer bill net of
+wear, the battery stays idle.
+
+When a home has both a thermostat and a battery, the dashboard first applies the
+same thermostat response used in the thermostat-only case, then runs the same
+battery dispatch policy on the adjusted load. There is no separate
+thermostat-plus-battery coordination bonus. This is a transparent heuristic
 dispatch model, not a solved household battery LP. The `Battery size` control
 changes capacity and the exported `utility_rm_battery_response.csv` contains
 hourly SOC, charge/discharge, home load, grid import, and price.
